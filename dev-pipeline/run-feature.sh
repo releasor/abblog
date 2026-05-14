@@ -127,13 +127,14 @@ spawn_and_wait_session() {
 
     case "$CLI_CMD" in
         *claude*)
-            # Claude Code: prompt via -p argument, --dangerously-skip-permissions for auto-accept
+            # Claude Code: prompt via stdin to avoid Windows argument length limit (~32KB)
             "$CLI_CMD" \
-                -p "$(cat "$bootstrap_prompt")" \
+                --print \
                 --dangerously-skip-permissions \
                 $verbose_flag \
                 $stream_json_flag \
                 $model_flag \
+                < "$bootstrap_prompt" \
                 > "$session_log" 2>&1 &
             ;;
         *)
