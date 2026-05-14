@@ -49,7 +49,7 @@
       "dependencies": [
         "F-001"
       ],
-      "status": "failed",
+      "status": "completed",
       "critic": true,
       "critic_count": 3,
       "browser_interaction": {
