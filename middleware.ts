@@ -10,20 +10,14 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  try {
-    // Check for valid session token
-    const token = await getToken({
-      req: request,
-      secret: process.env.NEXTAUTH_SECRET,
-    });
+  // Check for valid session token
+  const token = await getToken({
+    req: request,
+    secret: process.env.NEXTAUTH_SECRET || "fallback-secret-for-development",
+  });
 
-    // Redirect to login if not authenticated
-    if (!token) {
-      const loginUrl = new URL("/admin/login", request.url);
-      return NextResponse.redirect(loginUrl);
-    }
-  } catch {
-    // If getToken fails, redirect to login
+  // Redirect to login if not authenticated
+  if (!token) {
     const loginUrl = new URL("/admin/login", request.url);
     return NextResponse.redirect(loginUrl);
   }
