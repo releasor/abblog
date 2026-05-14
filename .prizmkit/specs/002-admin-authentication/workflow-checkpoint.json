@@ -42,7 +42,7 @@
       "id": "S05",
       "skill": "prizmkit-retrospective",
       "name": "Retrospective",
-      "status": "in_progress",
+      "status": "completed",
       "required_artifacts": [],
       "depends_on": "S04"
     },
@@ -50,7 +50,7 @@
       "id": "S06",
       "skill": "prizmkit-committer",
       "name": "Commit",
-      "status": "pending",
+      "status": "in_progress",
       "required_artifacts": ["--headless"],
       "depends_on": "S05"
     }
