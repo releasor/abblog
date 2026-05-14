@@ -68,7 +68,9 @@
       "Bash(rm -rf .prizmkit/state/features/features/F-002)",
       "Bash(git checkout *)",
       "Bash(git branch *)",
-      "Bash(VERBOSE=1 ENABLE_CRITIC=true MAX_RETRIES=3 bash dev-pipeline/run-feature.sh resume .prizmkit/plans/feature-list.json)"
+      "Bash(VERBOSE=1 ENABLE_CRITIC=true MAX_RETRIES=3 bash dev-pipeline/run-feature.sh resume .prizmkit/plans/feature-list.json)",
+      "Bash(pkill -f \"run-feature.sh\")",
+      "Bash(pkill -f \"claude.*F-002\")"
     ],
     "additionalDirectories": [
       "C:\\Users\\81097\\AppData\\Local\\ms-playwright\\__dirlock"
