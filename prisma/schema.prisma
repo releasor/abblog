@@ -1,0 +1,95 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+model AdminUser {
+  id           Int       @id @default(autoincrement())
+  email        String    @unique
+  passwordHash String    @map("password_hash")
+  name         String
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  posts Post[]
+
+  @@map("admin_users")
+}
+
+model Post {
+  id           Int       @id @default(autoincrement())
+  title        String
+  slug         String    @unique
+  content      String    @db.LongText
+  excerpt      String?
+  coverImageUrl String?  @map("cover_image_url")
+  status       PostStatus @default(DRAFT)
+  publishedAt  DateTime? @map("published_at")
+  authorId     Int       @map("author_id")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  author   AdminUser @relation(fields: [authorId], references: [id])
+  tags     PostTag[]
+  comments Comment[]
+
+  @@map("posts")
+}
+
+enum PostStatus {
+  DRAFT
+  PUBLISHED
+}
+
+model Category {
+  id          Int     @id @default(autoincrement())
+  name        String  @unique
+  slug        String  @unique
+  description String?
+
+  @@map("categories")
+}
+
+model Tag {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+  slug String @unique
+
+  posts PostTag[]
+
+  @@map("tags")
+}
+
+model PostTag {
+  postId Int  @map("post_id")
+  tagId  Int  @map("tag_id")
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  tag  Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([postId, tagId])
+  @@map("post_tags")
+}
+
+model Comment {
+  id          Int           @id @default(autoincrement())
+  postId      Int           @map("post_id")
+  authorName  String        @map("author_name")
+  authorEmail String        @map("author_email")
+  content     String        @db.LongText
+  status      CommentStatus @default(PENDING)
+  createdAt   DateTime      @default(now()) @map("created_at")
+
+  post Post @relation(fields: [postId], references: [id])
+
+  @@map("comments")
+}
+
+enum CommentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}

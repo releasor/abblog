@@ -6,7 +6,8 @@ TECH_STACK: TypeScript, Next.js 16, Tailwind CSS v4, ESLint (personal blog, user
 MODULE_INDEX:
 - app [routing, pages, layout]: src/app/ — Next.js App Router pages and layouts
 - components [ui, react]: src/components/ — reusable UI components (empty, ready for use)
-- lib [utils, helpers]: src/lib/ — utility functions and shared logic (empty, ready for use)
+- lib [utils, helpers, prisma]: src/lib/ — utility functions and Prisma client singleton
+- prisma [database, schema, seed]: prisma/ — database schema, migrations, and seed script
 RULES:
 - TypeScript fullstack project with Next.js (App Router)
 - Tailwind CSS v4 (CSS-based config, no tailwind.config.ts)

@@ -62,7 +62,8 @@
       "Bash(curl -sL https://github.com/jqlang/jq/releases/download/jq-1.7.1/jq-windows-amd64.exe -o /c/Users/81097/bin/jq.exe)",
       "Bash(chmod +x /c/Users/81097/bin/jq)",
       "Bash(jq.exe --version)",
-      "Bash(command -v jq.exe)"
+      "Bash(command -v jq.exe)",
+      "Bash(python3 -c ' *)"
     ],
     "additionalDirectories": [
       "C:\\Users\\81097\\AppData\\Local\\ms-playwright\\__dirlock"

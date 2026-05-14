@@ -1,0 +1,8 @@
+MODULE: prisma
+FILES: schema.prisma, seed.ts, prisma.config.ts
+RESPONSIBILITY: database schema definition, migrations, seed data, and Prisma 7 configuration
+DEPENDENCIES:
+- uses: @prisma/client: Prisma ORM client
+- uses: @prisma/adapter-mariadb: MariaDB driver adapter for MySQL compatibility
+- uses: bcrypt: password hashing for seed data
+- imports: generated/prisma/client: generated Prisma client types

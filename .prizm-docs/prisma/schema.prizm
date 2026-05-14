@@ -1,0 +1,30 @@
+MODULE: prisma/schema
+FILES: schema.prisma, seed.ts, prisma.config.ts
+RESPONSIBILITY: database schema definition, seed data, and Prisma 7 configuration
+KEY_FILES:
+- schema.prisma: database schema with 6 models (AdminUser, Post, Category, Tag, PostTag, Comment), ~100 lines
+- seed.ts: seed script creating admin user and 3 default categories, ~45 lines
+- prisma.config.ts: Prisma 7 config with datasource URL from .env, ~14 lines
+DEPENDENCIES:
+- uses: @prisma/client 7.8.0: Prisma ORM client
+- uses: @prisma/adapter-mariadb 7.8.0: MariaDB driver adapter (MySQL compatible)
+- uses: mariadb 3.5.2: MariaDB driver
+- uses: bcrypt 6.0.0: password hashing
+- imports: generated/prisma/client: generated Prisma client types
+INTERFACES:
+- PrismaClient: singleton instance in src/lib/prisma.ts, configured with MariaDB adapter
+- AdminUser model: id, email (unique), passwordHash, name, createdAt
+- Post model: id, title, slug (unique), content, excerpt, coverImageUrl, status (DRAFT/PUBLISHED), publishedAt, authorId, createdAt, updatedAt
+- Category model: id, name (unique), slug (unique), description
+- Tag model: id, name (unique), slug (unique)
+- PostTag model: postId, tagId (composite PK)
+- Comment model: id, postId, authorName, authorEmail, content, status (PENDING/APPROVED/REJECTED), createdAt
+TRAPS:
+- [CRITICAL] Prisma 7 removed url from datasource block — must use prisma.config.ts with defineConfig() | FIX: create prisma.config.ts with datasource.url from env
+- [CRITICAL] Prisma 7 requires adapter for PrismaClient constructor — no default driver | FIX: use @prisma/adapter-mariadb with connection string
+- [HIGH] Generated client output is ../generated/prisma, not node_modules/@prisma/client | FIX: import from ../../generated/prisma/client
+- [LOW] MariaDB adapter is wire-compatible with MySQL but uses different npm package | FIX: use @prisma/adapter-mariadb, not @prisma/adapter-mysql (doesn't exist)
+CHANGELOG:
+- F-001 | add: initial database schema with 6 models
+- F-001 | add: seed script for admin user and categories
+- F-001 | add: Prisma 7 config with MariaDB adapter

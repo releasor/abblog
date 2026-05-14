@@ -45,6 +45,9 @@ Thumbs.db
 .env
 .env.local
 
+# Prisma generated client
+/generated/prisma
+
 # ===========================
 # Next.js
 # ===========================
