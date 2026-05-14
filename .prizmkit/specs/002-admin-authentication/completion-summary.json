@@ -1,0 +1,12 @@
+{
+  "completion_notes": [
+    "Added NextAuth.js v4 config with Credentials provider in src/lib/auth.ts — exports authOptions",
+    "Created NextAuth API route at src/app/api/auth/[...nextauth]/route.ts (GET/POST handlers)",
+    "Admin login page at src/app/admin/login/page.tsx — email/password form with error handling",
+    "Admin layout at src/app/admin/(admin)/layout.tsx — sidebar nav (Dashboard, Posts, Categories, Comments, Settings) + header with logout",
+    "Dashboard placeholder at src/app/admin/(admin)/dashboard/page.tsx",
+    "Route protection middleware at middleware.ts — uses getToken, redirects unauthenticated to /admin/login",
+    "SessionProvider wrapper at src/app/providers.tsx, integrated in root layout.tsx",
+    "AdminUser model (id, email, passwordHash, name, createdAt) in prisma/schema.prisma"
+  ]
+}
