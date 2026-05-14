@@ -29,7 +29,7 @@
       "priority": "critical",
       "estimated_complexity": "low",
       "dependencies": [],
-      "status": "in_progress",
+      "status": "completed",
       "critic": false
     },
     {
