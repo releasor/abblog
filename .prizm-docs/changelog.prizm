@@ -3,3 +3,6 @@ CHANGELOG:
 - root | add: initial greenfield bootstrap
 - F-001 | add: Prisma ORM with MySQL schema (6 models)
 - F-001 | add: seed script, prisma client singleton, prisma.config.ts
+- F-002 | add: NextAuth.js v4 authentication with Credentials provider
+- F-002 | add: admin login page, layout with sidebar, middleware route protection
+- F-002 | add: auth and admin module L1/L2 prizm docs
