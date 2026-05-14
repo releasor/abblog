@@ -1,0 +1,8 @@
+MODULE: auth
+FILES: src/lib/auth.ts, src/app/api/auth/[...nextauth]/route.ts, middleware.ts, src/app/providers.tsx
+RESPONSIBILITY: NextAuth.js v4 authentication with Credentials provider, JWT sessions, route protection
+DEPENDENCIES:
+- uses: next-auth: authentication framework
+- uses: bcrypt: password hashing and comparison
+- imports: @/lib/prisma: database queries for AdminUser
+- imports: next-auth/jwt: token verification in middleware

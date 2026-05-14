@@ -1,0 +1,6 @@
+MODULE: admin
+FILES: src/app/admin/layout.tsx, src/app/admin/login/page.tsx, src/app/admin/(admin)/dashboard/page.tsx
+RESPONSIBILITY: admin panel UI — login page, sidebar navigation layout, dashboard placeholder
+DEPENDENCIES:
+- uses: next-auth/react: useSession, signIn, signOut client hooks
+- imports: next/navigation: useRouter, usePathname
