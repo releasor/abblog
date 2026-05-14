@@ -50,7 +50,7 @@
       "id": "S06",
       "skill": "prizmkit-committer",
       "name": "Commit",
-      "status": "in_progress",
+      "status": "completed",
       "required_artifacts": ["--headless"],
       "depends_on": "S05"
     }
