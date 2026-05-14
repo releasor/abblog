@@ -3,8 +3,8 @@
   "session": "F-002-20260514172903",
   "steps": {
     "context-snapshot": { "status": "completed", "timestamp": null },
-    "prizmkit-plan": { "status": "in_progress", "timestamp": null },
-    "prizmkit-implement": { "status": "pending", "timestamp": null },
+    "prizmkit-plan": { "status": "completed", "timestamp": null },
+    "prizmkit-implement": { "status": "in_progress", "timestamp": null },
     "browser-verification": { "status": "pending", "timestamp": null },
     "prizmkit-retrospective": { "status": "pending", "timestamp": null },
     "prizmkit-committer": { "status": "pending", "timestamp": null }
