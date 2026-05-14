@@ -1,0 +1,26 @@
+MODULE: auth
+FILES: src/lib/auth.ts, src/app/api/auth/[...nextauth]/route.ts, middleware.ts, src/app/providers.tsx
+RESPONSIBILITY: NextAuth.js v4 authentication with Credentials provider, JWT sessions, route protection
+KEY_FILES:
+- src/lib/auth.ts: NextAuth config with Credentials provider, bcrypt verification, JWT callbacks, ~65 lines
+- src/app/api/auth/[...nextauth]/route.ts: NextAuth API route handler (GET/POST), ~6 lines
+- middleware.ts: getToken-based middleware protecting /admin/* routes, redirects to /admin/login, ~30 lines
+- src/app/providers.tsx: SessionProvider wrapper for client components, ~7 lines
+DEPENDENCIES:
+- uses: next-auth@^4.24.14: authentication framework (v4, not Auth.js v5)
+- uses: bcrypt@^6.0.0: password hashing and comparison
+- imports: @/lib/prisma: prisma client for AdminUser queries
+- imports: next-auth/jwt: getToken for middleware token verification
+INTERFACES:
+- authOptions: NextAuthOptions object exported from src/lib/auth.ts
+- middleware: default export from middleware.ts, matcher ["/admin/:path*"]
+- Providers: SessionProvider wrapper component from src/app/providers.tsx
+TRAPS:
+- [HIGH] Login page must NOT be wrapped by admin layout — use route group (admin) for layout/dashboard, keep login outside | FIX: src/app/admin/(admin)/layout.tsx wraps only authenticated pages
+- [HIGH] Next.js App Router route groups with parentheses: (admin) directory does NOT add to URL path | FIX: /admin/(admin)/dashboard/page.tsx resolves to /admin/dashboard
+- [LOW] NextAuth v4 uses next-auth/react for client (signIn, signOut, useSession) and next-auth for server (NextAuth, getServerSession) | FIX: don't mix v4 and v5 API patterns
+- [LOW] middleware.ts uses getToken from next-auth/jwt, not withAuth — lighter weight, more control | FIX: check token manually, redirect with NextResponse.redirect
+CHANGELOG:
+- F-002 | add: NextAuth.js v4 with Credentials provider and JWT sessions
+- F-002 | add: middleware for /admin/* route protection
+- F-002 | add: SessionProvider wrapper in root layout
