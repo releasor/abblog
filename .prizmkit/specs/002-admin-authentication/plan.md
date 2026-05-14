@@ -40,11 +40,12 @@ Note: Using JWT session strategy (no DB sessions needed), so @auth/prisma-adapte
 
 ## Tasks
 
-- [ ] 1. Install next-auth dependency and verify package.json
-- [ ] 2. Create NextAuth config (src/lib/auth.ts) with Credentials provider + bcrypt verification
-- [ ] 3. Create NextAuth API route (src/app/api/auth/[...nextauth]/route.ts)
-- [ ] 4. Create admin login page (src/app/admin/login/page.tsx) with form, error handling, mobile-responsive
-- [ ] 5. Create admin dashboard placeholder (src/app/admin/dashboard/page.tsx)
-- [ ] 6. Create admin layout (src/app/admin/layout.tsx) with sidebar nav + header with logout
-- [ ] 7. Create middleware.ts for route protection (/admin/* except /admin/login)
-- [ ] 8. Verify all acceptance criteria via manual check
+- [x] 1. Install next-auth dependency and verify package.json
+- [x] 2. Create NextAuth config (src/lib/auth.ts) with Credentials provider + bcrypt verification
+- [x] 3. Create NextAuth API route (src/app/api/auth/[...nextauth]/route.ts)
+- [x] 4. Create admin login page (src/app/admin/login/page.tsx) with form, error handling, mobile-responsive
+- [x] 5. Create admin dashboard placeholder (src/app/admin/dashboard/page.tsx)
+- [x] 6. Create admin layout (src/app/admin/layout.tsx) with sidebar nav + header with logout
+- [x] 7. Create middleware.ts for route protection (/admin/* except /admin/login)
+- [x] 8. Add SessionProvider wrapper (src/app/providers.tsx) in root layout
+- [ ] 9. Verify build compiles and all acceptance criteria
