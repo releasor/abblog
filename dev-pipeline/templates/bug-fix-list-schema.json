@@ -1,0 +1,263 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Dev-Pipeline Bug Fix List",
+  "description": "Schema for .prizmkit/plans/bug-fix-list.json — standardized input for the Bug Fix Pipeline",
+  "type": "object",
+  "required": [
+    "$schema",
+    "project_name",
+    "bugs"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "const": "dev-pipeline-bug-fix-list-v1"
+    },
+    "project_name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "project_description": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "created_by": {
+      "type": "string"
+    },
+    "bugs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "description",
+          "severity",
+          "error_source",
+          "verification_type",
+          "acceptance_criteria",
+          "status"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^B-\\d{3}$",
+            "description": "Bug ID, format B-001, B-002..."
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Bug title — brief description of the symptom"
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Detailed bug description: expected vs actual behavior"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "critical",
+              "high",
+              "medium",
+              "low"
+            ],
+            "description": "critical=crash/data-loss; high=core-feature-broken; medium=workaround-exists; low=cosmetic"
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "high",
+              "medium",
+              "low"
+            ],
+            "description": "Fix priority. Pipeline processes high before medium before low; within same level, array order determines sequence. Both critical and high severity map to high priority."
+          },
+          "error_source": {
+            "type": "object",
+            "required": [
+              "type"
+            ],
+            "description": "Structured error source information extracted from various input formats",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "stack_trace",
+                  "user_report",
+                  "failed_test",
+                  "log_pattern",
+                  "monitoring_alert"
+                ]
+              },
+              "stack_trace": {
+                "type": "string",
+                "description": "Error stack trace (when type=stack_trace)"
+              },
+              "error_message": {
+                "type": "string",
+                "description": "Error message text"
+              },
+              "log_snippet": {
+                "type": "string",
+                "description": "Relevant log snippet (when type=log_pattern)"
+              },
+              "failed_test_path": {
+                "type": "string",
+                "description": "Path to failing test file (when type=failed_test)"
+              },
+              "reproduction_steps": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "User-reported reproduction steps (when type=user_report)"
+              }
+            }
+          },
+          "affected_modules": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Known affected module names (optional, triage will auto-detect)"
+          },
+          "environment": {
+            "type": "object",
+            "description": "Environment where the bug occurs",
+            "properties": {
+              "os": {
+                "type": "string"
+              },
+              "runtime": {
+                "type": "string"
+              },
+              "browser": {
+                "type": "string"
+              },
+              "version": {
+                "type": "string"
+              }
+            }
+          },
+          "verification_type": {
+            "type": "string",
+            "enum": [
+              "automated",
+              "manual",
+              "hybrid"
+            ],
+            "description": "automated=unit/integration-test; manual=human-UAT; hybrid=both"
+          },
+          "acceptance_criteria": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string"
+            },
+            "description": "Conditions that must be met for the bug to be considered fixed"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "in_progress",
+              "completed",
+              "failed",
+              "skipped",
+              "needs_info"
+            ],
+            "description": "Bug fix status. Subset of feature status enum plus needs_info."
+          },
+          "critic": {
+            "type": "boolean",
+            "description": "Enable adversarial plan challenge before implementation. Default: true for high severity bugs, false for others.",
+            "default": false
+          },
+          "critic_count": {
+            "type": "integer",
+            "description": "Number of parallel critic agents. 1 = single critic, 3 = multi-critic voting. Default: 1 for high severity, omit for others.",
+            "enum": [
+              1,
+              3
+            ]
+          },
+          "user_context": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "User-provided supplementary materials, preserved verbatim. Each entry is either inline content/rules (stored as-is) or a file reference (e.g. 'src/auth/login.ts:42-78', 'src/utils/ — focus on validation logic')."
+          },
+          "model": {
+            "type": "string",
+            "description": "AI model ID for this bug fix. Overrides $MODEL env var."
+          },
+          "browser_interaction": {
+            "type": "object",
+            "description": "Browser verification config for bugs reproducible via UI. Supports playwright-cli and opencli. AI auto-detects dev server command, URL, and port from project config at runtime.",
+            "properties": {
+              "tool": {
+                "type": "string",
+                "enum": ["playwright-cli", "opencli", "auto"],
+                "default": "auto",
+                "description": "Browser tool to use. 'auto' (default) = AI chooses at runtime. 'playwright-cli' = local dev server verification in isolated browser. 'opencli' = reuses Chrome logged-in session, ideal for verifying bugs related to third-party integrations or OAuth flows."
+              },
+              "verify_steps": {
+                "type": "array",
+                "description": "Verification goals describing HOW to reproduce and verify the bug fix (e.g., 'Click login button and verify error message is gone', 'Open dashboard and confirm performance metrics display'). AI decides concrete browser tool actions at runtime. If omitted, AI auto-reproduces from error description.",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "global_context": {
+      "type": "object",
+      "description": "Global context for all bug fixes in this batch",
+      "properties": {
+        "tech_stack": {
+          "type": "string"
+        },
+        "language": {
+          "type": "string"
+        },
+        "runtime": {
+          "type": "string"
+        },
+        "frontend_framework": {
+          "type": "string"
+        },
+        "frontend_styling": {
+          "type": "string"
+        },
+        "backend_framework": {
+          "type": "string"
+        },
+        "database": {
+          "type": "string"
+        },
+        "orm": {
+          "type": "string"
+        },
+        "testing_strategy": {
+          "type": "string"
+        },
+        "bundler": {
+          "type": "string"
+        },
+        "project_type": {
+          "type": "string"
+        },
+        "ci_pipeline": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

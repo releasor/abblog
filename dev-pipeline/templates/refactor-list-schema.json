@@ -1,0 +1,270 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Dev-Pipeline Refactor List",
+  "description": "Schema for .prizmkit/plans/refactor-list.json — standardized input for the Refactor Pipeline",
+  "type": "object",
+  "required": [
+    "$schema",
+    "project_name",
+    "refactors"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "const": "dev-pipeline-refactor-list-v1"
+    },
+    "project_name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "project_description": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "created_by": {
+      "type": "string"
+    },
+    "refactors": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "description",
+          "scope",
+          "type",
+          "priority",
+          "complexity",
+          "behavior_preservation",
+          "acceptance_criteria",
+          "dependencies",
+          "status"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^R-\\d{3}$",
+            "description": "Refactor ID, format R-001, R-002..."
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Refactor title — brief description of the change"
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Detailed description: what is being refactored and why"
+          },
+          "scope": {
+            "type": "object",
+            "description": "Files and modules affected by this refactor",
+            "properties": {
+              "files": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "File paths affected by this refactor"
+              },
+              "modules": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Module names affected by this refactor"
+              }
+            }
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "extract",
+              "rename",
+              "restructure",
+              "simplify",
+              "decouple",
+              "migrate"
+            ],
+            "description": "extract=extract-function/module; rename=rename-symbols; restructure=move/reorganize; simplify=reduce-complexity; decouple=remove-dependencies; migrate=tech-migration"
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "critical",
+              "high",
+              "medium",
+              "low"
+            ],
+            "description": "Refactor priority. Pipeline processes critical before high before medium before low; within same level, array order determines sequence."
+          },
+          "complexity": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ],
+            "description": "Estimated complexity of the refactor"
+          },
+          "behavior_preservation": {
+            "type": "object",
+            "required": [
+              "strategy"
+            ],
+            "description": "Strategy for ensuring no behavior changes",
+            "properties": {
+              "strategy": {
+                "type": "string",
+                "enum": [
+                  "test-gate",
+                  "snapshot",
+                  "manual"
+                ],
+                "description": "test-gate=existing-tests-must-pass; snapshot=before/after-snapshot-comparison; manual=human-verification"
+              },
+              "existing_tests": {
+                "type": "boolean",
+                "description": "Whether existing tests cover the refactored code"
+              },
+              "new_tests_needed": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "New tests that should be written before refactoring"
+              }
+            }
+          },
+          "acceptance_criteria": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string"
+            },
+            "description": "Conditions that must be met for the refactor to be considered complete"
+          },
+          "dependencies": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^R-\\d{3}$"
+            },
+            "description": "IDs of refactors that must be completed before this one"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "in_progress",
+              "completed",
+              "failed",
+              "skipped",
+              "auto_skipped"
+            ],
+            "description": "Refactor status. Subset of feature status enum."
+          },
+          "model": {
+            "type": "string",
+            "description": "AI model ID for this refactor. Overrides $MODEL env var."
+          },
+          "estimated_lines": {
+            "type": "integer",
+            "description": "Estimated number of lines affected by this refactor"
+          },
+          "completion_notes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "AI-generated summary of key changes from this refactor session. Used to provide rich dependency context to downstream refactors. Each item is a concise statement about what was refactored (e.g. modules extracted, files restructured, interfaces changed)."
+          },
+          "user_context": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "User-provided supplementary materials, preserved verbatim. Each entry is either inline content/rules (stored as-is) or a file reference (e.g. 'src/auth/login.ts:42-78', 'src/utils/ — focus on validation logic')."
+          },
+          "critic": {
+            "type": "boolean",
+            "description": "Enable adversarial plan challenge before implementation. Default: true for critical/high priority refactors, false for others.",
+            "default": false
+          },
+          "critic_count": {
+            "type": "integer",
+            "description": "Number of parallel critic agents. 1 = single critic, 3 = multi-critic voting. Default: 3 for critical, 1 for high, omit for others.",
+            "enum": [
+              1,
+              3
+            ]
+          },
+          "browser_interaction": {
+            "type": "object",
+            "description": "Browser verification config for refactors affecting UI behavior. Supports playwright-cli and opencli. AI auto-detects dev server command, URL, and port from project config at runtime.",
+            "properties": {
+              "tool": {
+                "type": "string",
+                "enum": ["playwright-cli", "opencli", "auto"],
+                "default": "auto",
+                "description": "Browser tool to use. 'auto' (default) = AI chooses at runtime. 'playwright-cli' = local dev server verification in isolated browser. 'opencli' = reuses Chrome logged-in session, ideal for verifying refactors involving third-party integrations or OAuth flows."
+              },
+              "verify_steps": {
+                "type": "array",
+                "description": "Verification goals describing WHAT to verify after refactoring (e.g., 'Navigation still works', 'Form submission succeeds', 'UI renders identically'). AI decides concrete browser tool actions at runtime. If omitted, AI explores the app and verifies no visual or behavioral regressions.",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "global_context": {
+      "type": "object",
+      "description": "Global context for all refactors in this batch",
+      "properties": {
+        "tech_stack": {
+          "type": "string"
+        },
+        "language": {
+          "type": "string"
+        },
+        "runtime": {
+          "type": "string"
+        },
+        "frontend_framework": {
+          "type": "string"
+        },
+        "frontend_styling": {
+          "type": "string"
+        },
+        "backend_framework": {
+          "type": "string"
+        },
+        "database": {
+          "type": "string"
+        },
+        "orm": {
+          "type": "string"
+        },
+        "testing_strategy": {
+          "type": "string"
+        },
+        "bundler": {
+          "type": "string"
+        },
+        "project_type": {
+          "type": "string"
+        },
+        "ci_pipeline": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

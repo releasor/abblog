@@ -1,0 +1,73 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(powershell *)",
+      "Bash(powershell.exe *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git diff *)",
+      "Bash(git status)",
+      "Bash(git log *)",
+      "Bash(powershell.exe -NoProfile -ExecutionPolicy Bypass -File ./.prizmkit/scripts/validate-prizm-docs.ps1 *)",
+      "Bash(powershell.exe -NoProfile -ExecutionPolicy Bypass -File ./.prizmkit/scripts/diff-prizm-docs.ps1 *)",
+      "Bash(powershell.exe -NoProfile -ExecutionPolicy Bypass -File ./dev-pipeline/native-pipeline.ps1 *)",
+      "Bash(powershell.exe -NoProfile -ExecutionPolicy Bypass -File ./dev-pipeline/native-runner.ps1 *)",
+      "Bash(powershell.exe -NoProfile -ExecutionPolicy Bypass -File ./dev-pipeline/native-daemon.ps1 *)",
+      "Bash(powershell.exe -NoProfile -ExecutionPolicy Bypass -File ./dev-pipeline/run-feature.ps1 *)",
+      "Bash(powershell.exe -NoProfile -ExecutionPolicy Bypass -File ./dev-pipeline/run-bugfix.ps1 *)",
+      "Bash(powershell.exe -NoProfile -ExecutionPolicy Bypass -File ./dev-pipeline/run-refactor.ps1 *)",
+      "Bash(powershell.exe -NoProfile -ExecutionPolicy Bypass -File ./dev-pipeline/run-recovery.ps1 *)",
+      "Bash(powershell.exe -NoProfile -ExecutionPolicy Bypass -File ./dev-pipeline/launch-feature-daemon.ps1 *)",
+      "Bash(powershell.exe -NoProfile -ExecutionPolicy Bypass -File ./dev-pipeline/launch-bugfix-daemon.ps1 *)",
+      "Bash(powershell.exe -NoProfile -ExecutionPolicy Bypass -File ./dev-pipeline/launch-refactor-daemon.ps1 *)",
+      "Bash(powershell.exe -NoProfile -ExecutionPolicy Bypass -File ./dev-pipeline/reset-feature.ps1 *)",
+      "Bash(powershell.exe -NoProfile -ExecutionPolicy Bypass -File ./dev-pipeline/reset-bug.ps1 *)",
+      "Bash(powershell.exe -NoProfile -ExecutionPolicy Bypass -File ./dev-pipeline/reset-refactor.ps1 *)",
+      "Bash(powershell.exe -NoProfile -ExecutionPolicy Bypass -File ./dev-pipeline/launch-bugfix-daemon.ps1 *)",
+      "Bash(powershell.exe -NoProfile -ExecutionPolicy Bypass -File ./dev-pipeline/launch-feature-daemon.ps1 *)",
+      "Bash(powershell.exe -NoProfile -ExecutionPolicy Bypass -File ./dev-pipeline/launch-refactor-daemon.ps1 *)",
+      "Bash(powershell.exe -NoProfile -ExecutionPolicy Bypass -File ./dev-pipeline/reset-bug.ps1 *)",
+      "Bash(powershell.exe -NoProfile -ExecutionPolicy Bypass -File ./dev-pipeline/reset-feature.ps1 *)",
+      "Bash(powershell.exe -NoProfile -ExecutionPolicy Bypass -File ./dev-pipeline/reset-refactor.ps1 *)",
+      "Bash(powershell.exe -NoProfile -ExecutionPolicy Bypass -File ./dev-pipeline/run-bugfix.ps1 *)",
+      "Bash(powershell.exe -NoProfile -ExecutionPolicy Bypass -File ./dev-pipeline/run-feature.ps1 *)",
+      "Bash(powershell.exe -NoProfile -ExecutionPolicy Bypass -File ./dev-pipeline/run-recovery.ps1 *)",
+      "Bash(powershell.exe -NoProfile -ExecutionPolicy Bypass -File ./dev-pipeline/run-refactor.ps1 *)"
+    ]
+  },
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "matcher": "(?i)\\b(commit|push|finish|ship|merge|pull request|pr)\\b|提交|推送|收尾|完成任务|合并|发版|发布",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -EncodedCommand JABzAHIAYwAgAD0AIABAACgAZwBpAHQAIABkAGkAZgBmACAALQAtAGMAYQBjAGgAZQBkACAALQAtAG4AYQBtAGUALQBvAG4AbAB5ACAAMgA+ACQAbgB1AGwAbAAgAHwAIABXAGgAZQByAGUALQBPAGIAagBlAGMAdAAgAHsAIAAkAF8AIAAtAG0AYQB0AGMAaAAgACcAXAAuACgAdABzAHwAdABzAHgAfABqAHMAfABqAHMAeAB8AHAAeQB8AGcAbwB8AHIAcwB8AGoAYQB2AGEAKQAkACcAIAB9ACkALgBDAG8AdQBuAHQAOwAgAGkAZgAgACgAJABzAHIAYwAgAC0AZwB0ACAAMAApACAAewAgACQAcAByAGkAegBtACAAPQAgAEAAKABnAGkAdAAgAGQAaQBmAGYAIAAtAC0AYwBhAGMAaABlAGQAIAAtAC0AbgBhAG0AZQAtAG8AbgBsAHkAIAAyAD4AJABuAHUAbABsACAAfAAgAFcAaABlAHIAZQAtAE8AYgBqAGUAYwB0ACAAewAgACQAXwAgAC0AbQBhAHQAYwBoACAAJwBeAFwALgBwAHIAaQB6AG0ALQBkAG8AYwBzAC8AJwAgAH0AKQAuAEMAbwB1AG4AdAA7ACAAaQBmACAAKAAkAHAAcgBpAHoAbQAgAC0AZwB0ACAAMAApACAAewAgAFcAcgBpAHQAZQAtAE8AdQB0AHAAdQB0ACAAIgBQAFIASQBaAE0ASwBJAFQAXwBEAE8AQwBfAFMAVABBAFQAVQBTADoAIAAkAHMAcgBjACAAcwBvAHUAcgBjAGUAIABmAGkAbABlACgAcwApACAAcwB0AGEAZwBlAGQAIAB8ACAALgBwAHIAaQB6AG0ALQBkAG8AYwBzAC8AIAB1AHAAZABhAHQAZQBkACAAKAAkAHAAcgBpAHoAbQAgAGYAaQBsAGUAKABzACkAKQAiACAAfQAgAGUAbABzAGUAIAB7ACAAVwByAGkAdABlAC0ATwB1AHQAcAB1AHQAIAAiAFAAUgBJAFoATQBLAEkAVABfAEQATwBDAF8AUwBUAEEAVABVAFMAOgAgACQAcwByAGMAIABzAG8AdQByAGMAZQAgAGYAaQBsAGUAKABzACkAIABzAHQAYQBnAGUAZAAgAHwAIAAuAHAAcgBpAHoAbQAtAGQAbwBjAHMALwAgAE4ATwBUACAAVQBQAEQAQQBUAEUARAAgABQgIAB1AHAAZABhAHQAZQAgAGkAZgAgAHQAaABpAHMAIABpAHMAIABhACAAZgBlAGEAdAB1AHIAZQAgAGMAaABhAG4AZwBlACIAIAB9ACAAfQA="
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -EncodedCommand JAB0AG8AbwBsAEkAbgBwAHUAdAAgAD0AIABpAGYAIAAoACQAZQBuAHYAOgBDAEwAQQBVAEQARQBfAFQATwBPAEwAXwBJAE4AUABVAFQAKQAgAHsAIAAkAGUAbgB2ADoAQwBMAEEAVQBEAEUAXwBUAE8ATwBMAF8ASQBOAFAAVQBUACAAfQAgAGUAbABzAGUAIAB7ACAAJABlAG4AdgA6AEMATwBEAEUAQgBVAEQARABZAF8AVABPAE8ATABfAEkATgBQAFUAVAAgAH0AOwAgAGkAZgAgACgAJAB0AG8AbwBsAEkAbgBwAHUAdAAgAC0AbQBhAHQAYwBoACAAJwBnAGkAdAAgACgAYwBvAG0AbQBpAHQAfABtAGUAcgBnAGUAfAByAGUAYgBhAHMAZQApACcAKQAgAHsAIAAkAHMAYwByAGkAcAB0ACAAPQAgACcALgBwAHIAaQB6AG0AawBpAHQALwBzAGMAcgBpAHAAdABzAC8AZABpAGYAZgAtAHAAcgBpAHoAbQAtAGQAbwBjAHMALgBwAHMAMQAnADsAIABpAGYAIAAoAFQAZQBzAHQALQBQAGEAdABoACAAJABzAGMAcgBpAHAAdAApACAAewAgACQAZAByAGkAZgB0ACAAPQAgACYAIABwAG8AdwBlAHIAcwBoAGUAbABsAC4AZQB4AGUAIAAtAE4AbwBQAHIAbwBmAGkAbABlACAALQBFAHgAZQBjAHUAdABpAG8AbgBQAG8AbABpAGMAeQAgAEIAeQBwAGEAcwBzACAALQBGAGkAbABlACAAJABzAGMAcgBpAHAAdAAgADIAPgAkAG4AdQBsAGwAOwAgAGkAZgAgACgAJABkAHIAaQBmAHQAKQAgAHsAIABXAHIAaQB0AGUALQBPAHUAdABwAHUAdAAgACIAUABSAEkAWgBNAEsASQBUAF8ARABSAEkARgBUAF8ARABFAFQARQBDAFQARQBEADoAIABwAHIAaQB6AG0ALQBkAG8AYwBzACAAcwB0AHIAdQBjAHQAdQByAGEAbAAgAGQAaQBmAGYAZQByAGUAbgBjAGUAcwAgAGYAbwB1AG4AZAA6ACIAOwAgAFcAcgBpAHQAZQAtAE8AdQB0AHAAdQB0ACAAJABkAHIAaQBmAHQAOwAgAFcAcgBpAHQAZQAtAE8AdQB0AHAAdQB0ACAAIgBQAGwAZQBhAHMAZQAgAHUAcABkAGEAdABlACAAYQBmAGYAZQBjAHQAZQBkACAALgBwAHIAaQB6AG0ALQBkAG8AYwBzAC8AIABmAGkAbABlAHMALgAiACAAfQAgAH0AIAB9AA=="
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "startup",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -EncodedCommand aQBmACAAKABUAGUAcwB0AC0AUABhAHQAaAAgAC4AcAByAGkAegBtAC0AZABvAGMAcwAvAHIAbwBvAHQALgBwAHIAaQB6AG0AKQAgAHsAIABXAHIAaQB0AGUALQBPAHUAdABwAHUAdAAgACIAUAByAGkAegBtAEsAaQB0ADoAIAAuAHAAcgBpAHoAbQAtAGQAbwBjAHMAIABmAG8AdQBuAGQALgAgAFIAZQBhAGQAIAByAG8AbwB0AC4AcAByAGkAegBtACAAZgBvAHIAIABwAHIAbwBqAGUAYwB0ACAAYwBvAG4AdABlAHgAdAAuACIAIAB9ACAAZQBsAHMAZQAgAHsAIABXAHIAaQB0AGUALQBPAHUAdABwAHUAdAAgACIAUAByAGkAegBtAEsAaQB0ADoAIABOAG8AIAAuAHAAcgBpAHoAbQAtAGQAbwBjAHMAIABmAG8AdQBuAGQALgAgAFIAdQBuACAALwBwAHIAaQB6AG0AawBpAHQALQBpAG4AaQB0ACAAdABvACAAYgBvAG8AdABzAHQAcgBhAHAALgAiACAAfQA="
+          }
+        ]
+      }
+    ]
+  }
+}

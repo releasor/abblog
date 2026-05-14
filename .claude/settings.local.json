@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm config *)",
+      "Bash(ls \"$\\(npm config get cache\\)/_npx/a910f70135060367/node_modules/prizmkit/src/\")",
+      "Bash(cat \"$\\(npm config get cache\\)/_npx/a910f70135060367/node_modules/prizmkit/src/scaffold.js\")",
+      "Bash(grep -n \"return import\\(\" \"$\\(npm config get cache\\)/_npx/a910f70135060367/node_modules/prizmkit/src/scaffold.js\")",
+      "Bash(npx create-next-app@latest *)",
+      "Bash(cp -r kittest-temp/src .)",
+      "Bash(cp -r kittest-temp/public .)",
+      "Bash(npm install *)",
+      "Bash(npm run *)",
+      "WebFetch(domain:mimo.xiaomi.com)",
+      "Bash(cd \"C:\\\\Users\\\\81097\\\\.claude\\\\skills\\\\playwright\" && npm run setup 2>&1 | tail -5)",
+      "Read(//c/Users/81097/.agents/skills/playwright/**)",
+      "Bash(node run.js \"C:\\\\Users\\\\81097\\\\AppData\\\\Local\\\\Temp\\\\playwright-test-mimo.js\")",
+      "Bash(npx playwright *)",
+      "Bash(ls \"C:\\\\Users\\\\81097\\\\AppData\\\\Local\\\\ms-playwright\\\\\" 2>/dev/null; where chrome 2>/dev/null; where chromium 2>/dev/null)",
+      "Read(//c/Users/81097/AppData/Local/ms-playwright\" 2>/dev/null; where chrome 2>/dev/null; where chromium 2>/dev/**)",
+      "Read(//c/Users/81097/AppData/Local/ms-playwright//**)",
+      "Read(//c/Users/81097/AppData/Local/ms-playwright/**)",
+      "Bash(rm -rf \"C:\\\\Users\\\\81097\\\\AppData\\\\Local\\\\ms-playwright\\\\__dirlock\" 2>/dev/null; echo \"done\")"
+    ],
+    "additionalDirectories": [
+      "C:\\Users\\81097\\AppData\\Local\\ms-playwright\\__dirlock"
+    ]
+  }
+}

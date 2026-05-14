@@ -1,0 +1,12 @@
+{
+  "ai_cli": "claude",
+  "adoption_mode": "passive",
+  "platform": "claude",
+  "tech_stack": {
+    "language": "TypeScript",
+    "runtime": "Node.js",
+    "frontend_framework": "Next.js",
+    "project_type": "fullstack",
+    "_auto_detected": false
+  }
+}
