@@ -64,7 +64,10 @@
       "Bash(jq.exe --version)",
       "Bash(command -v jq.exe)",
       "Bash(python3 -c ' *)",
-      "Bash(claude --print --dangerously-skip-permissions --no-session-persistence)"
+      "Bash(claude --print --dangerously-skip-permissions --no-session-persistence)",
+      "Bash(rm -rf .prizmkit/state/features/features/F-002)",
+      "Bash(git checkout *)",
+      "Bash(git branch *)"
     ],
     "additionalDirectories": [
       "C:\\Users\\81097\\AppData\\Local\\ms-playwright\\__dirlock"
