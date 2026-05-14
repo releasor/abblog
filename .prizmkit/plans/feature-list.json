@@ -1,0 +1,359 @@
+{
+  "$schema": "dev-pipeline-feature-list-v1",
+  "project_name": "KitTest",
+  "created_at": "2026-05-14",
+  "global_context": {
+    "language": "TypeScript",
+    "runtime": "Node.js",
+    "frontend_framework": "Next.js",
+    "frontend_styling": "Tailwind CSS v4",
+    "backend_framework": "Next.js API Routes",
+    "database": "MySQL",
+    "orm": "Prisma",
+    "testing_strategy": "Jest + React Testing Library",
+    "bundler": "Next.js built-in (Turbopack)",
+    "project_type": "fullstack"
+  },
+  "features": [
+    {
+      "id": "F-001",
+      "title": "Infrastructure & Database Setup",
+      "description": "Set up the foundational infrastructure for the blog application. Install and configure Prisma ORM with MySQL driver (@prisma/client, prisma). Create the database schema in prisma/schema.prisma with the following models: AdminUser (id, email unique, passwordHash, name, createdAt), Post (id, title, slug unique, content as rich text, excerpt, coverImageUrl optional, status enum DRAFT/PUBLISHED, publishedAt optional, authorId foreign key to AdminUser, createdAt, updatedAt), Category (id, name unique, slug unique, description optional), Tag (id, name unique, slug unique), PostTag (postId, tagId — join table for many-to-many), Comment (id, postId foreign key, authorName, authorEmail, content, status enum PENDING/APPROVED/REJECTED, createdAt). Add a seed script (prisma/seed.ts) that creates a default admin user (email: admin@blog.com, password: hashed with bcrypt) and sample categories. Configure the Next.js project with environment variables in .env for DATABASE_URL (mysql://user:password@host:3306/kitblog). Ensure npx prisma migrate dev and npx prisma db seed work correctly.",
+      "acceptance_criteria": [
+        "Given a MySQL database is running, When npx prisma migrate dev is executed, Then all tables (AdminUser, Post, Category, Tag, PostTag, Comment) are created with correct columns and foreign keys",
+        "Given the seed script is run, When querying the database, Then a default admin user exists with email admin@blog.com and a bcrypt-hashed password",
+        "Given the seed script is run, When querying categories, Then at least 3 default categories exist (e.g., 'Technology', 'Programming', 'Life')",
+        "Given the .env file is configured, When the Next.js dev server starts, Then Prisma Client connects to MySQL without errors",
+        "Given the schema has a Post model, When a post is created with status PUBLISHED, Then publishedAt is automatically set"
+      ],
+      "priority": "critical",
+      "estimated_complexity": "low",
+      "dependencies": [],
+      "status": "pending",
+      "critic": false
+    },
+    {
+      "id": "F-002",
+      "title": "Admin Authentication",
+      "description": "Implement admin-only authentication for the blog. Use NextAuth.js (Auth.js v5) with the Credentials provider for email/password login. Create a Prisma adapter to store sessions in the database. Build the following API routes: POST /api/auth/[...nextauth] for NextAuth handlers, and a custom POST /api/auth/register endpoint (optional, for initial setup only — can be disabled after first admin is created). Create the admin login page at /admin/login with a simple form (email + password fields, submit button, error message display). Implement password verification using bcrypt.compare(). Create a middleware.ts at the project root that protects all /admin/* routes except /admin/login — unauthenticated users are redirected to /admin/login. Build an admin layout component (src/app/admin/layout.tsx) that wraps all admin pages with a sidebar navigation (links to: Dashboard, Posts, Categories, Comments, Settings) and a header showing the admin name with a logout button. The layout should use Tailwind CSS v4 for styling with a clean, minimal admin design.",
+      "acceptance_criteria": [
+        "Given an admin user exists in the database, When they submit valid credentials on /admin/login, Then they are redirected to /admin/dashboard and a session is created",
+        "Given an admin user, When they submit an incorrect password on /admin/login, Then an error message 'Invalid credentials' is displayed and no session is created",
+        "Given an unauthenticated user, When they navigate to /admin/posts, Then they are redirected to /admin/login",
+        "Given an authenticated admin, When they click 'Logout' in the admin layout header, Then their session is destroyed and they are redirected to /admin/login",
+        "Given an authenticated admin, When they view the admin layout, Then a sidebar with navigation links (Dashboard, Posts, Categories, Comments) is visible",
+        "Given the admin login page, When viewed on mobile, Then the form is centered and usable on small screens"
+      ],
+      "priority": "high",
+      "estimated_complexity": "medium",
+      "dependencies": ["F-001"],
+      "status": "pending",
+      "critic": true,
+      "critic_count": 3,
+      "browser_interaction": {
+        "verify_steps": [
+          "Verify login form renders with email and password fields",
+          "Verify valid credentials redirect to admin dashboard",
+          "Verify invalid password shows error message",
+          "Verify unauthenticated access to /admin/posts redirects to login",
+          "Verify logout button destroys session and redirects to login"
+        ]
+      }
+    },
+    {
+      "id": "F-003",
+      "title": "Post Management CRUD",
+      "description": "Build the complete blog post management system accessible from the admin panel. Create the following admin pages: /admin/posts (list view with table showing title, status, category, published date, actions), /admin/posts/new (create form), /admin/posts/[id]/edit (edit form). The post list page should support filtering by status (All, Draft, Published) and sorting by date. The create/edit form should include: title input, slug auto-generated from title (editable), content area using a rich text editor (use @tiptap/react with basic formatting: bold, italic, headings, links, code blocks, images via URL), excerpt textarea, cover image URL input, category dropdown (populated from Category model), tags multi-select (populated from Tag model), status toggle (Draft/Published). Create API routes: GET/POST /api/posts (list with pagination, create), GET/PUT/DELETE /api/posts/[id] (read, update, delete). Implement slug generation from title using a slugify utility. When status changes to PUBLISHED, set publishedAt to current timestamp. When a post is deleted, cascade-delete related comments and PostTag entries. Add a public page at /posts/[slug] that renders a single published post with its content, category, tags, and published date.",
+      "acceptance_criteria": [
+        "Given an authenticated admin, When they visit /admin/posts, Then a table of all posts is displayed with title, status, category, and published date columns",
+        "Given an authenticated admin, When they create a new post with title 'My First Post' and status Published, Then the post appears in the list with slug 'my-first-post' and publishedAt is set",
+        "Given an authenticated admin, When they edit an existing post's title and save, Then the slug updates accordingly and the changes are reflected in the list",
+        "Given an authenticated admin, When they delete a post, Then the post and its associated comments and tags are removed from the database",
+        "Given a published post exists, When a visitor navigates to /posts/[slug], Then the post content is rendered with title, content, category, tags, and published date",
+        "Given a draft post exists, When a visitor navigates to /posts/[slug], Then a 404 page is shown",
+        "Given the post list has 25 posts, When the admin views the list, Then pagination controls are shown and 10 posts per page are displayed",
+        "Given the post create form, When the admin types a title, Then the slug field auto-populates with a URL-friendly version"
+      ],
+      "priority": "high",
+      "estimated_complexity": "medium",
+      "dependencies": ["F-002"],
+      "status": "pending",
+      "critic": true,
+      "critic_count": 3,
+      "browser_interaction": {
+        "verify_steps": [
+          "Verify post list page shows table with posts",
+          "Verify create post form renders with all fields (title, slug, content editor, excerpt, category, tags, status)",
+          "Verify creating a new published post adds it to the list",
+          "Verify editing a post updates its content",
+          "Verify deleting a post removes it from the list",
+          "Verify public post page renders published post content",
+          "Verify draft post returns 404 on public URL"
+        ]
+      }
+    },
+    {
+      "id": "F-004",
+      "title": "Categories & Tags Management",
+      "description": "Build admin interfaces for managing blog categories and tags. Create admin pages: /admin/categories (list with name, slug, post count, edit/delete actions), /admin/tags (list with name, slug, post count, edit/delete actions). Each page should have an inline create form at the top (name input + submit button) and inline edit capability. Create API routes: GET/POST /api/categories (list, create), GET/PUT/DELETE /api/categories/[id], GET/POST /api/tags (list, create), GET/PUT/DELETE /api/tags/[id]. Implement slug auto-generation from name. When a category or tag is deleted, disassociate it from all posts (remove PostTag entries, set post categoryId to null). Add validation: category/tag name must be 1-50 characters, slug must be unique. Create public pages: /categories (list all categories with post counts), /categories/[slug] (list posts in a category), /tags/[slug] (list posts with a tag). Each public listing page should show post cards with title, excerpt, published date, and category.",
+      "acceptance_criteria": [
+        "Given an authenticated admin, When they visit /admin/categories, Then a list of all categories with post counts is displayed",
+        "Given an authenticated admin, When they create a new category 'JavaScript', Then it appears in the list with slug 'javascript' and 0 posts",
+        "Given an authenticated admin, When they delete a category that has posts, Then the posts remain but their categoryId is set to null",
+        "Given an authenticated admin, When they visit /admin/tags, Then a list of all tags with post counts is displayed",
+        "Given a category 'Programming' with 3 published posts, When a visitor goes to /categories/programming, Then 3 post cards are shown",
+        "Given a tag 'react' with 2 published posts, When a visitor goes to /tags/react, Then 2 post cards are shown",
+        "Given an admin tries to create a category with a name that already exists, Then an error message 'Category already exists' is shown"
+      ],
+      "priority": "medium",
+      "estimated_complexity": "medium",
+      "dependencies": ["F-003"],
+      "status": "pending",
+      "critic": true,
+      "critic_count": 1,
+      "browser_interaction": {
+        "verify_steps": [
+          "Verify categories list page shows categories with post counts",
+          "Verify creating a new category adds it to the list",
+          "Verify deleting a category removes it from the list",
+          "Verify tags list page shows tags with post counts",
+          "Verify public category page lists posts in that category"
+        ]
+      }
+    },
+    {
+      "id": "F-005",
+      "title": "Comment System",
+      "description": "Implement a reader comment system on blog posts. On the public post page (/posts/[slug]), add a comment section below the post content with: a list of approved comments showing author name, content, and timestamp, and a comment submission form with fields for name (required, 1-50 chars), email (required, not displayed publicly), and comment content (required, 1-1000 chars). Create API routes: GET /api/posts/[postId]/comments (list approved comments), POST /api/posts/[postId]/comments (submit a comment with PENDING status). Create admin comment management page at /admin/comments showing all comments with status tabs (All, Pending, Approved, Rejected). Each comment row shows: post title, author name, content preview, status, and action buttons (Approve, Reject, Delete). Create API routes: GET /api/comments (list all with filtering by status), PATCH /api/comments/[id] (update status), DELETE /api/comments/[id]. Implement basic spam prevention: rate limit comment submissions to 1 per minute per IP address using a simple in-memory store or middleware. Add a comment count badge on the admin post list showing pending comment count per post.",
+      "acceptance_criteria": [
+        "Given a published post exists, When a visitor fills out the comment form with valid data and submits, Then a success message 'Comment submitted for review' is shown and the comment appears as PENDING in admin",
+        "Given a pending comment exists, When an admin clicks 'Approve' in /admin/comments, Then the comment status changes to APPROVED and it becomes visible on the public post page",
+        "Given an approved comment exists, When a visitor views the post, Then the comment is displayed with author name, content, and relative timestamp",
+        "Given an admin, When they click 'Reject' on a comment, Then the comment status changes to REJECTED and it is not visible on the public page",
+        "Given a visitor submits a comment, When they try to submit another comment within 1 minute, Then an error message 'Please wait before submitting another comment' is shown",
+        "Given the comment form, When submitted with an empty name field, Then a validation error 'Name is required' is shown",
+        "Given the admin post list, When a post has 2 pending comments, Then a badge showing '2 pending' is displayed next to the post title"
+      ],
+      "priority": "medium",
+      "estimated_complexity": "medium",
+      "dependencies": ["F-003"],
+      "status": "pending",
+      "critic": true,
+      "critic_count": 1,
+      "browser_interaction": {
+        "verify_steps": [
+          "Verify comment form renders below post content with name, email, and comment fields",
+          "Verify submitting a valid comment shows success message",
+          "Verify admin comments page shows pending comments with approve/reject buttons",
+          "Verify approving a comment makes it visible on the public post page",
+          "Verify comment validation errors display correctly"
+        ]
+      }
+    },
+    {
+      "id": "F-006",
+      "title": "Reader-Friendly UI & Layout",
+      "description": "Design and implement the public-facing blog UI with a clean, developer-friendly aesthetic using Tailwind CSS v4. Create the following pages and components: Root layout (src/app/layout.tsx) with a header (blog name, navigation links: Home, Categories, About) and footer (copyright, social links placeholder). Home page (/) showing a hero section with blog title and tagline, followed by a grid of recent post cards (title, excerpt, category badge, published date, reading time estimate). Post listing page (/posts) with all published posts in a paginated grid layout. Individual post page (/posts/[slug]) with: cover image (if set), title, metadata (author, date, reading time, category, tags as clickable badges), rendered content with proper typography (headings, code blocks with syntax highlighting using a lightweight library like highlight.js, blockquotes, images). Implement dark mode support using Tailwind's dark mode (class strategy) with a toggle button in the header that persists preference to localStorage. Add a responsive design that works on mobile (single column), tablet (2 columns), and desktop (3 columns for post grids). Create an About page (/about) with placeholder content. Add reading time estimation (average 200 words per minute) calculated from post content length.",
+      "acceptance_criteria": [
+        "Given a visitor navigates to /, Then the home page shows a hero section and a grid of recent published post cards with title, excerpt, and category badge",
+        "Given a visitor clicks on a post card, Then they are taken to /posts/[slug] showing the full post with proper typography",
+        "Given a visitor is on a mobile device, When they view the home page, Then post cards are displayed in a single column layout",
+        "Given a visitor clicks the dark mode toggle in the header, Then the page switches to dark color scheme and the preference is saved to localStorage",
+        "Given a visitor refreshes the page after enabling dark mode, Then dark mode remains active",
+        "Given a post has 1000 words, When displayed, Then reading time shows '5 min read'",
+        "Given a post has a cover image URL set, When viewed on the post page, Then the cover image is displayed above the title",
+        "Given a visitor views a post with tags, When they click a tag badge, Then they are taken to /tags/[slug] showing related posts",
+        "Given the blog has 15 published posts, When a visitor views /posts, Then pagination controls are shown"
+      ],
+      "priority": "high",
+      "estimated_complexity": "medium",
+      "dependencies": ["F-003"],
+      "status": "pending",
+      "critic": true,
+      "critic_count": 3,
+      "browser_interaction": {
+        "verify_steps": [
+          "Verify home page renders hero section and recent post cards",
+          "Verify post detail page shows content with proper typography",
+          "Verify dark mode toggle switches theme and persists on refresh",
+          "Verify responsive layout adapts from mobile to desktop",
+          "Verify post cards show category badge and reading time",
+          "Verify tag badge click navigates to tag listing page"
+        ]
+      }
+    },
+    {
+      "id": "F-007",
+      "title": "Search Functionality",
+      "description": "Add full-text search capability to the blog. Create a search API route GET /api/search?q=<query> that performs full-text search across post title, content, and excerpt fields using MySQL FULLTEXT indexes (add FULLTEXT index to Post model for title and content fields via a Prisma migration). The API should return matching posts sorted by relevance, limited to 20 results, with highlighted matching snippets. Create a search results page at /search?q=<query> showing matched posts as cards with title, excerpt (with matching terms highlighted), category, and published date. Add a search input component in the blog header that: shows a search icon button, expands into an input field on click, submits on Enter key press, navigates to /search?q=<query>. Implement debounced search suggestions (optional enhancement): as the user types, show a dropdown with top 5 matching post titles after 300ms debounce. Handle edge cases: empty query returns 'Please enter a search term', no results returns 'No posts found matching your query'. Ensure search only returns published posts (filter by status=PUBLISHED).",
+      "acceptance_criteria": [
+        "Given published posts exist with the word 'TypeScript' in their title, When a visitor searches for 'TypeScript', Then matching posts are displayed on /search with relevance-sorted results",
+        "Given a visitor types a search query in the header search input and presses Enter, Then they are navigated to /search?q=<query>",
+        "Given a search returns no results, When the visitor views the search page, Then a message 'No posts found matching your query' is displayed",
+        "Given a visitor submits an empty search, Then a message 'Please enter a search term' is displayed",
+        "Given a draft post contains the search term, When searching, Then the draft post is NOT included in results",
+        "Given search results are displayed, When a post matches, Then the excerpt shows the matching terms highlighted",
+        "Given the search input in the header, When a visitor clicks the search icon, Then the input field expands and receives focus"
+      ],
+      "priority": "medium",
+      "estimated_complexity": "medium",
+      "dependencies": ["F-003", "F-004"],
+      "status": "pending",
+      "critic": true,
+      "critic_count": 1,
+      "browser_interaction": {
+        "verify_steps": [
+          "Verify search input in header expands on click",
+          "Verify searching for a term navigates to search results page",
+          "Verify search results show matching posts with highlighted terms",
+          "Verify empty search shows appropriate message",
+          "Verify search does not return draft posts"
+        ]
+      }
+    },
+    {
+      "id": "F-008",
+      "title": "SEO & Performance Optimization",
+      "description": "Implement SEO best practices and performance optimizations for the blog. Add dynamic metadata to all pages using Next.js generateMetadata: post pages include title, description (from excerpt), og:image (cover image), canonical URL, article:published_time, article:modified_time, article:author, article:tag. Generate a sitemap.xml using Next.js App Router's sitemap.ts that includes all published posts, categories, and static pages with lastModified dates and priority scores. Generate a robots.txt using Next.js App Router's robots.ts that allows all crawlers and references the sitemap. Create an RSS feed at /feed.xml using the rss library that includes the last 20 published posts with title, link, description, author, and published date. Implement Next.js Static Site Generation (SSG) for post pages using generateStaticParams to pre-render all published posts at build time. Add ISR (Incremental Static Regeneration) with revalidate: 3600 (1 hour) for post pages so new posts appear without full rebuild. Optimize images: use Next.js Image component for cover images and post content images with proper width/height and lazy loading. Add structured data (JSON-LD) for blog posts using schema.org BlogPosting markup. Ensure all pages pass Core Web Vitals: LCP < 2.5s, FID < 100ms, CLS < 0.1.",
+      "acceptance_criteria": [
+        "Given a published post exists, When a crawler fetches /posts/[slug], Then the HTML contains Open Graph meta tags (og:title, og:description, og:image)",
+        "Given published posts exist, When /sitemap.xml is fetched, Then it contains URLs for all published posts with lastModified dates",
+        "Given the blog is deployed, When /robots.txt is fetched, Then it allows all crawlers and references /sitemap.xml",
+        "Given published posts exist, When /feed.xml is fetched, Then it contains the last 20 posts in RSS 2.0 format",
+        "Given a post page is loaded, When inspecting the HTML, Then JSON-LD structured data with BlogPosting schema is present",
+        "Given a post page is built, When using Next.js build, Then the page is pre-rendered as static HTML (SSG)",
+        "Given a post is updated, When the ISR revalidation period expires, Then the page reflects the updated content without manual rebuild",
+        "Given a post has a cover image, When the page loads, Then the image uses Next.js Image component with lazy loading"
+      ],
+      "priority": "medium",
+      "estimated_complexity": "medium",
+      "dependencies": ["F-006"],
+      "status": "pending",
+      "critic": true,
+      "critic_count": 1,
+      "browser_interaction": {
+        "verify_steps": [
+          "Verify post page contains Open Graph meta tags in HTML head",
+          "Verify /sitemap.xml is accessible and contains post URLs",
+          "Verify /robots.txt is accessible and references sitemap",
+          "Verify /feed.xml returns valid RSS feed",
+          "Verify post page contains JSON-LD structured data"
+        ]
+      }
+    },
+    {
+      "id": "F-009",
+      "title": "Page View Tracking & Admin Dashboard",
+      "description": "Implement a full page view tracking system and admin analytics dashboard. Add a PageView model to the Prisma schema with fields: id (auto-increment), postId (foreign key to Post), ip (string, stores client IP address), userAgent (string, stores browser user agent), createdAt (DateTime). Create a Next.js middleware or route handler that intercepts requests to /posts/[slug] and records a PageView entry — extract IP from x-forwarded-for header or request socket, and user agent from request headers. Create API route GET /api/admin/stats that returns aggregated analytics data for the admin dashboard: total views across all posts, views per post (sorted by most viewed), daily unique visitors (count distinct IPs per day for the last 30 days), views over time (group by day for the last 30 days for chart data). Build the admin dashboard page at /admin/dashboard with the following UI sections: (1) summary cards at the top showing total views, total posts, total comments, total categories; (2) a line chart showing views over the last 30 days (use a lightweight chart library like recharts or chart.js); (3) a 'Top Posts' table showing the 10 most-viewed posts with title, view count, and published date; (4) a 'Recent Activity' section showing the latest 5 comments and 5 published posts. Ensure the dashboard is protected by admin authentication (F-002 middleware). The tracking middleware should not block or slow down page rendering — use a fire-and-forget pattern (e.g., do not await the database write in the request path, or use a background queue).",
+      "acceptance_criteria": [
+        "Given a published post exists, When a visitor views /posts/[slug], Then a PageView record is created with the correct postId, IP address, and user agent",
+        "Given the same IP views the same post twice on the same day, When checking PageView records, Then two records exist but the dashboard counts 1 unique view for that day",
+        "Given an authenticated admin visits /admin/dashboard, When the page loads, Then summary cards showing total views, total posts, total comments, and total categories are displayed",
+        "Given posts have accumulated views over 15 days, When the admin views the dashboard, Then a line chart shows daily view counts for the last 30 days",
+        "Given 3 posts exist with varying view counts, When the admin views the dashboard, Then a 'Top Posts' table lists posts sorted by view count descending",
+        "Given a visitor views a post, When the page loads, Then the view tracking does not noticeably delay the page render (response time impact < 50ms)"
+      ],
+      "priority": "medium",
+      "estimated_complexity": "medium",
+      "dependencies": ["F-001", "F-002"],
+      "status": "pending",
+      "critic": true,
+      "critic_count": 1,
+      "browser_interaction": {
+        "tool": "auto",
+        "verify_steps": [
+          "Verify admin dashboard page loads and shows summary cards",
+          "Verify line chart renders with view data",
+          "Verify top posts table displays posts sorted by views",
+          "Verify viewing a public post creates a PageView record"
+        ]
+      }
+    },
+    {
+      "id": "F-010",
+      "title": "Image Upload",
+      "description": "Add image upload capability for the blog. Create an API route POST /api/upload that accepts multipart/form-data with an image file, validates the file (allowed types: image/jpeg, image/png, image/gif, image/webp; max size: 5MB), generates a unique filename using timestamp + random string to prevent collisions, saves the file to the public/uploads/ directory, and returns the public URL path (/uploads/filename.ext). Build a reusable ImageUpload React component that provides: a drag-and-drop zone with visual feedback (border highlight on drag), a file input button as fallback, image preview after upload with the ability to remove/replace, upload progress indicator, and error messages for invalid files (wrong type, too large). Integrate the ImageUpload component into the post create/edit form (from F-003) — replace the plain cover image URL text input with the ImageUpload component that uploads the file and sets the coverImageUrl field to the returned path. Add server-side validation in the upload API to prevent directory traversal attacks (sanitize filename, reject paths with .. or /). Create the uploads directory if it does not exist on first upload. Add a simple admin page at /admin/media that lists all uploaded images in a grid with thumbnail previews, file names, file sizes, and upload dates, with the ability to copy the image URL to clipboard.",
+      "acceptance_criteria": [
+        "Given an authenticated admin, When they upload a JPEG image via the drag-and-drop zone, Then the image is saved to public/uploads/ and the URL is returned",
+        "Given an admin tries to upload a file larger than 5MB, When the upload is submitted, Then an error message 'File too large (max 5MB)' is displayed",
+        "Given an admin tries to upload a .txt file, When the upload is submitted, Then an error message 'Invalid file type' is displayed",
+        "Given an admin is editing a post, When they upload a cover image, Then the coverImageUrl field is set to the uploaded image path and a preview is shown",
+        "Given an admin visits /admin/media, When the page loads, Then a grid of uploaded images with thumbnails, names, sizes, and dates is displayed",
+        "Given the public/uploads/ directory does not exist, When the first image is uploaded, Then the directory is created automatically",
+        "Given an admin views the media page, When they click 'Copy URL' on an image, Then the image URL is copied to the clipboard"
+      ],
+      "priority": "medium",
+      "estimated_complexity": "medium",
+      "dependencies": ["F-002", "F-003"],
+      "status": "pending",
+      "critic": true,
+      "critic_count": 1,
+      "browser_interaction": {
+        "tool": "auto",
+        "verify_steps": [
+          "Verify drag-and-drop upload zone renders in post editor",
+          "Verify uploading a valid image shows preview and sets URL",
+          "Verify uploading an oversized file shows error",
+          "Verify media page shows uploaded images in grid",
+          "Verify copy URL button copies image path"
+        ]
+      }
+    },
+    {
+      "id": "F-011",
+      "title": "Related Posts",
+      "description": "Add a related posts section to the public post page to increase reader engagement. Create a utility function getRelatedPosts(currentPostId, limit=3) that queries the database for related posts using the following algorithm: (1) find posts that share the most tags with the current post, scored by number of shared tags (each shared tag = 1 point); (2) if fewer than 3 matches, supplement with posts from the same category that have the fewest shared tags (to fill the limit); (3) exclude the current post itself and any draft posts; (4) sort by score descending, then by publishedAt descending as tiebreaker. Create a RelatedPosts React component that displays a horizontal row of up to 3 post cards, each showing: title, excerpt (truncated to 100 chars), category badge, published date, and cover image thumbnail (if available). Add the RelatedPosts component to the public post page (/posts/[slug]) below the comment section (or below post content if no comments). The section should have a heading 'Related Posts' styled consistently with the blog's design. If no related posts are found (e.g., the post has unique tags and no other posts in its category), the section should not render at all (no empty container). Create a server-side function so the related posts are fetched during page rendering (SSR/SSG), not via client-side API call.",
+      "acceptance_criteria": [
+        "Given a published post with tags ['react', 'typescript'] and 3 other published posts sharing those tags, When a visitor views the post, Then 3 related post cards are displayed below the content",
+        "Given a published post with a unique tag and 2 other posts in the same category, When a visitor views the post, Then the related posts section shows up to 3 posts (category fallback)",
+        "Given a published post with no other posts in its category and unique tags, When a visitor views the post, Then the related posts section is not rendered",
+        "Given a post has 5 related posts by tag score, When the related posts are displayed, Then only the top 3 by relevance are shown",
+        "Given related posts exist, When a visitor clicks a related post card, Then they are navigated to that post's page",
+        "Given the related posts section is rendered, When the post page is loaded via SSG, Then the related posts data is included in the pre-rendered HTML (no client-side fetch)"
+      ],
+      "priority": "low",
+      "estimated_complexity": "low",
+      "dependencies": ["F-003", "F-004"],
+      "status": "pending",
+      "critic": false,
+      "browser_interaction": {
+        "tool": "auto",
+        "verify_steps": [
+          "Verify related posts section appears below post content",
+          "Verify related post cards show title, excerpt, and category",
+          "Verify clicking a related post navigates to its page",
+          "Verify section is hidden when no related posts exist"
+        ]
+      }
+    },
+    {
+      "id": "F-012",
+      "title": "Table of Contents (TOC)",
+      "description": "Add an auto-generated table of contents for long blog posts to improve navigation. Create a utility function extractHeadings(htmlContent) that parses the post's HTML content and extracts all h2 and h3 elements, returning an array of objects with: level (2 or 3), text (heading text content), id (slugified version of the text for anchor linking). Implement a function injectHeadingIds(htmlContent) that processes the post HTML and adds id attributes to h2/h3 elements that don't already have them (using the same slugify logic as extractHeadings). Create a TableOfContents React component that renders a sticky sidebar navigation on the right side of the post page (visible on desktop only, hidden on mobile). The TOC should: display headings as a nested list (h3 indented under h2), link each heading to its anchor (#heading-id), highlight the currently visible heading as the user scrolls (using IntersectionObserver), and collapse to a floating button on tablet screens that expands the TOC on click. Add smooth scroll behavior when clicking TOC links (CSS scroll-behavior: smooth or JavaScript scrollTo). Apply the TOC only to posts longer than 1500 words (shorter posts don't need a TOC). The TOC should be positioned with position: sticky, top: 80px, and scroll independently if the heading list is longer than the viewport height. Style the TOC with Tailwind CSS v4 to match the blog's design: subtle border, small font, muted colors, with the active heading highlighted in the primary color.",
+      "acceptance_criteria": [
+        "Given a published post with h2 and h3 headings, When a visitor views the post on desktop, Then a table of contents is displayed in a sticky sidebar on the right",
+        "Given the TOC is visible, When a visitor clicks a heading link, Then the page scrolls smoothly to that heading",
+        "Given a visitor scrolls through a long post, When different headings enter the viewport, Then the corresponding TOC item is highlighted",
+        "Given a post has fewer than 1500 words, When a visitor views the post, Then the table of contents is not displayed",
+        "Given the TOC has many headings, When the list is taller than the viewport, Then the TOC scrolls independently without overlapping the footer",
+        "Given a visitor is on a tablet screen, When they view a post, Then a floating TOC button is shown that expands the TOC on click",
+        "Given a visitor is on a mobile screen, When they view a post, Then the TOC is hidden (no floating button)"
+      ],
+      "priority": "low",
+      "estimated_complexity": "low",
+      "dependencies": ["F-006"],
+      "status": "pending",
+      "critic": false,
+      "browser_interaction": {
+        "tool": "auto",
+        "verify_steps": [
+          "Verify TOC sidebar renders on desktop for long posts",
+          "Verify clicking a TOC link scrolls to the heading",
+          "Verify active heading highlights as user scrolls",
+          "Verify TOC is hidden on mobile",
+          "Verify short posts (< 1500 words) do not show TOC"
+        ]
+      }
+    }
+  ]
+}
