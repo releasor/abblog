@@ -29,7 +29,7 @@
       "priority": "critical",
       "estimated_complexity": "low",
       "dependencies": [],
-      "status": "pending",
+      "status": "in_progress",
       "critic": false
     },
     {
@@ -46,7 +46,9 @@
       ],
       "priority": "high",
       "estimated_complexity": "medium",
-      "dependencies": ["F-001"],
+      "dependencies": [
+        "F-001"
+      ],
       "status": "pending",
       "critic": true,
       "critic_count": 3,
@@ -76,7 +78,9 @@
       ],
       "priority": "high",
       "estimated_complexity": "medium",
-      "dependencies": ["F-002"],
+      "dependencies": [
+        "F-002"
+      ],
       "status": "pending",
       "critic": true,
       "critic_count": 3,
@@ -107,7 +111,9 @@
       ],
       "priority": "medium",
       "estimated_complexity": "medium",
-      "dependencies": ["F-003"],
+      "dependencies": [
+        "F-003"
+      ],
       "status": "pending",
       "critic": true,
       "critic_count": 1,
@@ -136,7 +142,9 @@
       ],
       "priority": "medium",
       "estimated_complexity": "medium",
-      "dependencies": ["F-003"],
+      "dependencies": [
+        "F-003"
+      ],
       "status": "pending",
       "critic": true,
       "critic_count": 1,
@@ -167,7 +175,9 @@
       ],
       "priority": "high",
       "estimated_complexity": "medium",
-      "dependencies": ["F-003"],
+      "dependencies": [
+        "F-003"
+      ],
       "status": "pending",
       "critic": true,
       "critic_count": 3,
@@ -197,7 +207,10 @@
       ],
       "priority": "medium",
       "estimated_complexity": "medium",
-      "dependencies": ["F-003", "F-004"],
+      "dependencies": [
+        "F-003",
+        "F-004"
+      ],
       "status": "pending",
       "critic": true,
       "critic_count": 1,
@@ -227,7 +240,9 @@
       ],
       "priority": "medium",
       "estimated_complexity": "medium",
-      "dependencies": ["F-006"],
+      "dependencies": [
+        "F-006"
+      ],
       "status": "pending",
       "critic": true,
       "critic_count": 1,
@@ -255,7 +270,10 @@
       ],
       "priority": "medium",
       "estimated_complexity": "medium",
-      "dependencies": ["F-001", "F-002"],
+      "dependencies": [
+        "F-001",
+        "F-002"
+      ],
       "status": "pending",
       "critic": true,
       "critic_count": 1,
@@ -284,7 +302,10 @@
       ],
       "priority": "medium",
       "estimated_complexity": "medium",
-      "dependencies": ["F-002", "F-003"],
+      "dependencies": [
+        "F-002",
+        "F-003"
+      ],
       "status": "pending",
       "critic": true,
       "critic_count": 1,
@@ -313,7 +334,10 @@
       ],
       "priority": "low",
       "estimated_complexity": "low",
-      "dependencies": ["F-003", "F-004"],
+      "dependencies": [
+        "F-003",
+        "F-004"
+      ],
       "status": "pending",
       "critic": false,
       "browser_interaction": {
@@ -341,7 +365,9 @@
       ],
       "priority": "low",
       "estimated_complexity": "low",
-      "dependencies": ["F-006"],
+      "dependencies": [
+        "F-006"
+      ],
       "status": "pending",
       "critic": false,
       "browser_interaction": {
