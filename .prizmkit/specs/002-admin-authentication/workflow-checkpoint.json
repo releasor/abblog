@@ -26,7 +26,7 @@
       "id": "S03",
       "skill": "prizmkit-implement",
       "name": "Implement + Test",
-      "status": "in_progress",
+      "status": "completed",
       "required_artifacts": [],
       "depends_on": "S02"
     },
@@ -34,7 +34,7 @@
       "id": "S04",
       "skill": "browser-verification",
       "name": "Browser Verification",
-      "status": "pending",
+      "status": "in_progress",
       "required_artifacts": [],
       "depends_on": "S03"
     },
