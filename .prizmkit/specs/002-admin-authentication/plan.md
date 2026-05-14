@@ -48,4 +48,4 @@ Note: Using JWT session strategy (no DB sessions needed), so @auth/prisma-adapte
 - [x] 6. Create admin layout (src/app/admin/layout.tsx) with sidebar nav + header with logout
 - [x] 7. Create middleware.ts for route protection (/admin/* except /admin/login)
 - [x] 8. Add SessionProvider wrapper (src/app/providers.tsx) in root layout
-- [ ] 9. Verify build compiles and all acceptance criteria
+- [x] 9. Verify build compiles and all acceptance criteria
