@@ -67,7 +67,8 @@
       "Bash(claude --print --dangerously-skip-permissions --no-session-persistence)",
       "Bash(rm -rf .prizmkit/state/features/features/F-002)",
       "Bash(git checkout *)",
-      "Bash(git branch *)"
+      "Bash(git branch *)",
+      "Bash(VERBOSE=1 ENABLE_CRITIC=true MAX_RETRIES=3 bash dev-pipeline/run-feature.sh resume .prizmkit/plans/feature-list.json)"
     ],
     "additionalDirectories": [
       "C:\\Users\\81097\\AppData\\Local\\ms-playwright\\__dirlock"
