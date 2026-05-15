@@ -274,7 +274,7 @@
         "F-001",
         "F-002"
       ],
-      "status": "pending",
+      "status": "in_progress",
       "critic": true,
       "critic_count": 1,
       "browser_interaction": {
