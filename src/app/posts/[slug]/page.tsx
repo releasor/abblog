@@ -5,9 +5,11 @@ import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 import { estimateReadingTime } from "@/lib/reading-time";
 import { absoluteUrl } from "@/lib/site-url";
+import { getRelatedPosts } from "@/lib/related-posts";
 import { PostContent } from "./post-content";
 import { CommentList } from "@/components/comment-list";
 import { CommentForm } from "@/components/comment-form";
+import { RelatedPosts } from "@/components/related-posts";
 
 export const revalidate = 3600;
 
@@ -86,6 +88,8 @@ export default async function PublicPostPage({ params }: PageProps) {
   }
 
   const readingTime = estimateReadingTime(post.content);
+
+  const relatedPosts = await getRelatedPosts(post.id);
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -187,6 +191,8 @@ export default async function PublicPostPage({ params }: PageProps) {
           <CommentForm postId={post.id} />
         </div>
       </section>
+
+      <RelatedPosts posts={relatedPosts} />
     </article>
   );
 }

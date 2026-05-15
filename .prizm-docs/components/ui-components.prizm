@@ -1,5 +1,5 @@
 MODULE: components/ui
-FILES: src/components/header.tsx, src/components/footer.tsx, src/components/dark-mode-toggle.tsx, src/components/theme-provider.tsx, src/components/post-card.tsx, src/components/pagination.tsx
+FILES: src/components/header.tsx, src/components/footer.tsx, src/components/dark-mode-toggle.tsx, src/components/theme-provider.tsx, src/components/post-card.tsx, src/components/pagination.tsx, src/components/related-posts.tsx
 RESPONSIBILITY: site layout components — header with nav, footer with social links, dark mode with localStorage, post cards, pagination
 KEY_FILES:
 - src/components/header.tsx: sticky header — KitTest logo link, Home/Posts/About nav, DarkModeToggle

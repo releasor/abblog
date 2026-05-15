@@ -4,7 +4,7 @@
   "pipeline_mode": "lite",
   "item_id": "F-011",
   "item_slug": "011-related-posts",
-  "session_id": "F-011-20260515114852",
+  "session_id": "F-011-20260515115754",
   "steps": [
     {
       "id": "S01",
@@ -30,7 +30,7 @@
       "id": "S03",
       "skill": "prizmkit-implement",
       "name": "Implement + Test",
-      "status": "in_progress",
+      "status": "completed",
       "required_artifacts": [],
       "depends_on": "S02"
     },
@@ -38,7 +38,7 @@
       "id": "S04",
       "skill": "browser-verification",
       "name": "Browser Verification",
-      "status": "pending",
+      "status": "completed",
       "required_artifacts": [],
       "depends_on": "S03"
     },
@@ -46,7 +46,7 @@
       "id": "S05",
       "skill": "prizmkit-retrospective",
       "name": "Retrospective",
-      "status": "pending",
+      "status": "completed",
       "required_artifacts": [],
       "depends_on": "S04"
     },
@@ -54,7 +54,7 @@
       "id": "S06",
       "skill": "prizmkit-committer",
       "name": "Commit",
-      "status": "pending",
+      "status": "completed",
       "required_artifacts": [
         "--headless"
       ],

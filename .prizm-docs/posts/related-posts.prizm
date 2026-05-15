@@ -1,0 +1,18 @@
+MODULE: posts/related-posts
+FILES: src/lib/related-posts.ts, src/components/related-posts.tsx
+RESPONSIBILITY: related posts discovery and display — server-side tag/category-based post matching
+KEY_FILES:
+- src/lib/related-posts.ts: getRelatedPosts(currentPostId, limit=3) — scores posts by shared tags, fills with same-category fallback, excludes current+drafts
+- src/components/related-posts.tsx: server component — horizontal grid of up to 3 post cards with title, excerpt (100 char), category badge, date, cover image thumbnail
+DEPENDENCIES:
+- imports: src/lib/prisma: Prisma client for database queries
+- imports: next/link: card navigation
+- imports: next/image: cover image thumbnails
+INTERFACES:
+- getRelatedPosts(currentPostId: number, limit?: number): Promise<RelatedPost[]> — returns posts scored by tag overlap, supplemented by category
+- RelatedPosts(posts: RelatedPostData[]): JSX.Element | null — renders section or null if empty
+TRAPS:
+- [LOW] getRelatedPosts makes 2 DB queries in sequence (tags then category fallback) — could be optimized to single query | FIX: acceptable for low-traffic blog, simplifies scoring logic
+- [LOW] Category fallback orders by publishedAt desc — does not consider tag overlap | FIX: intentional — category posts with 0 tag score serve as filler
+CHANGELOG:
+- F-011 | add: related posts utility and component with tag-scoring algorithm

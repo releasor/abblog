@@ -1,5 +1,5 @@
 MODULE: posts/ui
-FILES: src/app/admin/(admin)/posts/page.tsx, src/app/admin/(admin)/posts/new/page.tsx, src/app/admin/(admin)/posts/[id]/edit/page.tsx, src/app/admin/(admin)/categories/page.tsx, src/app/admin/(admin)/tags/page.tsx, src/app/posts/page.tsx, src/app/posts/[slug]/page.tsx, src/app/posts/[slug]/post-content.tsx, src/app/tags/[slug]/page.tsx, src/app/categories/page.tsx, src/app/categories/[slug]/page.tsx, src/components/post-form.tsx, src/components/post-card.tsx, src/components/pagination.tsx, src/components/tiptap-editor.tsx
+FILES: src/app/admin/(admin)/posts/page.tsx, src/app/admin/(admin)/posts/new/page.tsx, src/app/admin/(admin)/posts/[id]/edit/page.tsx, src/app/admin/(admin)/categories/page.tsx, src/app/admin/(admin)/tags/page.tsx, src/app/posts/page.tsx, src/app/posts/[slug]/page.tsx, src/app/posts/[slug]/post-content.tsx, src/app/tags/[slug]/page.tsx, src/app/categories/page.tsx, src/app/categories/[slug]/page.tsx, src/components/post-form.tsx, src/components/post-card.tsx, src/components/pagination.tsx, src/components/tiptap-editor.tsx, src/lib/related-posts.ts, src/components/related-posts.tsx
 RESPONSIBILITY: post/category/tag admin UI, public post/category/tag viewers with syntax highlighting
 KEY_FILES:
 - src/app/admin/(admin)/posts/page.tsx: post list with table, status filter, sort dropdown, pagination

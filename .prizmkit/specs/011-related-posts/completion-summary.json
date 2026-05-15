@@ -1,0 +1,9 @@
+{
+  "completion_notes": [
+    "Added getRelatedPosts(currentPostId, limit=3) in src/lib/related-posts.ts — scores by shared tags, fills with same-category fallback",
+    "Added RelatedPosts server component in src/components/related-posts.tsx — horizontal grid of up to 3 post cards",
+    "Modified src/app/posts/[slug]/page.tsx — renders RelatedPosts below comment section (SSR/SSG)",
+    "Created L2 doc at .prizm-docs/posts/related-posts.prizm with TRAPS and interfaces",
+    "No schema changes — uses existing PostTag join table for tag-based scoring"
+  ]
+}
