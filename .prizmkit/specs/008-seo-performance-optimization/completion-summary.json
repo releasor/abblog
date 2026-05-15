@@ -1,0 +1,12 @@
+{
+  "completion_notes": [
+    "Added src/lib/site-url.ts with getSiteUrl() and absoluteUrl() helpers using NEXT_PUBLIC_SITE_URL env var",
+    "Created src/app/sitemap.ts — generates sitemap.xml with published posts, categories, and static pages",
+    "Created src/app/robots.ts — allows all crawlers, references sitemap.xml",
+    "Created src/app/feed.xml/route.ts — RSS 2.0 feed with last 20 published posts",
+    "Post page (src/app/posts/[slug]/page.tsx) has generateMetadata with OG tags, canonical, article meta",
+    "Post page has generateStaticParams for SSG and revalidate=3600 for ISR",
+    "Post page has JSON-LD BlogPosting structured data and Next.js Image component",
+    "Added generateMetadata to all public pages (home, posts, categories, tags, about, search)"
+  ]
+}

@@ -2,17 +2,17 @@
   "version": 1,
   "workflow_type": "feature-pipeline",
   "pipeline_mode": "lite",
-  "item_id": "F-008",
-  "item_slug": "008-seo-performance-optimization",
-  "session_id": "F-008-20260515110522",
+  "item_id": "F-009",
+  "item_slug": "009-page-view-tracking-admin-dashboard",
+  "session_id": "F-009-20260515111626",
   "steps": [
     {
       "id": "S01",
       "skill": "context-snapshot",
       "name": "Build Context Snapshot",
-      "status": "completed",
+      "status": "pending",
       "required_artifacts": [
-        ".prizmkit/specs/008-seo-performance-optimization/context-snapshot.md"
+        ".prizmkit/specs/009-page-view-tracking-admin-dashboard/context-snapshot.md"
       ],
       "depends_on": null
     },
@@ -20,9 +20,9 @@
       "id": "S02",
       "skill": "prizmkit-plan",
       "name": "Plan & Tasks",
-      "status": "completed",
+      "status": "pending",
       "required_artifacts": [
-        ".prizmkit/specs/008-seo-performance-optimization/plan.md"
+        ".prizmkit/specs/009-page-view-tracking-admin-dashboard/plan.md"
       ],
       "depends_on": "S01"
     },
@@ -30,7 +30,7 @@
       "id": "S03",
       "skill": "prizmkit-implement",
       "name": "Implement + Test",
-      "status": "completed",
+      "status": "pending",
       "required_artifacts": [],
       "depends_on": "S02"
     },
@@ -38,7 +38,7 @@
       "id": "S04",
       "skill": "browser-verification",
       "name": "Browser Verification",
-      "status": "completed",
+      "status": "pending",
       "required_artifacts": [],
       "depends_on": "S03"
     },
@@ -46,7 +46,7 @@
       "id": "S05",
       "skill": "prizmkit-retrospective",
       "name": "Retrospective",
-      "status": "completed",
+      "status": "pending",
       "required_artifacts": [],
       "depends_on": "S04"
     },
@@ -54,7 +54,7 @@
       "id": "S06",
       "skill": "prizmkit-committer",
       "name": "Commit",
-      "status": "completed",
+      "status": "pending",
       "required_artifacts": [
         "--headless"
       ],
