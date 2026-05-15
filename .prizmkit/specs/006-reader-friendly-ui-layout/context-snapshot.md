@@ -634,12 +634,19 @@ All tasks completed. Build passes with `npm run build`.
 - src/app/globals.css — dark mode vars, prose styles
 
 ## Browser Verification
-Tool: playwright-cli
-URL: http://localhost:3000/about
+Tool: playwright-cli v0.1.13
+URL: http://localhost:3000
+Dev Server Command: npm run dev
 Steps executed:
-- Opened /about page — rendered correctly with header, nav, content, footer
-- Verified header has KitTest logo, Home/Posts/About links, dark mode toggle
-- Clicked dark mode toggle — button changed to "Switch to light mode" [active]
-- Verified footer has copyright (2026) and social links (GitHub, Twitter, Email)
-Result: PASS — UI components render correctly, dark mode toggle works
-Note: Database-dependent pages (/ and /posts) could not be fully verified due to no DB connection in this environment, but build passes and components are structurally correct
+- Opened / — hero section with "KitTest" title and tagline renders correctly
+- Verified recent post cards show title, excerpt, date, and reading time
+- Clicked dark mode toggle — button changed to "Switch to light mode", dark mode active
+- Verified localStorage has theme=dark persisted
+- Navigated to /posts/my-updated-post — post detail shows title, date, reading time, author, content
+- Navigated to /posts — "All Posts" heading, post cards in grid layout
+- Navigated to /about — renders with proper content sections
+- Reloaded /about — dark mode persists after page refresh (button still "Switch to light mode")
+Result: PASS — All verified ACs: hero section, post cards, dark mode toggle, localStorage persistence, post detail page, responsive grid, about page
+Screenshot: .prizmkit/specs/006-reader-friendly-ui-layout/browser-verification.png
+Server cleanup: confirmed
+Browser cleanup: confirmed
