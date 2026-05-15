@@ -1,0 +1,25 @@
+
+> kittest@0.1.0 dev
+> next dev
+
+▲ Next.js 16.2.6 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://172.30.252.228:3000
+- Environments: .env
+✓ Ready in 326ms
+⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+
+ GET / 200 in 383ms (next.js: 130ms, application-code: 253ms)
+ GET / 200 in 31ms (next.js: 3ms, application-code: 28ms)
+[next-auth][warn][NEXTAUTH_URL] 
+https://next-auth.js.org/warnings#nextauth_url
+ GET /api/auth/session 200 in 645ms (next.js: 627ms, application-code: 18ms)
+ GET / 200 in 32ms (next.js: 3ms, application-code: 29ms)
+ GET /api/auth/session 200 in 29ms (next.js: 10ms, application-code: 19ms)
+ GET /posts 200 in 104ms (next.js: 28ms, application-code: 76ms)
+ GET /api/auth/session 200 in 36ms (next.js: 13ms, application-code: 23ms)
+ GET /posts/my-updated-post 200 in 713ms (next.js: 682ms, application-code: 31ms)
+ GET /api/posts/1/comments 200 in 670ms (next.js: 664ms, application-code: 6ms)
+ GET /api/posts/1/comments 200 in 14ms (next.js: 8ms, application-code: 6ms)
+ GET /about 200 in 202ms (next.js: 178ms, application-code: 25ms)
+ GET /api/auth/session 200 in 22ms (next.js: 12ms, application-code: 10ms)
