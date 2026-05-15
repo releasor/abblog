@@ -75,7 +75,10 @@
       "Bash(mv /tmp/feature-list-fixed.json .prizmkit/plans/feature-list.json)",
       "Bash(jq '\\(.features[] | select\\(.status == \"auto_skipped\"\\)\\) |= \\(.status = \"pending\"\\)' .prizmkit/plans/feature-list.json)",
       "Bash(rm -rf .prizmkit/state/features/features/F-00[3-9] .prizmkit/state/features/features/F-01[0-2])",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "Bash(rm -rf .prizmkit/state/features/features/F-003)",
+      "Bash(jq '\\(.features[] | select\\(.id == \"F-003\"\\)\\) |= \\(.status = \"pending\"\\)' .prizmkit/plans/feature-list.json)",
+      "Bash(mv /tmp/fl.json .prizmkit/plans/feature-list.json)"
     ],
     "additionalDirectories": [
       "C:\\Users\\81097\\AppData\\Local\\ms-playwright\\__dirlock"

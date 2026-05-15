@@ -24,3 +24,37 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Tiptap editor styles */
+.tiptap p.is-editor-empty:first-child::before {
+  color: #9ca3af;
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+.tiptap pre {
+  background: #1e1e1e;
+  color: #d4d4d4;
+  padding: 1rem;
+  border-radius: 0.375rem;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.875rem;
+  overflow-x: auto;
+}
+
+.tiptap img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.375rem;
+}
+
+.tiptap a {
+  color: #2563eb;
+  text-decoration: underline;
+}
+
+.tiptap a:hover {
+  color: #1d4ed8;
+}

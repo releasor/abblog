@@ -29,10 +29,12 @@ model Post {
   status       PostStatus @default(DRAFT)
   publishedAt  DateTime? @map("published_at")
   authorId     Int       @map("author_id")
+  categoryId   Int?      @map("category_id")
   createdAt    DateTime  @default(now()) @map("created_at")
   updatedAt    DateTime  @updatedAt @map("updated_at")
 
-  author   AdminUser @relation(fields: [authorId], references: [id])
+  author   AdminUser  @relation(fields: [authorId], references: [id])
+  category Category? @relation(fields: [categoryId], references: [id])
   tags     PostTag[]
   comments Comment[]
 
@@ -49,6 +51,8 @@ model Category {
   name        String  @unique
   slug        String  @unique
   description String?
+
+  posts Post[]
 
   @@map("categories")
 }

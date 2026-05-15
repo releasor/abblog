@@ -33,7 +33,26 @@ async function main() {
     });
   }
 
-  console.log("Seed completed:", { admin: admin.email, categories: categories.length });
+  const tags = [
+    { name: "JavaScript", slug: "javascript" },
+    { name: "TypeScript", slug: "typescript" },
+    { name: "React", slug: "react" },
+    { name: "Next.js", slug: "nextjs" },
+    { name: "CSS", slug: "css" },
+    { name: "Node.js", slug: "nodejs" },
+    { name: "Tutorial", slug: "tutorial" },
+    { name: "Tips", slug: "tips" },
+  ];
+
+  for (const tag of tags) {
+    await prisma.tag.upsert({
+      where: { slug: tag.slug },
+      update: {},
+      create: tag,
+    });
+  }
+
+  console.log("Seed completed:", { admin: admin.email, categories: categories.length, tags: tags.length });
 }
 
 main()
