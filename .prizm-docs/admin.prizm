@@ -1,6 +1,6 @@
 MODULE: admin
-FILES: src/app/admin/layout.tsx, src/app/admin/login/page.tsx, src/app/admin/(admin)/dashboard/page.tsx
-RESPONSIBILITY: admin panel UI — login page, sidebar navigation layout, dashboard placeholder
+FILES: src/app/admin/layout.tsx, src/app/admin/login/page.tsx, src/app/admin/(admin)/layout.tsx, src/app/admin/(admin)/dashboard/page.tsx, src/app/admin/(admin)/posts/page.tsx, src/app/admin/(admin)/posts/new/page.tsx, src/app/admin/(admin)/posts/[id]/edit/page.tsx
+RESPONSIBILITY: admin panel UI — login page, sidebar navigation layout, dashboard, post management pages
 DEPENDENCIES:
 - uses: next-auth/react: useSession, signIn, signOut client hooks
 - imports: next/navigation: useRouter, usePathname

@@ -36,7 +36,7 @@ export default function PostForm({ mode, initialData }: PostFormProps) {
   const router = useRouter();
   const [title, setTitle] = useState(initialData?.title || "");
   const [slug, setSlug] = useState(initialData?.slug || "");
-  const [slugEdited, setSlugEdited] = useState(mode === "edit");
+  const [slugEdited, setSlugEdited] = useState(false);
   const [content, setContent] = useState(initialData?.content || "");
   const [excerpt, setExcerpt] = useState(initialData?.excerpt || "");
   const [coverImageUrl, setCoverImageUrl] = useState(initialData?.coverImageUrl || "");

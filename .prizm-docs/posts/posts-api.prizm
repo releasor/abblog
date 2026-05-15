@@ -1,0 +1,28 @@
+MODULE: posts/api
+FILES: src/app/api/posts/route.ts, src/app/api/posts/[id]/route.ts, src/app/api/categories/route.ts, src/app/api/tags/route.ts, src/lib/slugify.ts
+RESPONSIBILITY: post CRUD API endpoints, category/tag read endpoints, slug utility
+KEY_FILES:
+- src/app/api/posts/route.ts: GET list with pagination/filtering/sorting, POST create with auth
+- src/app/api/posts/[id]/route.ts: GET/PUT/DELETE single post with auth, cascade delete
+- src/app/api/categories/route.ts: GET categories for dropdown
+- src/app/api/tags/route.ts: GET/POST tags for multi-select
+- src/lib/slugify.ts: URL-friendly slug generation from title
+DEPENDENCIES:
+- uses: next-auth: getServerSession for API auth
+- uses: @prisma/client: ORM queries with includes
+- imports: src/lib/prisma: Prisma singleton
+- imports: src/lib/slugify: slugify function
+INTERFACES:
+- GET /api/posts: list with ?page, ?limit, ?status, ?sortBy, ?sortOrder — returns {posts, pagination}
+- POST /api/posts: create post — requires auth, body: {title, content, slug?, excerpt?, coverImageUrl?, categoryId?, tags?, status?}
+- GET /api/posts/[id]: read single post with category, tags, author
+- PUT /api/posts/[id]: update post — requires auth, partial body
+- DELETE /api/posts/[id]: delete post — requires auth, cascades to PostTag and Comment
+- GET /api/categories: list all categories
+- GET /api/tags: list all tags
+- POST /api/tags: create tag — body: {name}
+TRAPS:
+- [LOW] Session user id accessed via (session.user as {id?: string}).id cast — next-auth default type lacks id field | FIX: cast to {id?: string} in all API routes
+- [LOW] slugify uses regex replace chain — may not handle unicode/emoji correctly | FIX: acceptable for English-only blog content
+CHANGELOG:
+- root | add: initial posts API with CRUD, pagination, filtering, sorting

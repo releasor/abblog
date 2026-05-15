@@ -1,0 +1,26 @@
+MODULE: posts/ui
+FILES: src/app/admin/(admin)/posts/page.tsx, src/app/admin/(admin)/posts/new/page.tsx, src/app/admin/(admin)/posts/[id]/edit/page.tsx, src/app/posts/[slug]/page.tsx, src/components/post-form.tsx, src/components/tiptap-editor.tsx
+RESPONSIBILITY: post admin UI (list, create, edit) and public post viewer
+KEY_FILES:
+- src/app/admin/(admin)/posts/page.tsx: post list with table, status filter, sort dropdown, pagination
+- src/app/admin/(admin)/posts/new/page.tsx: create post page wrapping PostForm
+- src/app/admin/(admin)/posts/[id]/edit/page.tsx: edit post page wrapping PostForm with data fetch
+- src/app/posts/[slug]/page.tsx: server component, public post view — published only, 404 for drafts
+- src/components/post-form.tsx: shared create/edit form — title, slug auto-gen, tiptap editor, excerpt, cover image, category dropdown, tags multi-select, status toggle
+- src/components/tiptap-editor.tsx: tiptap wrapper with toolbar (bold, italic, headings, code block, link, image, list)
+DEPENDENCIES:
+- uses: @tiptap/react: EditorContent, useEditor hooks
+- uses: @tiptap/starter-kit: core extensions
+- uses: @tiptap/extension-link: link support
+- uses: @tiptap/extension-image: image via URL
+- uses: @tiptap/extension-placeholder: placeholder text
+- imports: src/lib/slugify: slug auto-generation
+- imports: src/lib/prisma: direct DB query in public page
+INTERFACES:
+- PostForm: mode="create"|"edit", initialData? — shared form component
+- TiptapEditor: content=string, onChange=(html)=>void — rich text editor wrapper
+TRAPS:
+- [LOW] Public post page uses server component with direct prisma query — no API layer | FIX: acceptable for read-only public page
+- [LOW] Tags multi-select uses button toggle pattern — no search/filter for large tag sets | FIX: sufficient for small tag collections
+CHANGELOG:
+- root | add: initial posts admin UI and public viewer

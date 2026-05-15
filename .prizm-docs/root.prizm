@@ -7,8 +7,9 @@ MODULE_INDEX:
 - app [routing, pages, layout]: src/app/ — Next.js App Router pages and layouts
 - auth [nextauth, login, middleware, session]: src/lib/auth.ts, middleware.ts — NextAuth.js authentication, route protection
 - admin [dashboard, layout, sidebar]: src/app/admin/ — admin panel pages and layout with sidebar nav
-- components [ui, react]: src/components/ — reusable UI components (empty, ready for use)
-- lib [utils, helpers, prisma]: src/lib/ — utility functions and Prisma client singleton
+- posts [crud, api, editor, tiptap]: src/app/api/posts/, src/app/admin/(admin)/posts/, src/app/posts/ — post CRUD API, admin UI, public view
+- components [ui, react, tiptap]: src/components/ — reusable UI components including tiptap editor
+- lib [utils, helpers, prisma, slugify]: src/lib/ — utility functions, Prisma client, slugify
 - prisma [database, schema, seed]: prisma/ — database schema, migrations, and seed script
 RULES:
 - TypeScript fullstack project with Next.js (App Router)

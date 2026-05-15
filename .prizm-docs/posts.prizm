@@ -1,0 +1,9 @@
+MODULE: posts
+FILES: src/app/api/posts/route.ts, src/app/api/posts/[id]/route.ts, src/app/api/categories/route.ts, src/app/api/tags/route.ts, src/app/admin/(admin)/posts/page.tsx, src/app/admin/(admin)/posts/new/page.tsx, src/app/admin/(admin)/posts/[id]/edit/page.tsx, src/app/posts/[slug]/page.tsx, src/components/post-form.tsx, src/components/tiptap-editor.tsx, src/lib/slugify.ts
+RESPONSIBILITY: blog post CRUD — API routes, admin list/create/edit pages, public post viewer, rich text editor
+DEPENDENCIES:
+- uses: @tiptap/react: rich text editor for post content
+- uses: @prisma/client: database ORM for post queries
+- imports: next-auth: session validation for API routes
+- imports: src/lib/prisma: Prisma client singleton
+- imports: src/lib/slugify: URL slug generation
