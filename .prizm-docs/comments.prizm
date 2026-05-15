@@ -1,0 +1,23 @@
+MODULE: comments
+FILES: src/app/api/posts/[id]/comments/route.ts, src/app/api/comments/route.ts, src/app/api/comments/[id]/route.ts, src/components/comment-form.tsx, src/components/comment-list.tsx, src/app/admin/(admin)/comments/page.tsx
+RESPONSIBILITY: reader comment system — public comment submission and display, admin comment moderation with status management
+DEPENDENCIES:
+- uses: @prisma/client: database ORM for comment queries
+- imports: next-auth: session validation for admin API routes
+- imports: src/lib/prisma: Prisma client singleton
+
+INTERFACES:
+- GET /api/posts/[id]/comments: list approved comments for a post (public)
+- POST /api/posts/[id]/comments: submit comment with PENDING status (public, rate-limited)
+- GET /api/comments: list all comments with status filtering (admin, auth required)
+- PATCH /api/comments/[id]: update comment status (admin, auth required)
+- DELETE /api/comments/[id]: delete comment (admin, auth required)
+- CommentForm: client component with name/email/content validation
+- CommentList: client component with relative time display
+
+TRAPS:
+- [HIGH] Next.js dynamic route params must use same segment name — [id] and [postId] at same level causes build error | FIX: use [id] consistently
+- [LOW] In-memory rate limit store (Map) resets on server restart — acceptable for single-instance dev | FIX: use Redis or DB-backed store for production
+
+CHANGELOG:
+- F-005 | add: comment system with public submission and admin moderation

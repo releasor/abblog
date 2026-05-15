@@ -1,0 +1,14 @@
+{
+  "completion_notes": [
+    "Comment model already existed in prisma/schema.prisma with PENDING/APPROVED/REJECTED status",
+    "GET /api/posts/[id]/comments returns approved comments (public, no auth)",
+    "POST /api/posts/[id]/comments submits comment with PENDING status (public, rate-limited 1/min per IP)",
+    "GET /api/comments lists all comments with status filtering (admin, auth required)",
+    "PATCH /api/comments/[id] updates comment status (admin, auth required)",
+    "DELETE /api/comments/[id] deletes comment (admin, auth required)",
+    "CommentForm component at src/components/comment-form.tsx with name/email/content validation",
+    "CommentList component at src/components/comment-list.tsx with relative timestamp display",
+    "Admin comments page at src/app/admin/(admin)/comments/page.tsx with status tabs and action buttons",
+    "Posts API includes pendingComments count for admin badge display"
+  ]
+}

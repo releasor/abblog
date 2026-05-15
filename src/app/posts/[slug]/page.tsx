@@ -3,6 +3,8 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { estimateReadingTime } from "@/lib/reading-time";
 import { PostContent } from "./post-content";
+import { CommentList } from "@/components/comment-list";
+import { CommentForm } from "@/components/comment-form";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -94,6 +96,13 @@ export default async function PublicPostPage({ params }: PageProps) {
       )}
 
       <PostContent content={post.content} />
+
+      <section className="mt-12 pt-8 border-t border-zinc-200 dark:border-zinc-800">
+        <CommentList postId={post.id} />
+        <div className="mt-8">
+          <CommentForm postId={post.id} />
+        </div>
+      </section>
     </article>
   );
 }

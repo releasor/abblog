@@ -8,6 +8,7 @@ MODULE_INDEX:
 - auth [nextauth, login, middleware, session]: src/lib/auth.ts, middleware.ts — NextAuth.js authentication, route protection
 - admin [dashboard, layout, sidebar]: src/app/admin/ — admin panel pages and layout with sidebar nav
 - posts [crud, api, editor, tiptap]: src/app/api/posts/, src/app/admin/(admin)/posts/, src/app/posts/ — post CRUD API, admin UI, public view
+- comments [feedback, moderation, rate-limit]: src/app/api/comments/, src/app/api/posts/[id]/comments/, src/app/admin/(admin)/comments/ — reader comment system with admin moderation
 - components [ui, react, tiptap, header, footer, dark-mode]: src/components/ — reusable UI components including layout, theme, and editor
 - lib [utils, helpers, prisma, slugify, reading-time]: src/lib/ — utility functions, Prisma client, slugify, reading time
 - prisma [database, schema, seed]: prisma/ — database schema, migrations, and seed script

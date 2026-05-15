@@ -33,6 +33,7 @@ export async function GET(request: NextRequest) {
       include: {
         category: { select: { name: true } },
         tags: { include: { tag: { select: { id: true, name: true, slug: true } } } },
+        _count: { select: { comments: { where: { status: "PENDING" } } } },
       },
     }),
     prisma.post.count({ where }),
@@ -42,6 +43,7 @@ export async function GET(request: NextRequest) {
     posts: posts.map((p) => ({
       ...p,
       tags: p.tags.map((pt) => pt.tag),
+      pendingComments: p._count.comments,
     })),
     pagination: {
       page,

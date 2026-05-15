@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 
 interface Post {
   id: number;
@@ -13,6 +12,7 @@ interface Post {
   createdAt: string;
   category: { name: string } | null;
   tags: { id: number; name: string }[];
+  pendingComments: number;
 }
 
 interface Pagination {
@@ -23,7 +23,6 @@ interface Pagination {
 }
 
 export default function AdminPostsPage() {
-  const router = useRouter();
   const [posts, setPosts] = useState<Post[]>([]);
   const [pagination, setPagination] = useState<Pagination | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -152,7 +151,14 @@ export default function AdminPostsPage() {
               {posts.map((post) => (
                 <tr key={post.id} className="border-b border-zinc-100 dark:border-zinc-800 last:border-0 hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
                   <td className="px-4 py-3">
-                    <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">{post.title}</div>
+                    <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                      {post.title}
+                      {post.pendingComments > 0 && (
+                        <span className="ml-2 inline-block px-2 py-0.5 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 rounded-full text-xs font-medium">
+                          {post.pendingComments} pending
+                        </span>
+                      )}
+                    </div>
                     <div className="text-xs text-zinc-500 dark:text-zinc-500">/posts/{post.slug}</div>
                   </td>
                   <td className="px-4 py-3">
