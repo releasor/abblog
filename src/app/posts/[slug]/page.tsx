@@ -1,13 +1,72 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import type { Metadata } from "next";
+import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 import { estimateReadingTime } from "@/lib/reading-time";
+import { absoluteUrl } from "@/lib/site-url";
 import { PostContent } from "./post-content";
 import { CommentList } from "@/components/comment-list";
 import { CommentForm } from "@/components/comment-form";
 
+export const revalidate = 3600;
+
 interface PageProps {
   params: Promise<{ slug: string }>;
+}
+
+export async function generateStaticParams() {
+  const posts = await prisma.post.findMany({
+    where: { status: "PUBLISHED" },
+    select: { slug: true },
+  });
+  return posts.map((post) => ({ slug: post.slug }));
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug } = await params;
+
+  const post = await prisma.post.findUnique({
+    where: { slug },
+    select: {
+      title: true,
+      excerpt: true,
+      coverImageUrl: true,
+      publishedAt: true,
+      updatedAt: true,
+      slug: true,
+      author: { select: { name: true } },
+      tags: { include: { tag: { select: { name: true } } } },
+    },
+  });
+
+  if (!post) return {};
+
+  const description = post.excerpt || `Read ${post.title} on KitTest`;
+  const url = absoluteUrl(`/posts/${post.slug}`);
+
+  return {
+    title: post.title,
+    description,
+    alternates: { canonical: url },
+    openGraph: {
+      title: post.title,
+      description,
+      url,
+      type: "article",
+      publishedTime: post.publishedAt?.toISOString(),
+      modifiedTime: post.updatedAt?.toISOString(),
+      authors: [post.author.name],
+      tags: post.tags.map((pt) => pt.tag.name),
+      images: post.coverImageUrl ? [{ url: post.coverImageUrl, alt: post.title }] : [],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.title,
+      description,
+      images: post.coverImageUrl ? [post.coverImageUrl] : [],
+    },
+  };
 }
 
 export default async function PublicPostPage({ params }: PageProps) {
@@ -28,6 +87,24 @@ export default async function PublicPostPage({ params }: PageProps) {
 
   const readingTime = estimateReadingTime(post.content);
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: post.title,
+    description: post.excerpt || undefined,
+    image: post.coverImageUrl || undefined,
+    datePublished: post.publishedAt?.toISOString(),
+    dateModified: post.updatedAt?.toISOString(),
+    author: {
+      "@type": "Person",
+      name: post.author.name,
+    },
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": absoluteUrl(`/posts/${post.slug}`),
+    },
+  };
+
   const formatDate = (date: Date | null) => {
     if (!date) return "";
     return new Date(date).toLocaleDateString("en-US", {
@@ -39,12 +116,19 @@ export default async function PublicPostPage({ params }: PageProps) {
 
   return (
     <article className="max-w-3xl mx-auto px-4 py-12">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {post.coverImageUrl && (
-        <div className="mb-8">
-          <img
+        <div className="relative w-full aspect-[16/9] mb-8 rounded-lg overflow-hidden">
+          <Image
             src={post.coverImageUrl}
             alt={post.title}
-            className="w-full h-auto rounded-lg object-cover max-h-96"
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, 768px"
+            priority
           />
         </div>
       )}

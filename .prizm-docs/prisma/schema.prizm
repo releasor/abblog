@@ -5,6 +5,7 @@ KEY_FILES:
 - schema.prisma: database schema with 6 models (AdminUser, Post, Category, Tag, PostTag, Comment), ~100 lines
 - seed.ts: seed script creating admin user and 3 default categories, ~45 lines
 - prisma.config.ts: Prisma 7 config with datasource URL from .env, ~14 lines
+- migrations/20260515104644_add_fulltext_index: FULLTEXT index on posts(title, content) for search
 DEPENDENCIES:
 - uses: @prisma/client 7.8.0: Prisma ORM client
 - uses: @prisma/adapter-mariadb 7.8.0: MariaDB driver adapter (MySQL compatible)
@@ -24,7 +25,9 @@ TRAPS:
 - [CRITICAL] Prisma 7 requires adapter for PrismaClient constructor — no default driver | FIX: use @prisma/adapter-mariadb with connection string
 - [HIGH] Generated client output is ../generated/prisma, not node_modules/@prisma/client | FIX: import from ../../generated/prisma/client
 - [LOW] MariaDB adapter is wire-compatible with MySQL but uses different npm package | FIX: use @prisma/adapter-mariadb, not @prisma/adapter-mysql (doesn't exist)
+- [HIGH] Prisma doesn't support FULLTEXT index in schema — must use raw SQL migration | FIX: CREATE FULLTEXT INDEX in migration.sql, use $queryRaw for MATCH...AGAINST queries
 CHANGELOG:
 - F-001 | add: initial database schema with 6 models
 - F-001 | add: seed script for admin user and categories
 - F-001 | add: Prisma 7 config with MariaDB adapter
+- F-007 | add: FULLTEXT index on posts(title, content) for search

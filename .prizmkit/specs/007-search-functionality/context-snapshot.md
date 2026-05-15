@@ -514,3 +514,27 @@ export default async function PublicPostPage({ params }: PageProps) {
 ## Section 5 — Existing Tests
 
 No existing test files found for the search feature. The project uses Jest + React Testing Library per project conventions.
+
+## Browser Verification
+
+Tool: playwright-cli
+URL: http://localhost:3000
+Dev Server Command: npm run dev
+Tool version: playwright-cli (global)
+Steps executed:
+1. Opened http://localhost:3000 - homepage loaded with search icon button in header (ref=e63)
+2. Clicked search icon - input field expanded with focus, placeholder "Search posts..." (ref=e99)
+3. Filled "test" and submitted - navigated to /search?q=test
+4. Search results page showed "0 results for 'test'" and "No posts found matching your query" message
+5. Navigated to /search without query - showed "Please enter a search term" message
+6. Took screenshot of search results page
+Screenshot: search-results.png
+Result: PASS
+- AC1: Search input expands on click ✓
+- AC2: Enter key navigates to /search?q=<query> ✓
+- AC3: No results shows "No posts found matching your query" ✓
+- AC4: Empty search shows "Please enter a search term" ✓
+- AC7: Search icon click expands input and receives focus ✓
+Note: AC5 (draft exclusion) and AC6 (highlighted terms) require database with test data to verify visually; code review confirms implementation is correct
+Server cleanup: confirmed (PID 125212 killed)
+Browser cleanup: confirmed

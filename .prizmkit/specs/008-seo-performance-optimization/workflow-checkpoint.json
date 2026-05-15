@@ -2,9 +2,9 @@
   "version": 1,
   "workflow_type": "feature-pipeline",
   "pipeline_mode": "lite",
-  "item_id": "F-007",
-  "item_slug": "007-search-functionality",
-  "session_id": "F-007-20260515105549",
+  "item_id": "F-008",
+  "item_slug": "008-seo-performance-optimization",
+  "session_id": "F-008-20260515110233",
   "steps": [
     {
       "id": "S01",
@@ -12,7 +12,7 @@
       "name": "Build Context Snapshot",
       "status": "completed",
       "required_artifacts": [
-        ".prizmkit/specs/007-search-functionality/context-snapshot.md"
+        ".prizmkit/specs/008-seo-performance-optimization/context-snapshot.md"
       ],
       "depends_on": null
     },
@@ -22,7 +22,7 @@
       "name": "Plan & Tasks",
       "status": "completed",
       "required_artifacts": [
-        ".prizmkit/specs/007-search-functionality/plan.md"
+        ".prizmkit/specs/008-seo-performance-optimization/plan.md"
       ],
       "depends_on": "S01"
     },
@@ -30,7 +30,7 @@
       "id": "S03",
       "skill": "prizmkit-implement",
       "name": "Implement + Test",
-      "status": "completed",
+      "status": "in_progress",
       "required_artifacts": [],
       "depends_on": "S02"
     },
@@ -38,7 +38,7 @@
       "id": "S04",
       "skill": "browser-verification",
       "name": "Browser Verification",
-      "status": "completed",
+      "status": "pending",
       "required_artifacts": [],
       "depends_on": "S03"
     },
@@ -46,7 +46,7 @@
       "id": "S05",
       "skill": "prizmkit-retrospective",
       "name": "Retrospective",
-      "status": "completed",
+      "status": "pending",
       "required_artifacts": [],
       "depends_on": "S04"
     },
@@ -54,7 +54,7 @@
       "id": "S06",
       "skill": "prizmkit-committer",
       "name": "Commit",
-      "status": "completed",
+      "status": "pending",
       "required_artifacts": [
         "--headless"
       ],

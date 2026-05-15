@@ -1,0 +1,10 @@
+{
+  "completion_notes": [
+    "Added FULLTEXT index on posts(title, content) via migration prisma/migrations/20260515104644_add_fulltext_index",
+    "GET /api/search?q=<query> endpoint in src/app/api/search/route.ts — returns relevance-sorted results with highlighted snippets",
+    "GET /api/search?q=<query>&suggestions=true — returns top 5 matching post titles for dropdown suggestions",
+    "Search results page at /search?q=<query> in src/app/search/page.tsx — shows matched posts with highlighted excerpts",
+    "SearchInput component in src/components/search-input.tsx — expandable input with 300ms debounced suggestions",
+    "Header component updated to include SearchInput in src/components/header.tsx"
+  ]
+}

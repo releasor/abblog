@@ -1,0 +1,10 @@
+MODULE: search
+FILES: src/app/api/search/route.ts, src/app/search/page.tsx, src/components/search-input.tsx
+RESPONSIBILITY: full-text search across blog posts — API endpoint, results page, header search input with suggestions
+DEPENDENCIES:
+- uses: @prisma/client: raw SQL queries for FULLTEXT search
+- imports: src/lib/prisma: Prisma client singleton
+- imports: src/lib/reading-time: reading time estimation for results
+- imports: next/navigation: router for programmatic navigation
+SUBDIRS:
+- search/search-detail.prizm -> L2 detail with TRAPS and INTERFACES

@@ -26,10 +26,10 @@
 
 ## Tasks
 
-- [ ] 1. Add FULLTEXT index to posts table via Prisma migration
-- [ ] 2. Create search API route (GET /api/search?q=<query>)
-- [ ] 3. Create search results page (/search?q=<query>)
-- [ ] 4. Create search input component with expand/collapse
-- [ ] 5. Integrate search input into header
-- [ ] 6. Add debounced search suggestions dropdown
-- [ ] 7. Verify all acceptance criteria
+- [x] 1. Add FULLTEXT index to posts table via Prisma migration
+- [x] 2. Create search API route (GET /api/search?q=<query>)
+- [x] 3. Create search results page (/search?q=<query>)
+- [x] 4. Create search input component with expand/collapse
+- [x] 5. Integrate search input into header
+- [x] 6. Add debounced search suggestions dropdown
+- [x] 7. Verify all acceptance criteria

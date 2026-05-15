@@ -1,0 +1,23 @@
+MODULE: search
+FILES: src/app/api/search/route.ts, src/app/search/page.tsx, src/components/search-input.tsx
+RESPONSIBILITY: full-text search across blog posts — API endpoint, results page, header search input with suggestions
+KEY_FILES:
+- src/app/api/search/route.ts: search API endpoint, uses MySQL FULLTEXT MATCH...AGAINST via $queryRaw, returns relevance-sorted results with highlighted snippets
+- src/app/search/page.tsx: search results page, server component, displays PostCard list with highlighted excerpts
+- src/components/search-input.tsx: expandable search icon -> input field, debounced suggestions (300ms), Enter-to-navigate, click-outside-to-close
+DEPENDENCIES:
+- uses: @prisma/client: $queryRaw for FULLTEXT search (Prisma ORM doesn't support FULLTEXT natively)
+- imports: src/lib/prisma: Prisma client singleton
+- imports: src/lib/reading-time: reading time estimation for search results
+- imports: next/navigation: useRouter for programmatic navigation on form submit
+INTERFACES:
+- GET /api/search?q=<query>: full-text search, returns { query, results[], total }
+- GET /api/search?q=<query>&suggestions=true: returns top 5 matching post titles for dropdown
+- /search?q=<query>: search results page, shows matched posts as cards with highlighted excerpts
+- SearchInput: client component, renders search icon button that expands to input on click
+TRAPS:
+- [HIGH] MySQL FULLTEXT stopword filtering: common words like "my", "the", "is" are stopwords and return 0 results even if present in posts | FIX: document this behavior; users should search for meaningful terms
+- [HIGH] Prisma doesn't support FULLTEXT indexes natively: must use raw SQL migration and $queryRaw for MATCH...AGAINST | FIX: manual migration in prisma/migrations/, raw queries in API route
+- [LOW] Minimum word length for FULLTEXT: MySQL default ft_min_word_len is 4, so short words (< 4 chars) may not match | FIX: configurable via MySQL server settings if needed
+CHANGELOG:
+- root | add: initial search functionality with FULLTEXT index, API, results page, header search input

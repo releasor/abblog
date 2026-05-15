@@ -1,5 +1,5 @@
 MODULE: prisma
-FILES: schema.prisma, seed.ts
+FILES: schema.prisma, seed.ts, migrations/
 RESPONSIBILITY: database schema definition, migrations, seed data, and Prisma 7 configuration
 DEPENDENCIES:
 - uses: @prisma/client: Prisma ORM client

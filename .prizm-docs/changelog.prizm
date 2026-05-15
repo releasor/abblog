@@ -13,3 +13,5 @@ CHANGELOG:
 - F-004 | add: categories/tags CRUD API with validation, post counts, cascade delete
 - F-004 | add: admin categories/tags pages with inline create/edit/delete
 - F-004 | add: public categories list and category posts pages
+- F-007 | add: full-text search with MySQL FULLTEXT index, relevance sorting, highlighted snippets
+- F-007 | add: search API endpoint, results page, expandable header search input with suggestions
