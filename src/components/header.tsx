@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { DarkModeToggle } from "./dark-mode-toggle";
+import { SearchInput } from "./search-input";
 
 export function Header() {
   return (
@@ -21,6 +22,7 @@ export function Header() {
           <Link href="/about" className="text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">
             About
           </Link>
+          <SearchInput />
           <DarkModeToggle />
         </nav>
       </div>

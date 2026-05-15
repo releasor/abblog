@@ -62,3 +62,4 @@ https://next-auth.js.org/warnings#nextauth_url
  GET /api/auth/session 200 in 44ms (next.js: 19ms, application-code: 25ms)
  GET / 200 in 46ms (next.js: 1731µs, application-code: 44ms)
  GET /api/auth/session 200 in 32ms (next.js: 11ms, application-code: 21ms)
+ GET / 200 in 180ms (next.js: 77ms, application-code: 103ms)
