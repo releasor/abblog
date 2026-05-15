@@ -1,0 +1,12 @@
+{
+  "completion_notes": [
+    "ThemeProvider (src/components/theme-provider.tsx) — client context for dark mode, toggles 'dark' class on <html>, persists to localStorage",
+    "Header (src/components/header.tsx) — sticky header with blog name, nav links (Home, Posts, About), dark mode toggle",
+    "Footer (src/components/footer.tsx) — copyright and social links placeholder (GitHub, Twitter, Email)",
+    "PostCard (src/components/post-card.tsx) — reusable card with title, excerpt, category badge, date, reading time",
+    "Pagination (src/components/pagination.tsx) — page controls for post listings with basePath prop",
+    "Reading time utility (src/lib/reading-time.ts) — estimateReadingTime(htmlContent) returns minutes at 200 wpm",
+    "Post content renderer (src/app/posts/[slug]/post-content.tsx) — client component with highlight.js syntax highlighting for code blocks",
+    "Public pages: / (hero + recent posts), /posts (paginated grid), /tags/[slug] (tag filtered), /about"
+  ]
+}

@@ -1,0 +1,25 @@
+MODULE: components/ui
+FILES: src/components/header.tsx, src/components/footer.tsx, src/components/dark-mode-toggle.tsx, src/components/theme-provider.tsx, src/components/post-card.tsx, src/components/pagination.tsx
+RESPONSIBILITY: site layout components — header with nav, footer with social links, dark mode with localStorage, post cards, pagination
+KEY_FILES:
+- src/components/header.tsx: sticky header — KitTest logo link, Home/Posts/About nav, DarkModeToggle
+- src/components/footer.tsx: footer — copyright with year, GitHub/Twitter/Email social SVG links
+- src/components/dark-mode-toggle.tsx: sun/moon icon button, uses ThemeProvider context
+- src/components/theme-provider.tsx: client component, ThemeContext with localStorage persistence, class strategy for dark mode
+- src/components/post-card.tsx: Link wrapper — title, excerpt (line-clamp-2), category badge, date, reading time
+- src/components/pagination.tsx: Previous/Next + numbered page links, active page highlight
+DEPENDENCIES:
+- imports: next/link: client-side navigation
+- imports: src/components/theme-provider: dark mode context
+INTERFACES:
+- Header: no props — renders site header
+- Footer: no props — renders site footer
+- DarkModeToggle: no props — toggles theme via context
+- ThemeProvider: children — wraps app with theme context
+- PostCard: title, slug, excerpt, category, publishedAt, readingTime — post card link
+- Pagination: currentPage, totalPages, basePath — page navigation
+TRAPS:
+- [LOW] ThemeProvider uses useEffect for localStorage — SSR renders light mode first, then hydrates | FIX: suppressHydrationWarning on html element in layout.tsx
+- [LOW] PostCard uses line-clamp-2 for excerpt — truncates long excerpts | FIX: intentional for card layout consistency
+CHANGELOG:
+- F-006 | add: initial layout components, dark mode, post cards, pagination

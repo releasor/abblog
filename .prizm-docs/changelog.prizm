@@ -6,3 +6,7 @@ CHANGELOG:
 - F-002 | add: NextAuth.js v4 authentication with Credentials provider
 - F-002 | add: admin login page, layout with sidebar, middleware route protection
 - F-002 | add: auth and admin module L1/L2 prizm docs
+- F-003 | add: post management CRUD API, admin UI, public post viewer
+- F-006 | add: reader-friendly UI with header, footer, dark mode, responsive grid
+- F-006 | add: post listing page, tag page, about page, reading time utility
+- F-006 | add: syntax highlighting with highlight.js for code blocks
