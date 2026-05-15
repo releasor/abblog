@@ -211,7 +211,7 @@
         "F-003",
         "F-004"
       ],
-      "status": "in_progress",
+      "status": "completed",
       "critic": true,
       "critic_count": 1,
       "browser_interaction": {
