@@ -3,7 +3,6 @@
     "allow": [
       "Bash(powershell *)",
       "Bash(powershell.exe *)",
-      "Bash(curl *)",
       "Bash(git add *)",
       "Bash(git commit *)",
       "Bash(git diff *)",
