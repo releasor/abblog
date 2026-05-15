@@ -508,4 +508,33 @@ No test files exist in the project. No test framework (jest, vitest) is configur
 TEST_CMDS: `npx tsc --noEmit` (TypeScript type-check only)
 
 ## Implementation Log
-(to be filled during implementation)
+
+Implementation was completed in a prior session. All files exist and are functional:
+- `src/lib/related-posts.ts` — getRelatedPosts() with tag scoring + category fallback
+- `src/components/related-posts.tsx` — RelatedPosts server component with card grid
+- `src/app/posts/[slug]/page.tsx` — integrated below comment section
+
+TypeScript type-check: PASS (no errors)
+
+## Browser Verification
+Tool: playwright-cli
+URL: http://localhost:3000
+Dev Server Command: npm run dev (port 3000)
+Tool version: 0.1.13
+Steps executed:
+1. Opened homepage — verified post listing
+2. Navigated to /posts/typescript-best-practices — Related Posts section visible with 3 cards (My Updated Post, React with TypeScript, Complete Guide to Modern Web Development)
+3. Clicked "React with TypeScript" related post card — navigated to /posts/react-with-typescript (AC5 PASS)
+4. Navigated to /posts/my-travel-blog (Life category, unique tag "tips") — Related Posts section NOT rendered (AC3 PASS)
+5. Screenshots saved to .prizmkit/specs/011-related-posts/
+Result: PASS
+Server cleanup: confirmed
+Browser cleanup: confirmed
+
+## Acceptance Criteria Verification
+- [x] AC1: 3 related post cards displayed for post with shared tags
+- [x] AC2: Category fallback works (posts in same category shown when tag matches insufficient)
+- [x] AC3: Section not rendered when no related posts exist
+- [x] AC4: Only top 3 by relevance shown
+- [x] AC5: Clicking related post navigates to its page
+- [x] AC6: Server-side rendered (SSG with revalidate=3600, no client-side fetch)
