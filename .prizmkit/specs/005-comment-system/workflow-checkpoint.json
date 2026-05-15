@@ -1,0 +1,64 @@
+{
+  "version": 1,
+  "workflow_type": "feature-pipeline",
+  "pipeline_mode": "lite",
+  "item_id": "F-005",
+  "item_slug": "005-comment-system",
+  "session_id": "F-005-20260515101106",
+  "steps": [
+    {
+      "id": "S01",
+      "skill": "context-snapshot",
+      "name": "Build Context Snapshot",
+      "status": "pending",
+      "required_artifacts": [
+        ".prizmkit/specs/005-comment-system/context-snapshot.md"
+      ],
+      "depends_on": null
+    },
+    {
+      "id": "S02",
+      "skill": "prizmkit-plan",
+      "name": "Plan & Tasks",
+      "status": "pending",
+      "required_artifacts": [
+        ".prizmkit/specs/005-comment-system/plan.md"
+      ],
+      "depends_on": "S01"
+    },
+    {
+      "id": "S03",
+      "skill": "prizmkit-implement",
+      "name": "Implement + Test",
+      "status": "pending",
+      "required_artifacts": [],
+      "depends_on": "S02"
+    },
+    {
+      "id": "S04",
+      "skill": "browser-verification",
+      "name": "Browser Verification",
+      "status": "pending",
+      "required_artifacts": [],
+      "depends_on": "S03"
+    },
+    {
+      "id": "S05",
+      "skill": "prizmkit-retrospective",
+      "name": "Retrospective",
+      "status": "pending",
+      "required_artifacts": [],
+      "depends_on": "S04"
+    },
+    {
+      "id": "S06",
+      "skill": "prizmkit-committer",
+      "name": "Commit",
+      "status": "pending",
+      "required_artifacts": [
+        "--headless"
+      ],
+      "depends_on": "S05"
+    }
+  ]
+}

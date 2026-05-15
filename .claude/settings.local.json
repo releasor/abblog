@@ -80,7 +80,8 @@
       "Bash(jq '\\(.features[] | select\\(.id == \"F-003\"\\)\\) |= \\(.status = \"pending\"\\)' .prizmkit/plans/feature-list.json)",
       "Bash(mv /tmp/fl.json .prizmkit/plans/feature-list.json)",
       "Bash(jq '\\(.features[] | select\\(.id == \"F-003\"\\)\\) |= \\(.status = \"completed\"\\)' .prizmkit/plans/feature-list.json)",
-      "Bash(pkill -f \"claude.*F-006\")"
+      "Bash(pkill -f \"claude.*F-006\")",
+      "Bash(kill -9 53541)"
     ],
     "additionalDirectories": [
       "C:\\Users\\81097\\AppData\\Local\\ms-playwright\\__dirlock"
