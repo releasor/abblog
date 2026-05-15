@@ -49,7 +49,7 @@
       "dependencies": [
         "F-001"
       ],
-      "status": "failed",
+      "status": "completed",
       "critic": true,
       "critic_count": 3,
       "browser_interaction": {
@@ -81,7 +81,7 @@
       "dependencies": [
         "F-002"
       ],
-      "status": "auto_skipped",
+      "status": "pending",
       "critic": true,
       "critic_count": 3,
       "browser_interaction": {
@@ -114,7 +114,7 @@
       "dependencies": [
         "F-003"
       ],
-      "status": "auto_skipped",
+      "status": "pending",
       "critic": true,
       "critic_count": 1,
       "browser_interaction": {
@@ -145,7 +145,7 @@
       "dependencies": [
         "F-003"
       ],
-      "status": "auto_skipped",
+      "status": "pending",
       "critic": true,
       "critic_count": 1,
       "browser_interaction": {
@@ -178,7 +178,7 @@
       "dependencies": [
         "F-003"
       ],
-      "status": "auto_skipped",
+      "status": "pending",
       "critic": true,
       "critic_count": 3,
       "browser_interaction": {
@@ -211,7 +211,7 @@
         "F-003",
         "F-004"
       ],
-      "status": "auto_skipped",
+      "status": "pending",
       "critic": true,
       "critic_count": 1,
       "browser_interaction": {
@@ -243,7 +243,7 @@
       "dependencies": [
         "F-006"
       ],
-      "status": "auto_skipped",
+      "status": "pending",
       "critic": true,
       "critic_count": 1,
       "browser_interaction": {
@@ -274,7 +274,7 @@
         "F-001",
         "F-002"
       ],
-      "status": "auto_skipped",
+      "status": "pending",
       "critic": true,
       "critic_count": 1,
       "browser_interaction": {
@@ -306,7 +306,7 @@
         "F-002",
         "F-003"
       ],
-      "status": "auto_skipped",
+      "status": "pending",
       "critic": true,
       "critic_count": 1,
       "browser_interaction": {
@@ -338,7 +338,7 @@
         "F-003",
         "F-004"
       ],
-      "status": "auto_skipped",
+      "status": "pending",
       "critic": false,
       "browser_interaction": {
         "tool": "auto",
@@ -368,7 +368,7 @@
       "dependencies": [
         "F-006"
       ],
-      "status": "auto_skipped",
+      "status": "pending",
       "critic": false,
       "browser_interaction": {
         "tool": "auto",
