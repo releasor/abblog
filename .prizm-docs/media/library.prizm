@@ -1,0 +1,18 @@
+MODULE: media/library
+FILES: src/app/api/media/route.ts
+RESPONSIBILITY: GET /api/media — lists uploaded images with metadata for admin media gallery
+KEY_FILES:
+- src/app/api/media/route.ts: media listing endpoint, 42 lines, low complexity
+DEPENDENCIES:
+- uses: next-auth: getServerSession for admin auth
+- uses: fs/promises: readdir, stat for directory scanning
+- imports: src/lib/auth: authOptions
+INTERFACES:
+- GET /api/media: returns array of { filename, url, size, createdAt } sorted by newest first
+TRAPS:
+- [LOW] Empty or missing uploads dir returns empty array (catches ENOENT) | FIX: try/catch around readdir returns []
+DECISIONS:
+- Scan filesystem directly instead of database — no schema change needed for file metadata
+- Sort by birthtime descending — newest uploads appear first
+CHANGELOG:
+- F-010 | add: initial media listing API

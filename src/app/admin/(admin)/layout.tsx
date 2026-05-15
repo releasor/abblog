@@ -10,6 +10,7 @@ const navLinks = [
   { href: "/admin/categories", label: "Categories" },
   { href: "/admin/tags", label: "Tags" },
   { href: "/admin/comments", label: "Comments" },
+  { href: "/admin/media", label: "Media" },
   { href: "/admin/settings", label: "Settings" },
 ];
 

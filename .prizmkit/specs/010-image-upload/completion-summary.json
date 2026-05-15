@@ -1,0 +1,12 @@
+{
+  "completion_notes": [
+    "POST /api/upload endpoint in src/app/api/upload/route.ts — accepts FormData with image file, returns { url }",
+    "GET /api/media endpoint in src/app/api/media/route.ts — returns array of uploaded image metadata",
+    "ImageUpload component in src/components/image-upload.tsx — drag-and-drop zone with preview and progress",
+    "Media admin page at /admin/media in src/app/admin/(admin)/media/page.tsx — image grid with copy-URL",
+    "post-form.tsx updated to use ImageUpload component for cover image instead of text input",
+    "Admin sidebar in layout.tsx now includes Media nav link at /admin/media",
+    "Upload constraints: allowed types JPEG/PNG/GIF/WebP, max 5MB, crypto-random filenames",
+    "public/uploads/ directory auto-created on first upload, already in .gitignore"
+  ]
+}

@@ -1,0 +1,7 @@
+MODULE: media
+FILES: src/app/api/upload/route.ts, src/app/api/media/route.ts
+RESPONSIBILITY: image upload API and media library listing — file validation, storage, directory scanning
+DEPENDENCIES:
+- uses: next-auth: session validation for admin-only access
+- uses: fs/promises: file system operations (writeFile, mkdir, readdir, stat)
+- imports: src/lib/auth: authOptions for getServerSession

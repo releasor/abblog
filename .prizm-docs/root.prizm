@@ -13,6 +13,7 @@ MODULE_INDEX:
 - components [ui, react, tiptap, header, footer, dark-mode]: src/components/ — reusable UI components including layout, theme, and editor
 - lib [utils, helpers, prisma, slugify, reading-time]: src/lib/ — utility functions, Prisma client, slugify, reading time
 - prisma [database, schema, seed]: prisma/ — database schema, migrations, and seed script
+- media [upload, image, files]: src/app/api/upload/, src/app/api/media/ — image upload and media library API
 RULES:
 - TypeScript fullstack project with Next.js (App Router)
 - Tailwind CSS v4 (CSS-based config, no tailwind.config.ts)

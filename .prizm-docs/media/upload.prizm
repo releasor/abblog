@@ -1,0 +1,23 @@
+MODULE: media/upload
+FILES: src/app/api/upload/route.ts
+RESPONSIBILITY: POST /api/upload — accepts multipart image uploads, validates type/size, saves to public/uploads/
+KEY_FILES:
+- src/app/api/upload/route.ts: upload endpoint, 68 lines, moderate (file validation + sanitization)
+DEPENDENCIES:
+- uses: next-auth: getServerSession for admin auth
+- uses: fs/promises: writeFile, mkdir for file storage
+- uses: crypto: randomBytes for unique filename generation
+- imports: src/lib/auth: authOptions
+INTERFACES:
+- POST /api/upload: accepts FormData with "file" field, returns { url: string } with public path
+ALLOWED_TYPES: image/jpeg, image/png, image/gif, image/webp
+MAX_SIZE: 5MB (5 * 1024 * 1024)
+FILENAME_PATTERN: ${timestamp}-${randomHex8}.${ext} (ext derived from MIME type, not user input)
+TRAPS:
+- [HIGH] Filename extension derived from MIME type map, not user-supplied filename | FIX: EXT_MAP object maps MIME to extension
+- [LOW] path.basename double-check prevents directory traversal even if filename generation logic changes | FIX: sanitized !== filename check
+DECISIONS:
+- Use crypto.randomBytes(8) over Math.random() for filename uniqueness — cryptographic randomness prevents collisions under concurrent uploads
+- Extension from MIME type not original filename — prevents extension spoofing attacks
+CHANGELOG:
+- F-010 | add: initial upload API with auth, validation, sanitization

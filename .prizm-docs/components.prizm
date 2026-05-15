@@ -1,5 +1,5 @@
 MODULE: components
-FILES: src/components/header.tsx, src/components/footer.tsx, src/components/dark-mode-toggle.tsx, src/components/theme-provider.tsx, src/components/post-card.tsx, src/components/pagination.tsx, src/components/post-form.tsx, src/components/tiptap-editor.tsx
+FILES: src/components/header.tsx, src/components/footer.tsx, src/components/dark-mode-toggle.tsx, src/components/theme-provider.tsx, src/components/post-card.tsx, src/components/pagination.tsx, src/components/post-form.tsx, src/components/tiptap-editor.tsx, src/components/image-upload.tsx
 RESPONSIBILITY: reusable UI components — site layout (header/footer), dark mode, post cards, pagination, forms, editor
 DEPENDENCIES:
 - uses: @tiptap/react: rich text editor

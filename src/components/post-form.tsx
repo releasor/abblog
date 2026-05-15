@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import TiptapEditor from "./tiptap-editor";
+import ImageUpload from "./image-upload";
 import { slugify } from "@/lib/slugify";
 
 interface Category {
@@ -184,16 +185,10 @@ export default function PostForm({ mode, initialData }: PostFormProps) {
       </div>
 
       <div>
-        <label htmlFor="coverImage" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
-          Cover Image URL
+        <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+          Cover Image
         </label>
-        <input
-          id="coverImage"
-          type="text"
-          value={coverImageUrl}
-          onChange={(e) => setCoverImageUrl(e.target.value)}
-          className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500"
-        />
+        <ImageUpload value={coverImageUrl} onChange={setCoverImageUrl} />
       </div>
 
       <div className="grid grid-cols-2 gap-4">

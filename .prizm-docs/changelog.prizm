@@ -15,3 +15,9 @@ CHANGELOG:
 - F-004 | add: public categories list and category posts pages
 - F-007 | add: full-text search with MySQL FULLTEXT index, relevance sorting, highlighted snippets
 - F-007 | add: search API endpoint, results page, expandable header search input with suggestions
+- F-010 | add: POST /api/upload with auth, MIME validation, size limit, crypto-random filenames
+- F-010 | add: GET /api/media listing uploaded images with metadata
+- F-010 | add: ImageUpload component with drag-and-drop, preview, progress, error display
+- F-010 | add: /admin/media page with image grid, thumbnails, copy-URL
+- F-010 | update: post-form.tsx to use ImageUpload for cover image
+- F-010 | update: admin sidebar with Media nav link
