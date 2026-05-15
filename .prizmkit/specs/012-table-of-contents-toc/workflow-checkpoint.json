@@ -1,0 +1,64 @@
+{
+  "version": 1,
+  "workflow_type": "feature-pipeline",
+  "pipeline_mode": "lite",
+  "item_id": "F-012",
+  "item_slug": "012-table-of-contents-toc",
+  "session_id": "F-012-20260515120707",
+  "steps": [
+    {
+      "id": "S01",
+      "skill": "context-snapshot",
+      "name": "Build Context Snapshot",
+      "status": "completed",
+      "required_artifacts": [
+        ".prizmkit/specs/012-table-of-contents-toc/context-snapshot.md"
+      ],
+      "depends_on": null
+    },
+    {
+      "id": "S02",
+      "skill": "prizmkit-plan",
+      "name": "Plan & Tasks",
+      "status": "completed",
+      "required_artifacts": [
+        ".prizmkit/specs/012-table-of-contents-toc/plan.md"
+      ],
+      "depends_on": "S01"
+    },
+    {
+      "id": "S03",
+      "skill": "prizmkit-implement",
+      "name": "Implement + Test",
+      "status": "completed",
+      "required_artifacts": [],
+      "depends_on": "S02"
+    },
+    {
+      "id": "S04",
+      "skill": "browser-verification",
+      "name": "Browser Verification",
+      "status": "in_progress",
+      "required_artifacts": [],
+      "depends_on": "S03"
+    },
+    {
+      "id": "S05",
+      "skill": "prizmkit-retrospective",
+      "name": "Retrospective",
+      "status": "pending",
+      "required_artifacts": [],
+      "depends_on": "S04"
+    },
+    {
+      "id": "S06",
+      "skill": "prizmkit-committer",
+      "name": "Commit",
+      "status": "pending",
+      "required_artifacts": [
+        "--headless"
+      ],
+      "depends_on": "S05"
+    }
+  ]
+}

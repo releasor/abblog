@@ -6,10 +6,12 @@ import { prisma } from "@/lib/prisma";
 import { estimateReadingTime } from "@/lib/reading-time";
 import { absoluteUrl } from "@/lib/site-url";
 import { getRelatedPosts } from "@/lib/related-posts";
+import { injectHeadingIds, extractHeadings, countWords } from "@/lib/toc";
 import { PostContent } from "./post-content";
 import { CommentList } from "@/components/comment-list";
 import { CommentForm } from "@/components/comment-form";
 import { RelatedPosts } from "@/components/related-posts";
+import { TableOfContents } from "@/components/table-of-contents";
 
 export const revalidate = 3600;
 
@@ -88,6 +90,10 @@ export default async function PublicPostPage({ params }: PageProps) {
   }
 
   const readingTime = estimateReadingTime(post.content);
+  const wordCount = countWords(post.content);
+  const processedContent = injectHeadingIds(post.content);
+  const headings = extractHeadings(processedContent);
+  const showToc = wordCount >= 1500 && headings.length > 0;
 
   const relatedPosts = await getRelatedPosts(post.id);
 
@@ -119,7 +125,9 @@ export default async function PublicPostPage({ params }: PageProps) {
   };
 
   return (
-    <article className="max-w-3xl mx-auto px-4 py-12">
+    <div className="max-w-5xl mx-auto px-4 py-12">
+      <div className="flex gap-8">
+      <article className="max-w-3xl flex-1 min-w-0">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -183,7 +191,7 @@ export default async function PublicPostPage({ params }: PageProps) {
         </p>
       )}
 
-      <PostContent content={post.content} />
+      <PostContent content={processedContent} />
 
       <section className="mt-12 pt-8 border-t border-zinc-200 dark:border-zinc-800">
         <CommentList postId={post.id} />
@@ -194,5 +202,8 @@ export default async function PublicPostPage({ params }: PageProps) {
 
       <RelatedPosts posts={relatedPosts} />
     </article>
+    {showToc && <TableOfContents headings={headings} />}
+      </div>
+    </div>
   );
 }
