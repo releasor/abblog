@@ -178,7 +178,7 @@
       "dependencies": [
         "F-003"
       ],
-      "status": "pending",
+      "status": "in_progress",
       "critic": true,
       "critic_count": 3,
       "browser_interaction": {
