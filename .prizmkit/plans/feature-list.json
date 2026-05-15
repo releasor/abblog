@@ -338,7 +338,7 @@
         "F-003",
         "F-004"
       ],
-      "status": "pending",
+      "status": "in_progress",
       "critic": false,
       "browser_interaction": {
         "tool": "auto",
