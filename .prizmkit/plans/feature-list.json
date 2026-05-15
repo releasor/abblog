@@ -368,7 +368,7 @@
       "dependencies": [
         "F-006"
       ],
-      "status": "in_progress",
+      "status": "completed",
       "critic": false,
       "browser_interaction": {
         "tool": "auto",
