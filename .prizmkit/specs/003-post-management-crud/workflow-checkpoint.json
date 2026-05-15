@@ -38,7 +38,7 @@
       "id": "S04",
       "skill": "browser-verification",
       "name": "Browser Verification",
-      "status": "in_progress",
+      "status": "completed",
       "required_artifacts": [],
       "depends_on": "S03"
     },
@@ -46,7 +46,7 @@
       "id": "S05",
       "skill": "prizmkit-retrospective",
       "name": "Retrospective",
-      "status": "pending",
+      "status": "in_progress",
       "required_artifacts": [],
       "depends_on": "S04"
     },
