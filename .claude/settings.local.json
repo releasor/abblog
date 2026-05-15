@@ -78,7 +78,8 @@
       "Bash(git commit *)",
       "Bash(rm -rf .prizmkit/state/features/features/F-003)",
       "Bash(jq '\\(.features[] | select\\(.id == \"F-003\"\\)\\) |= \\(.status = \"pending\"\\)' .prizmkit/plans/feature-list.json)",
-      "Bash(mv /tmp/fl.json .prizmkit/plans/feature-list.json)"
+      "Bash(mv /tmp/fl.json .prizmkit/plans/feature-list.json)",
+      "Bash(jq '\\(.features[] | select\\(.id == \"F-003\"\\)\\) |= \\(.status = \"completed\"\\)' .prizmkit/plans/feature-list.json)"
     ],
     "additionalDirectories": [
       "C:\\Users\\81097\\AppData\\Local\\ms-playwright\\__dirlock"

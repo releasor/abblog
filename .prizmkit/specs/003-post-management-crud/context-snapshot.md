@@ -22,23 +22,36 @@ Build the complete blog post management system accessible from the admin panel. 
 ```
 prizm-docs/
 prisma/
-public/
+  schema.prisma
+  seed.ts
 src/
   app/
     admin/
       (admin)/
-        dashboard/
+        dashboard/page.tsx
         layout.tsx
-      login/
+        posts/
+          page.tsx
+          new/page.tsx
+          [id]/edit/page.tsx
+      login/page.tsx
     api/
-      auth/
+      auth/[...nextauth]/route.ts
+      categories/route.ts
+      posts/route.ts
+      posts/[id]/route.ts
+      tags/route.ts
+    posts/[slug]/page.tsx
     layout.tsx
     page.tsx
     providers.tsx
   components/
+    post-form.tsx
+    tiptap-editor.tsx
   lib/
     auth.ts
     prisma.ts
+    slugify.ts
   middleware.ts
 ```
 
@@ -54,9 +67,23 @@ MODULE_INDEX:
 - app [routing, pages, layout]: src/app/ — Next.js App Router pages and layouts
 - auth [nextauth, login, middleware, session]: src/lib/auth.ts, middleware.ts — NextAuth.js authentication, route protection
 - admin [dashboard, layout, sidebar]: src/app/admin/ — admin panel pages and layout with sidebar nav
-- components [ui, react]: src/components/ — reusable UI components (empty, ready for use)
-- lib [utils, helpers, prisma]: src/lib/ — utility functions and Prisma client singleton
+- posts [crud, api, editor, tiptap]: src/app/api/posts/, src/app/admin/(admin)/posts/, src/app/posts/ — post CRUD API, admin UI, public view
+- components [ui, react, tiptap]: src/components/ — reusable UI components including tiptap editor
+- lib [utils, helpers, prisma, slugify]: src/lib/ — utility functions, Prisma client, slugify
 - prisma [database, schema, seed]: prisma/ — database schema, migrations, and seed script
+
+### posts.prizm (L1)
+MODULE: posts
+FILES: src/app/api/posts/route.ts, src/app/api/posts/[id]/route.ts, src/app/api/categories/route.ts, src/app/api/tags/route.ts, src/app/admin/(admin)/posts/page.tsx, src/app/admin/(admin)/posts/new/page.tsx, src/app/admin/(admin)/posts/[id]/edit/page.tsx, src/app/posts/[slug]/page.tsx, src/components/post-form.tsx, src/components/tiptap-editor.tsx, src/lib/slugify.ts
+RESPONSIBILITY: blog post CRUD — API routes, admin list/create/edit pages, public post viewer, rich text editor
+
+### posts-api.prizm (L2)
+INTERFACES: GET/POST /api/posts, GET/PUT/DELETE /api/posts/[id], GET /api/categories, GET/POST /api/tags
+TRAPS: Session user id cast, slugify unicode handling
+
+### posts-ui.prizm (L2)
+INTERFACES: PostForm (mode, initialData), TiptapEditor (content, onChange)
+TRAPS: Server component direct prisma query, tags multi-select scalability
 
 ### admin.prizm
 MODULE: admin
@@ -572,6 +599,49 @@ main()
   )
   .finally(() => prisma.$disconnect());
 ```
+
+### src/lib/slugify.ts (9 lines)
+```ts
+export function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, "")
+    .replace(/[\s_]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+```
+
+### src/app/api/posts/route.ts (103 lines)
+GET: pagination (page, limit), status filter, sortBy/sortOrder. Returns {posts, pagination}. POST: auth required, slug from body or auto-generated, sets publishedAt if PUBLISHED, connects tags.
+
+### src/app/api/posts/[id]/route.ts (139 lines)
+GET: single post with category, tags, author. PUT: auth required, slug update check, publishedAt on status transition, tag replacement. DELETE: auth required, cascade via Prisma schema onDelete: Cascade.
+
+### src/app/api/categories/route.ts (9 lines)
+GET: list all categories ordered by name.
+
+### src/app/api/tags/route.ts (31 lines)
+GET: list all tags. POST: create tag with auto-slug, dedup by slug.
+
+### src/app/admin/(admin)/posts/page.tsx (237 lines)
+Client component. Table with title, status badge, category, published date, edit/delete actions. Status filter buttons (All/Draft/Published). Sort dropdown. Pagination with page buttons.
+
+### src/app/admin/(admin)/posts/new/page.tsx (14 lines)
+Wraps PostForm in create mode.
+
+### src/app/admin/(admin)/posts/[id]/edit/page.tsx (77 lines)
+Fetches post by ID, wraps PostForm in edit mode with initialData.
+
+### src/components/post-form.tsx (312 lines)
+Shared form: title, slug (auto-gen with slugEditable flag), TiptapEditor, excerpt, coverImageUrl, category dropdown, tags multi-select with inline create, status toggle (Draft/Published). Submit to create/update API.
+
+### src/components/tiptap-editor.tsx (100 lines)
+Tiptap wrapper with StarterKit, Link, Image, Placeholder extensions. Toolbar: bold, italic, H2, H3, code block, link, image, list.
+
+### src/app/posts/[slug]/page.tsx (94 lines)
+Server component. Queries post by slug, returns 404 if not found or not PUBLISHED. Renders title, date, category, author, tags, cover image, excerpt, content HTML.
 
 ## Section 5 — Existing Tests
 

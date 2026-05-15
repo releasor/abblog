@@ -87,7 +87,7 @@ model Comment {
   status      CommentStatus @default(PENDING)
   createdAt   DateTime      @default(now()) @map("created_at")
 
-  post Post @relation(fields: [postId], references: [id])
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
 
   @@map("comments")
 }
