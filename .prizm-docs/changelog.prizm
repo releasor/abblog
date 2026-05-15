@@ -10,3 +10,6 @@ CHANGELOG:
 - F-006 | add: reader-friendly UI with header, footer, dark mode, responsive grid
 - F-006 | add: post listing page, tag page, about page, reading time utility
 - F-006 | add: syntax highlighting with highlight.js for code blocks
+- F-004 | add: categories/tags CRUD API with validation, post counts, cascade delete
+- F-004 | add: admin categories/tags pages with inline create/edit/delete
+- F-004 | add: public categories list and category posts pages

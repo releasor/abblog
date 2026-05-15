@@ -1,0 +1,12 @@
+{
+  "completion_notes": [
+    "Categories CRUD API: GET/POST /api/categories, GET/PUT/DELETE /api/categories/[id] with auth, validation, _count",
+    "Tags CRUD API: GET/POST /api/tags, GET/PUT/DELETE /api/tags/[id] with auth, validation, _count",
+    "Admin categories page: /admin/categories with inline create/edit/delete and post counts",
+    "Admin tags page: /admin/tags with inline create/edit/delete and post counts",
+    "Public categories page: /categories listing all categories with post counts",
+    "Category posts page: /categories/[slug] showing published posts in a category",
+    "Category delete disassociates posts (categoryId set to null) before deletion",
+    "Validation: category/tag name 1-50 chars, unique slug, 'Category already exists' error"
+  ]
+}

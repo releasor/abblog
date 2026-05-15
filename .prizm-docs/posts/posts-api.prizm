@@ -1,15 +1,17 @@
 MODULE: posts/api
-FILES: src/app/api/posts/route.ts, src/app/api/posts/[id]/route.ts, src/app/api/categories/route.ts, src/app/api/tags/route.ts, src/lib/slugify.ts
-RESPONSIBILITY: post CRUD API endpoints, category/tag read endpoints, slug utility
+FILES: src/app/api/posts/route.ts, src/app/api/posts/[id]/route.ts, src/app/api/categories/route.ts, src/app/api/categories/[id]/route.ts, src/app/api/tags/route.ts, src/app/api/tags/[id]/route.ts, src/lib/slugify.ts
+RESPONSIBILITY: post CRUD API, categories/tags CRUD API with validation, slug utility
 KEY_FILES:
 - src/app/api/posts/route.ts: GET list with pagination/filtering/sorting, POST create with auth
 - src/app/api/posts/[id]/route.ts: GET/PUT/DELETE single post with auth, cascade delete
-- src/app/api/categories/route.ts: GET categories for dropdown
-- src/app/api/tags/route.ts: GET/POST tags for multi-select
+- src/app/api/categories/route.ts: GET categories with post counts, POST create with auth/validation
+- src/app/api/categories/[id]/route.ts: GET/PUT/DELETE single category with auth, disassociates posts on delete
+- src/app/api/tags/route.ts: GET tags with post counts, POST create with auth/validation
+- src/app/api/tags/[id]/route.ts: GET/PUT/DELETE single tag with auth, PostTag cascade on delete
 - src/lib/slugify.ts: URL-friendly slug generation from title
 DEPENDENCIES:
 - uses: next-auth: getServerSession for API auth
-- uses: @prisma/client: ORM queries with includes
+- uses: @prisma/client: ORM queries with includes and _count
 - imports: src/lib/prisma: Prisma singleton
 - imports: src/lib/slugify: slugify function
 INTERFACES:
@@ -18,11 +20,21 @@ INTERFACES:
 - GET /api/posts/[id]: read single post with category, tags, author
 - PUT /api/posts/[id]: update post — requires auth, partial body
 - DELETE /api/posts/[id]: delete post — requires auth, cascades to PostTag and Comment
-- GET /api/categories: list all categories
-- GET /api/tags: list all tags
-- POST /api/tags: create tag — body: {name}
+- GET /api/categories: list all categories with _count.posts
+- POST /api/categories: create category — requires auth, body: {name}, validates 1-50 chars, auto-slug, unique check
+- GET /api/categories/[id]: read single category with post count
+- PUT /api/categories/[id]: update category — requires auth, body: {name}, validates uniqueness
+- DELETE /api/categories/[id]: delete category — requires auth, sets post.categoryId to null first
+- GET /api/tags: list all tags with _count.posts
+- POST /api/tags: create tag — requires auth, body: {name}, validates 1-50 chars, auto-slug
+- GET /api/tags/[id]: read single tag with post count
+- PUT /api/tags/[id]: update tag — requires auth, body: {name}, validates uniqueness
+- DELETE /api/tags/[id]: delete tag — requires auth, PostTag entries cascade-deleted
 TRAPS:
 - [LOW] Session user id accessed via (session.user as {id?: string}).id cast — next-auth default type lacks id field | FIX: cast to {id?: string} in all API routes
 - [LOW] slugify uses regex replace chain — may not handle unicode/emoji correctly | FIX: acceptable for English-only blog content
+- [LOW] Category delete disassociates posts before deleting — two DB operations not in a transaction | FIX: acceptable for single-user blog, low concurrency
 CHANGELOG:
 - root | add: initial posts API with CRUD, pagination, filtering, sorting
+- F-004 | add: categories CRUD API with post counts, validation, post disassociation
+- F-004 | add: tags CRUD API with post counts, validation, cascade delete

@@ -8,6 +8,7 @@ const navLinks = [
   { href: "/admin/dashboard", label: "Dashboard" },
   { href: "/admin/posts", label: "Posts" },
   { href: "/admin/categories", label: "Categories" },
+  { href: "/admin/tags", label: "Tags" },
   { href: "/admin/comments", label: "Comments" },
   { href: "/admin/settings", label: "Settings" },
 ];

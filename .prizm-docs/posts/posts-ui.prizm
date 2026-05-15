@@ -1,14 +1,18 @@
 MODULE: posts/ui
-FILES: src/app/admin/(admin)/posts/page.tsx, src/app/admin/(admin)/posts/new/page.tsx, src/app/admin/(admin)/posts/[id]/edit/page.tsx, src/app/posts/page.tsx, src/app/posts/[slug]/page.tsx, src/app/posts/[slug]/post-content.tsx, src/app/tags/[slug]/page.tsx, src/components/post-form.tsx, src/components/post-card.tsx, src/components/pagination.tsx, src/components/tiptap-editor.tsx
-RESPONSIBILITY: post admin UI (list, create, edit), public post viewer with syntax highlighting, post listing with pagination, tag-filtered post views
+FILES: src/app/admin/(admin)/posts/page.tsx, src/app/admin/(admin)/posts/new/page.tsx, src/app/admin/(admin)/posts/[id]/edit/page.tsx, src/app/admin/(admin)/categories/page.tsx, src/app/admin/(admin)/tags/page.tsx, src/app/posts/page.tsx, src/app/posts/[slug]/page.tsx, src/app/posts/[slug]/post-content.tsx, src/app/tags/[slug]/page.tsx, src/app/categories/page.tsx, src/app/categories/[slug]/page.tsx, src/components/post-form.tsx, src/components/post-card.tsx, src/components/pagination.tsx, src/components/tiptap-editor.tsx
+RESPONSIBILITY: post/category/tag admin UI, public post/category/tag viewers with syntax highlighting
 KEY_FILES:
 - src/app/admin/(admin)/posts/page.tsx: post list with table, status filter, sort dropdown, pagination
 - src/app/admin/(admin)/posts/new/page.tsx: create post page wrapping PostForm
 - src/app/admin/(admin)/posts/[id]/edit/page.tsx: edit post page wrapping PostForm with data fetch
+- src/app/admin/(admin)/categories/page.tsx: category list with inline create/edit/delete, post counts
+- src/app/admin/(admin)/tags/page.tsx: tag list with inline create/edit/delete, post counts
 - src/app/posts/page.tsx: public paginated post grid (12 per page), responsive 1/2/3 col layout
 - src/app/posts/[slug]/page.tsx: server component, public post view with cover image, reading time, clickable tag links
 - src/app/posts/[slug]/post-content.tsx: client component with highlight.js syntax highlighting for code blocks
 - src/app/tags/[slug]/page.tsx: posts filtered by tag slug, responsive grid layout
+- src/app/categories/page.tsx: public categories list with post counts, links to /categories/[slug]
+- src/app/categories/[slug]/page.tsx: posts filtered by category slug, responsive grid layout
 - src/components/post-card.tsx: post card — title, excerpt, category badge, date, reading time
 - src/components/pagination.tsx: page navigation controls with Previous/Next and numbered pages
 - src/components/post-form.tsx: shared create/edit form — title, slug auto-gen, tiptap editor, excerpt, cover image, category dropdown, tags multi-select, status toggle
@@ -33,5 +37,8 @@ TRAPS:
 - [LOW] Public post pages use server components with direct prisma query — no API layer | FIX: acceptable for read-only public pages
 - [LOW] Tags multi-select uses button toggle pattern — no search/filter for large tag sets | FIX: sufficient for small tag collections
 - [LOW] Post pages use force-dynamic to prevent static generation DB errors | FIX: required for DB-dependent pages without static fallback
+- [LOW] Admin category/tag pages are client components fetching via API — no SSR | FIX: acceptable for admin-only pages, requires auth
 CHANGELOG:
 - F-006 | add: public post listing, pagination, tag pages, reading time, syntax highlighting
+- F-004 | add: admin categories/tags pages with inline create/edit/delete
+- F-004 | add: public categories list and category posts pages

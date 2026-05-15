@@ -1,9 +1,9 @@
 MODULE: posts
-FILES: src/app/api/posts/route.ts, src/app/api/posts/[id]/route.ts, src/app/api/categories/route.ts, src/app/api/tags/route.ts, src/app/admin/(admin)/posts/page.tsx, src/app/admin/(admin)/posts/new/page.tsx, src/app/admin/(admin)/posts/[id]/edit/page.tsx, src/app/posts/page.tsx, src/app/posts/[slug]/page.tsx, src/app/posts/[slug]/post-content.tsx, src/app/tags/[slug]/page.tsx, src/components/post-form.tsx, src/components/post-card.tsx, src/components/pagination.tsx, src/components/tiptap-editor.tsx, src/lib/slugify.ts, src/lib/reading-time.ts
-RESPONSIBILITY: blog post CRUD — API routes, admin pages, public post viewer with syntax highlighting, tag pages, reading time
+FILES: src/app/api/posts/route.ts, src/app/api/posts/[id]/route.ts, src/app/api/categories/route.ts, src/app/api/categories/[id]/route.ts, src/app/api/tags/route.ts, src/app/api/tags/[id]/route.ts, src/app/admin/(admin)/posts/page.tsx, src/app/admin/(admin)/posts/new/page.tsx, src/app/admin/(admin)/posts/[id]/edit/page.tsx, src/app/admin/(admin)/categories/page.tsx, src/app/admin/(admin)/tags/page.tsx, src/app/posts/page.tsx, src/app/posts/[slug]/page.tsx, src/app/posts/[slug]/post-content.tsx, src/app/tags/[slug]/page.tsx, src/app/categories/page.tsx, src/app/categories/[slug]/page.tsx, src/components/post-form.tsx, src/components/post-card.tsx, src/components/pagination.tsx, src/components/tiptap-editor.tsx, src/lib/slugify.ts, src/lib/reading-time.ts
+RESPONSIBILITY: blog post/category/tag CRUD — API routes, admin pages, public post/category/tag viewers with syntax highlighting
 DEPENDENCIES:
 - uses: @tiptap/react: rich text editor for post content
-- uses: @prisma/client: database ORM for post queries
+- uses: @prisma/client: database ORM for queries
 - uses: highlight.js: syntax highlighting for code blocks in posts
 - imports: next-auth: session validation for API routes
 - imports: src/lib/prisma: Prisma client singleton

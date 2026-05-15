@@ -1,10 +1,13 @@
 MODULE: admin
-FILES: src/app/admin/layout.tsx, src/app/admin/login/page.tsx, src/app/admin/(admin)/dashboard/page.tsx
-RESPONSIBILITY: admin panel UI — login page, sidebar navigation layout, dashboard placeholder
+FILES: src/app/admin/layout.tsx, src/app/admin/login/page.tsx, src/app/admin/(admin)/layout.tsx, src/app/admin/(admin)/dashboard/page.tsx, src/app/admin/(admin)/posts/page.tsx, src/app/admin/(admin)/posts/new/page.tsx, src/app/admin/(admin)/posts/[id]/edit/page.tsx, src/app/admin/(admin)/categories/page.tsx, src/app/admin/(admin)/tags/page.tsx
+RESPONSIBILITY: admin panel UI — login page, sidebar navigation layout, dashboard, post/category/tag management pages
 KEY_FILES:
-- src/app/admin/login/page.tsx: client component, email/password form, signIn("credentials") with redirect:false, error display, ~91 lines
-- src/app/admin/(admin)/layout.tsx: client component, sidebar (w-64) with nav links, header with admin name + logout, ~76 lines
-- src/app/admin/(admin)/dashboard/page.tsx: placeholder dashboard page, ~12 lines
+- src/app/admin/login/page.tsx: client component, email/password form, signIn("credentials") with redirect:false, error display
+- src/app/admin/(admin)/layout.tsx: client component, sidebar (w-64) with nav links (Dashboard, Posts, Categories, Tags, Comments, Settings), header with admin name + logout
+- src/app/admin/(admin)/dashboard/page.tsx: placeholder dashboard page
+- src/app/admin/(admin)/posts/page.tsx: post list with table, status filter, sort, pagination
+- src/app/admin/(admin)/categories/page.tsx: category list with inline create/edit/delete, post counts
+- src/app/admin/(admin)/tags/page.tsx: tag list with inline create/edit/delete, post counts
 DEPENDENCIES:
 - uses: next-auth/react: useSession, signIn, signOut hooks
 - imports: next/navigation: useRouter, usePathname
@@ -12,11 +15,16 @@ INTERFACES:
 - AdminLoginPage: default export, standalone page (no admin layout wrapping)
 - AdminLayout: default export, wraps (admin) route group pages with sidebar + header
 - AdminDashboard: default export, placeholder dashboard content
+- AdminCategoriesPage: default export, client component with category CRUD
+- AdminTagsPage: default export, client component with tag CRUD
 TRAPS:
 - [HIGH] Login page MUST be outside the (admin) route group — otherwise it gets wrapped by admin layout with sidebar | FIX: keep login at src/app/admin/login/page.tsx, layout at src/app/admin/(admin)/layout.tsx
-- [LOW] Sidebar nav links use hardcoded paths (/admin/dashboard, /admin/posts, etc.) — update when adding new admin pages | FIX: add entries to navLinks array in layout.tsx
+- [LOW] Sidebar nav links use hardcoded paths — update when adding new admin pages | FIX: add entries to navLinks array in layout.tsx
 - [LOW] signOut callback URL is /admin/login — redirects after logout | FIX: signOut({ callbackUrl: "/admin/login" })
 CHANGELOG:
 - F-002 | add: admin login page with form and error handling
 - F-002 | add: admin layout with sidebar navigation and logout
 - F-002 | add: dashboard placeholder page
+- F-004 | add: admin categories page with inline create/edit/delete
+- F-004 | add: admin tags page with inline create/edit/delete
+- F-004 | add: Tags link to sidebar nav
