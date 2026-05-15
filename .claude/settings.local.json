@@ -70,7 +70,12 @@
       "Bash(git branch *)",
       "Bash(VERBOSE=1 ENABLE_CRITIC=true MAX_RETRIES=3 bash dev-pipeline/run-feature.sh resume .prizmkit/plans/feature-list.json)",
       "Bash(pkill -f \"run-feature.sh\")",
-      "Bash(pkill -f \"claude.*F-002\")"
+      "Bash(pkill -f \"claude.*F-002\")",
+      "Bash(jq '\\(.features[] | select\\(.id == \"F-002\"\\)\\) |= \\(.status = \"completed\"\\)' .prizmkit/plans/feature-list.json)",
+      "Bash(mv /tmp/feature-list-fixed.json .prizmkit/plans/feature-list.json)",
+      "Bash(jq '\\(.features[] | select\\(.status == \"auto_skipped\"\\)\\) |= \\(.status = \"pending\"\\)' .prizmkit/plans/feature-list.json)",
+      "Bash(rm -rf .prizmkit/state/features/features/F-00[3-9] .prizmkit/state/features/features/F-01[0-2])",
+      "Bash(git commit *)"
     ],
     "additionalDirectories": [
       "C:\\Users\\81097\\AppData\\Local\\ms-playwright\\__dirlock"
