@@ -1,0 +1,41 @@
+import { Metadata } from "next";
+import { prisma } from "@/lib/prisma";
+import { SeriesCard } from "@/components/series-card";
+
+export const metadata: Metadata = {
+  title: "系列文章",
+  description: "浏览所有系列文章",
+};
+
+export default async function SeriesPage() {
+  const series = await prisma.postSeries.findMany({
+    orderBy: { createdAt: "desc" },
+    include: {
+      user: { select: { name: true } },
+      _count: { select: { posts: true } },
+    },
+  });
+
+  return (
+    <main className="container mx-auto px-4 py-8">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100">系列文章</h1>
+        <p className="mt-2 text-zinc-600 dark:text-zinc-400">
+          浏览所有系列文章，系统地学习某个主题
+        </p>
+      </div>
+
+      {series.length === 0 ? (
+        <div className="text-center py-16">
+          <p className="text-zinc-500 dark:text-zinc-400">暂无系列文章</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {series.map((s) => (
+            <SeriesCard key={s.id} series={s} />
+          ))}
+        </div>
+      )}
+    </main>
+  );
+}

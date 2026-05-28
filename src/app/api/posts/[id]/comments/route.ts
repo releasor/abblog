@@ -1,19 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-
-// In-memory rate limit store: IP -> last submission timestamp
-const rateLimitMap = new Map<string, number>();
-const RATE_LIMIT_MS = 60_000; // 1 minute
-
-// Clean up old entries periodically
-setInterval(() => {
-  const now = Date.now();
-  for (const [ip, timestamp] of rateLimitMap) {
-    if (now - timestamp > RATE_LIMIT_MS * 2) {
-      rateLimitMap.delete(ip);
-    }
-  }
-}, RATE_LIMIT_MS * 5);
+import { createActivity } from "@/lib/activity";
+import { checkRateLimit, RATE_LIMITS, getRateLimitHeaders } from "@/lib/rate-limit";
 
 export async function GET(
   _request: NextRequest,
@@ -49,35 +39,30 @@ export async function POST(
     return NextResponse.json({ error: "Invalid post ID" }, { status: 400 });
   }
 
-  // Rate limiting by IP
-  const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
-  const now = Date.now();
-  const lastSubmission = rateLimitMap.get(ip);
-  if (lastSubmission && now - lastSubmission < RATE_LIMIT_MS) {
+  // Check if user is logged in
+  const session = await getServerSession(authOptions);
+  if (!session?.user) {
+    return NextResponse.json({ error: "请先登录" }, { status: 401 });
+  }
+
+  // Rate limiting
+  const userId_str = (session.user as { id?: string }).id || "unknown";
+  const rl = checkRateLimit(`comment:${userId_str}`, RATE_LIMITS.comment);
+  if (!rl.allowed) {
     return NextResponse.json(
-      { error: "Please wait before submitting another comment" },
-      { status: 429 }
+      { error: "评论太频繁，请稍后再试" },
+      { status: 429, headers: getRateLimitHeaders(rl) }
     );
   }
 
   const body = await request.json();
-  const { authorName, authorEmail, content } = body;
+  const { content } = body;
 
-  // Validation
-  if (!authorName || typeof authorName !== "string" || authorName.trim().length === 0) {
-    return NextResponse.json({ error: "Name is required" }, { status: 400 });
-  }
-  if (authorName.trim().length > 50) {
-    return NextResponse.json({ error: "Name must be 50 characters or less" }, { status: 400 });
-  }
-  if (!authorEmail || typeof authorEmail !== "string" || authorEmail.trim().length === 0) {
-    return NextResponse.json({ error: "Email is required" }, { status: 400 });
-  }
   if (!content || typeof content !== "string" || content.trim().length === 0) {
-    return NextResponse.json({ error: "Comment content is required" }, { status: 400 });
+    return NextResponse.json({ error: "请输入评论内容" }, { status: 400 });
   }
   if (content.trim().length > 1000) {
-    return NextResponse.json({ error: "Comment must be 1000 characters or less" }, { status: 400 });
+    return NextResponse.json({ error: "评论不能超过1000个字符" }, { status: 400 });
   }
 
   // Verify post exists and is published
@@ -86,24 +71,31 @@ export async function POST(
     select: { id: true, status: true },
   });
   if (!post || post.status !== "PUBLISHED") {
-    return NextResponse.json({ error: "Post not found" }, { status: 404 });
+    return NextResponse.json({ error: "文章不存在" }, { status: 404 });
+  }
+
+  const userId = parseInt((session.user as { id?: string }).id || "0");
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) {
+    return NextResponse.json({ error: "用户不存在" }, { status: 404 });
   }
 
   const comment = await prisma.comment.create({
     data: {
       postId,
-      authorName: authorName.trim(),
-      authorEmail: authorEmail.trim(),
+      userId: user.id,
+      authorName: user.name,
+      authorEmail: user.email,
       content: content.trim(),
-      status: "PENDING",
+      status: "APPROVED",
     },
   });
 
-  // Update rate limit
-  rateLimitMap.set(ip, now);
+  // Create activity
+  await createActivity(user.id, "COMMENT_ADDED", postId, { commentId: comment.id });
 
   return NextResponse.json(
-    { message: "Comment submitted for review", comment: { id: comment.id } },
+    { message: "评论发表成功", comment: { id: comment.id, authorName: user.name, content: comment.content, createdAt: comment.createdAt } },
     { status: 201 }
   );
 }

@@ -33,20 +33,19 @@ export default async function CategoryPage({ params }: PageProps) {
     <div className="max-w-6xl mx-auto px-4 py-12">
       <div className="mb-8">
         <p className="text-sm text-zinc-500 dark:text-zinc-500 mb-1">
-          Category
+          分类
         </p>
         <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100">
           {category.name}
         </h1>
         <p className="text-zinc-600 dark:text-zinc-400 mt-2">
-          {category.posts.length}{" "}
-          {category.posts.length === 1 ? "post" : "posts"}
+          {category.posts.length} 篇文章
         </p>
       </div>
 
       {category.posts.length === 0 ? (
         <p className="text-zinc-500 dark:text-zinc-500 text-center py-12">
-          No posts in this category yet.
+          此分类下暂无文章。
         </p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

@@ -15,11 +15,11 @@ export async function GET() {
 
   try {
     const files = await readdir(uploadsDir);
-    const imageExts = [".jpg", ".jpeg", ".png", ".gif", ".webp"];
+    const mediaExts = [".jpg", ".jpeg", ".png", ".gif", ".webp", ".mp4", ".webm"];
 
     const images = await Promise.all(
       files
-        .filter((f) => imageExts.includes(path.extname(f).toLowerCase()))
+        .filter((f) => mediaExts.includes(path.extname(f).toLowerCase()))
         .map(async (filename) => {
           const filepath = path.join(uploadsDir, filename);
           const fileStat = await stat(filepath);

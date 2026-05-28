@@ -1,0 +1,183 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
+import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
+import { UserAvatar } from "@/components/user-avatar";
+import { FollowButton } from "@/components/follow-button";
+
+interface UserProfile {
+  id: number;
+  name: string;
+  username: string | null;
+  avatar: string | null;
+  bio: string | null;
+  website: string | null;
+  location: string | null;
+  createdAt: string;
+  _count: { followers: number; following: number; posts: number; likes: number };
+}
+
+interface UserPost {
+  id: number;
+  title: string;
+  slug: string;
+  excerpt: string | null;
+  coverImageUrl: string | null;
+  publishedAt: string | null;
+  author?: { name: string } | null;
+  user?: { name: string; username: string } | null;
+}
+
+export default function UserProfilePage() {
+  const params = useParams();
+  const router = useRouter();
+  const { data: session } = useSession();
+  const username = params.username as string;
+
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [posts, setPosts] = useState<UserPost[]>([]);
+  const [tab, setTab] = useState<"posts" | "likes" | "bookmarks">("posts");
+  const [loading, setLoading] = useState(true);
+
+  const isOwn = session?.user && (session.user as { username?: string }).username === username;
+
+  useEffect(() => {
+    fetch(`/api/users/${username}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.error) {
+          router.push("/");
+          return;
+        }
+        setProfile(data);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, [username]);
+
+  useEffect(() => {
+    if (!profile) return;
+    fetch(`/api/users/${username}/posts?tab=${tab}`)
+      .then((res) => res.json())
+      .then(setPosts)
+      .catch(() => {});
+  }, [profile, tab]);
+
+  const formatDate = (date: string) => {
+    return new Date(date).toLocaleDateString("zh-CN", { year: "numeric", month: "long", day: "numeric" });
+  };
+
+  if (loading) {
+    return <div className="max-w-3xl mx-auto px-4 py-12 text-center text-zinc-500">加载中...</div>;
+  }
+
+  if (!profile) return null;
+
+  return (
+    <div className="max-w-3xl mx-auto px-4 py-12">
+      <div className="flex items-start gap-6 mb-8">
+        <UserAvatar name={profile.name} avatar={profile.avatar} size="xl" />
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-3 mb-2">
+            <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">{profile.name}</h1>
+            {!isOwn && session && profile.username && <FollowButton username={profile.username} />}
+            {!isOwn && session && (
+              <Link
+                href={`/messages?user=${profile.id}`}
+                className="px-3 py-1.5 text-sm bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+              >
+                私信
+              </Link>
+            )}
+            {isOwn && (
+              <Link
+                href="/settings"
+                className="px-3 py-1.5 text-sm bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+              >
+                编辑资料
+              </Link>
+            )}
+          </div>
+
+          {profile.username && (
+            <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-2">@{profile.username}</p>
+          )}
+
+          {profile.bio && (
+            <p className="text-sm text-zinc-700 dark:text-zinc-300 mb-3">{profile.bio}</p>
+          )}
+
+          <div className="flex flex-wrap items-center gap-4 text-sm text-zinc-500 dark:text-zinc-400">
+            {profile.location && <span>📍 {profile.location}</span>}
+            {profile.website && (
+              <a href={profile.website} target="_blank" rel="noopener noreferrer" className="hover:text-zinc-900 dark:hover:text-zinc-100">
+                🔗 {profile.website.replace(/^https?:\/\//, "")}
+              </a>
+            )}
+            <span>📅 {formatDate(profile.createdAt)} 加入</span>
+          </div>
+
+          <div className="flex gap-6 mt-4 text-sm">
+            <Link href={`/u/${username}/following`} className="hover:underline">
+              <span className="font-semibold text-zinc-900 dark:text-zinc-100">{profile._count.following}</span>
+              <span className="text-zinc-500 dark:text-zinc-400 ml-1">关注</span>
+            </Link>
+            <Link href={`/u/${username}/followers`} className="hover:underline">
+              <span className="font-semibold text-zinc-900 dark:text-zinc-100">{profile._count.followers}</span>
+              <span className="text-zinc-500 dark:text-zinc-400 ml-1">粉丝</span>
+            </Link>
+            <span>
+              <span className="font-semibold text-zinc-900 dark:text-zinc-100">{profile._count.posts}</span>
+              <span className="text-zinc-500 dark:text-zinc-400 ml-1">文章</span>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex gap-4 mb-6 border-b border-zinc-200 dark:border-zinc-800">
+        {(["posts", "likes", "bookmarks"] as const).map((t) => (
+          <button
+            key={t}
+            onClick={() => setTab(t)}
+            className={`pb-3 text-sm font-medium border-b-2 transition-colors ${tab === t ? "border-zinc-900 dark:border-zinc-100 text-zinc-900 dark:text-zinc-100" : "border-transparent text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"}`}
+          >
+            {t === "posts" ? "文章" : t === "likes" ? "点赞" : "收藏"}
+          </button>
+        ))}
+      </div>
+
+      <div className="space-y-4">
+        {posts.length === 0 ? (
+          <p className="text-center text-zinc-500 dark:text-zinc-400 py-12">
+            {tab === "posts" ? "暂无文章" : tab === "likes" ? "暂无点赞" : "暂无收藏"}
+          </p>
+        ) : (
+          posts.map((post) => (
+            <Link
+              key={post.id}
+              href={`/posts/${post.slug}`}
+              className="block p-4 rounded-lg border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-sm transition-all"
+            >
+              <h3 className="font-medium text-zinc-900 dark:text-zinc-100 mb-1">{post.title}</h3>
+              {post.excerpt && (
+                <p className="text-sm text-zinc-600 dark:text-zinc-400 line-clamp-2">{post.excerpt}</p>
+              )}
+              <div className="flex items-center gap-2 mt-2 text-xs text-zinc-500 dark:text-zinc-400">
+                {post.author && <span>{post.author.name}</span>}
+                {post.user && <span>{post.user.name}</span>}
+                {post.publishedAt && (
+                  <>
+                    <span>·</span>
+                    <span>{formatDate(post.publishedAt)}</span>
+                  </>
+                )}
+              </div>
+            </Link>
+          ))
+        )}
+      </div>
+    </div>
+  );
+}

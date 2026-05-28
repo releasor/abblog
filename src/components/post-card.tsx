@@ -12,8 +12,8 @@ interface PostCardProps {
 export function PostCard({ title, slug, excerpt, category, publishedAt, readingTime }: PostCardProps) {
   const formatDate = (date: Date | null) => {
     if (!date) return "";
-    return new Date(date).toLocaleDateString("en-US", {
-      month: "short",
+    return new Date(date).toLocaleDateString("zh-CN", {
+      month: "long",
       day: "numeric",
       year: "numeric",
     });
@@ -44,7 +44,7 @@ export function PostCard({ title, slug, excerpt, category, publishedAt, readingT
 
       <div className="flex items-center gap-3 text-xs text-zinc-500 dark:text-zinc-500">
         {publishedAt && <time dateTime={publishedAt.toISOString()}>{formatDate(publishedAt)}</time>}
-        <span>{readingTime} min read</span>
+        <span>{readingTime} 分钟阅读</span>
       </div>
     </Link>
   );

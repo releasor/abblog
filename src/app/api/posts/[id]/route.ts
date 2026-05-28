@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/slugify";
+import { createActivity } from "@/lib/activity";
 
 export async function GET(
   _request: NextRequest,
@@ -50,7 +51,7 @@ export async function PUT(
   }
 
   const body = await request.json();
-  const { title, content, excerpt, coverImageUrl, categoryId, tags, status } = body;
+  const { title, content, excerpt, coverImageUrl, categoryId, tags, status, isPinned, scheduledAt } = body;
 
   const existing = await prisma.post.findUnique({ where: { id: postId } });
   if (!existing) {
@@ -75,6 +76,25 @@ export async function PUT(
   }
 
   // If tags provided, replace all tags
+  // Auto-save version before updating if content or title changed
+  if ((content && content !== existing.content) || (title && title !== existing.title)) {
+    const latestVersion = await prisma.postVersion.findFirst({
+      where: { postId },
+      orderBy: { version: "desc" },
+      select: { version: true },
+    });
+    const nextVersion = (latestVersion?.version ?? 0) + 1;
+    await prisma.postVersion.create({
+      data: {
+        postId,
+        title: existing.title,
+        content: existing.content,
+        excerpt: existing.excerpt,
+        version: nextVersion,
+      },
+    });
+  }
+
   const tagUpdate = tags !== undefined
     ? {
         tags: {
@@ -96,6 +116,8 @@ export async function PUT(
       coverImageUrl: coverImageUrl !== undefined ? coverImageUrl || null : existing.coverImageUrl,
       status: isPublished ? "PUBLISHED" : "DRAFT",
       publishedAt,
+      isPinned: isPinned !== undefined ? Boolean(isPinned) : existing.isPinned,
+      scheduledAt: scheduledAt !== undefined ? (scheduledAt ? new Date(scheduledAt) : null) : existing.scheduledAt,
       categoryId: categoryId !== undefined ? (categoryId ? parseInt(categoryId) : null) : existing.categoryId,
       ...tagUpdate,
     },
@@ -104,6 +126,11 @@ export async function PUT(
       tags: { include: { tag: true } },
     },
   });
+
+  // Create activity when post is first published
+  if (isPublished && !wasPublished) {
+    await createActivity(parseInt(userId), "POST_PUBLISHED", postId, { title: post.title });
+  }
 
   return NextResponse.json({
     ...post,

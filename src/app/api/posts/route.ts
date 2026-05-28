@@ -3,6 +3,8 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/slugify";
+import { createActivity } from "@/lib/activity";
+import { addPoints, POINTS } from "@/lib/points";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -17,11 +19,13 @@ export async function GET(request: NextRequest) {
     where.status = status;
   }
 
-  const orderBy: Record<string, string> = {};
+  const orderBy: Record<string, string>[] = [];
   if (sortBy === "publishedAt" || sortBy === "createdAt" || sortBy === "title") {
-    orderBy[sortBy] = sortOrder;
+    orderBy.push({ isPinned: "desc" });
+    orderBy.push({ [sortBy]: sortOrder });
   } else {
-    orderBy.createdAt = "desc";
+    orderBy.push({ isPinned: "desc" });
+    orderBy.push({ createdAt: "desc" });
   }
 
   const [posts, total] = await Promise.all([
@@ -62,7 +66,7 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json();
-  const { title, content, excerpt, coverImageUrl, categoryId, tags, status } = body;
+  const { title, content, excerpt, coverImageUrl, categoryId, tags, status, isPinned, scheduledAt } = body;
 
   if (!title || !content) {
     return NextResponse.json({ error: "Title and content are required" }, { status: 400 });
@@ -85,6 +89,8 @@ export async function POST(request: NextRequest) {
       coverImageUrl: coverImageUrl || null,
       status: isPublished ? "PUBLISHED" : "DRAFT",
       publishedAt: isPublished ? new Date() : null,
+      isPinned: isPinned ? Boolean(isPinned) : false,
+      scheduledAt: scheduledAt ? new Date(scheduledAt) : null,
       authorId: parseInt(userId),
       categoryId: categoryId ? parseInt(categoryId) : null,
       tags: tags?.length
@@ -100,6 +106,11 @@ export async function POST(request: NextRequest) {
       tags: { include: { tag: true } },
     },
   });
+
+  if (isPublished) {
+    await createActivity(parseInt(userId), "POST_PUBLISHED", post.id, { title: post.title });
+    await addPoints(parseInt(userId), POINTS.POST_PUBLISHED);
+  }
 
   return NextResponse.json(post, { status: 201 });
 }

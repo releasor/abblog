@@ -5,6 +5,9 @@ import Providers from "./providers";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
+import { websiteSchema, organizationSchema } from "@/lib/structured-data";
+import { ToastProvider } from "@/components/toast";
+import { ErrorBoundary } from "@/components/error-boundary";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -17,8 +20,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "KitTest",
-  description: "A personal blog for developers",
+  title: "billionaire",
+  description: "一个面向开发者的个人博客",
 };
 
 export default function RootLayout({
@@ -28,18 +31,44 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
+      lang="zh-CN"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@graph": [websiteSchema(), organizationSchema()],
+            }),
+          }}
+        />
+      </head>
       <body className="min-h-full flex flex-col">
         <Providers>
           <ThemeProvider>
-            <Header />
-            <main className="flex-1">{children}</main>
-            <Footer />
+            <ToastProvider>
+              <ErrorBoundary>
+                <Header />
+                <main className="flex-1">{children}</main>
+                <Footer />
+              </ErrorBoundary>
+            </ToastProvider>
           </ThemeProvider>
         </Providers>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                  navigator.serviceWorker.register('/sw.js');
+                });
+              }
+            `,
+          }}
+        />
       </body>
     </html>
   );

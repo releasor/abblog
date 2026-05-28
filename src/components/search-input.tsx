@@ -59,6 +59,7 @@ export function SearchInput() {
         !containerRef.current.contains(e.target as Node)
       ) {
         setShowSuggestions(false);
+        setIsOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -89,41 +90,41 @@ export function SearchInput() {
 
   return (
     <div ref={containerRef} className="relative">
-      {!isOpen ? (
-        <button
-          onClick={handleOpen}
-          className="p-2 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
-          aria-label="Search"
+      <button
+        onClick={handleOpen}
+        className="p-2 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+        aria-label="搜索"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <circle cx="11" cy="11" r="8" />
-            <path d="m21 21-4.3-4.3" />
-          </svg>
-        </button>
-      ) : (
-        <form onSubmit={handleSubmit} className="relative">
+          <circle cx="11" cy="11" r="8" />
+          <path d="m21 21-4.3-4.3" />
+        </svg>
+      </button>
+
+      {isOpen && (
+        <form onSubmit={handleSubmit} className="absolute right-0 top-full mt-2 z-50">
           <input
             ref={inputRef}
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search posts..."
-            className="w-48 sm:w-64 px-3 py-1.5 pr-8 text-sm border border-zinc-300 dark:border-zinc-700 rounded-md bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500"
+            placeholder="搜索文章..."
+            className="w-48 sm:w-64 px-3 py-1.5 pr-8 text-sm border border-zinc-300 dark:border-zinc-700 rounded-md bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-lg focus:outline-none focus:ring-2 focus:ring-zinc-500"
           />
           <button
             type="submit"
             className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
-            aria-label="Submit search"
+            aria-label="提交搜索"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"

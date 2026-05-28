@@ -37,12 +37,12 @@ export default async function PostsPage({ searchParams }: PageProps) {
   return (
     <div className="max-w-6xl mx-auto px-4 py-12">
       <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-8">
-        All Posts
+        所有文章
       </h1>
 
       {posts.length === 0 ? (
         <p className="text-zinc-500 dark:text-zinc-500 text-center py-12">
-          No posts published yet.
+          暂无已发布的文章。
         </p>
       ) : (
         <>

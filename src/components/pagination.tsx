@@ -12,13 +12,13 @@ export function Pagination({ currentPage, totalPages, basePath }: PaginationProp
   const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
 
   return (
-    <nav className="flex items-center justify-center gap-1 mt-8" aria-label="Pagination">
+    <nav className="flex items-center justify-center gap-1 mt-8" aria-label="分页">
       {currentPage > 1 && (
         <Link
           href={`${basePath}?page=${currentPage - 1}`}
           className="px-3 py-1.5 text-sm border border-zinc-300 dark:border-zinc-700 rounded-md hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
         >
-          Previous
+          上一页
         </Link>
       )}
 
@@ -41,7 +41,7 @@ export function Pagination({ currentPage, totalPages, basePath }: PaginationProp
           href={`${basePath}?page=${currentPage + 1}`}
           className="px-3 py-1.5 text-sm border border-zinc-300 dark:border-zinc-700 rounded-md hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
         >
-          Next
+          下一页
         </Link>
       )}
     </nav>

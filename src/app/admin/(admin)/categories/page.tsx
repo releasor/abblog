@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { Folder, Plus, Pencil, Trash2, Check, X } from "lucide-react";
 
 interface Category {
   id: number;
@@ -54,18 +55,6 @@ export default function AdminCategoriesPage() {
     setCreating(false);
   };
 
-  const handleEdit = (category: Category) => {
-    setEditId(category.id);
-    setEditName(category.name);
-    setEditError("");
-  };
-
-  const handleCancelEdit = () => {
-    setEditId(null);
-    setEditName("");
-    setEditError("");
-  };
-
   const handleSave = async (id: number) => {
     setEditError("");
     setSaving(true);
@@ -88,41 +77,34 @@ export default function AdminCategoriesPage() {
   };
 
   const handleDelete = async (id: number) => {
-    if (
-      !confirm(
-        "Are you sure? Posts in this category will become uncategorized."
-      )
-    ) {
-      return;
-    }
+    if (!confirm("确定要删除此分类吗？该分类下的文章将变为未分类。")) return;
     setDeleteId(id);
     const res = await fetch(`/api/categories/${id}`, { method: "DELETE" });
-    if (res.ok) {
-      fetchCategories();
-    }
+    if (res.ok) fetchCategories();
     setDeleteId(null);
   };
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 mb-6">
-        Categories
+    <div className="space-y-6">
+      <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+        分类管理
       </h1>
 
-      {/* Inline create form */}
-      <form onSubmit={handleCreate} className="mb-6 flex gap-2 items-start">
+      <form onSubmit={handleCreate} className="flex items-start gap-3">
         <div className="flex-1 max-w-sm">
-          <input
-            type="text"
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
-            placeholder="New category name"
-            maxLength={50}
-            required
-            className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-500 dark:focus:ring-zinc-400"
-          />
+          <div className="relative">
+            <input
+              type="text"
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              placeholder="输入分类名称..."
+              maxLength={50}
+              required
+              className="w-full px-3 py-2.5 text-sm border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-200 dark:focus:ring-zinc-700 transition-shadow"
+            />
+          </div>
           {createError && (
-            <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+            <p className="mt-1.5 text-xs text-red-600 dark:text-red-400">
               {createError}
             </p>
           )}
@@ -130,44 +112,57 @@ export default function AdminCategoriesPage() {
         <button
           type="submit"
           disabled={creating || !newName.trim()}
-          className="px-4 py-2 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-md font-medium hover:bg-zinc-800 dark:hover:bg-zinc-200 disabled:opacity-50 transition-colors"
+          className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium bg-zinc-900 dark:bg-zinc-50 text-white dark:text-zinc-900 rounded-xl hover:bg-zinc-800 dark:hover:bg-zinc-200 disabled:opacity-50 transition-colors"
         >
-          {creating ? "Creating..." : "Add Category"}
+          <Plus className="w-4 h-4" />
+          {creating ? "创建中..." : "添加"}
         </button>
       </form>
 
       {loading ? (
-        <div className="text-center py-12 text-zinc-500">Loading...</div>
+        <div className="space-y-3">
+          {[...Array(4)].map((_, i) => (
+            <div
+              key={i}
+              className="h-14 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl animate-pulse"
+            />
+          ))}
+        </div>
       ) : categories.length === 0 ? (
-        <div className="text-center py-12 text-zinc-500">
-          No categories yet. Create one above.
+        <div className="flex flex-col items-center justify-center py-20 text-center">
+          <div className="p-4 rounded-2xl bg-zinc-100 dark:bg-zinc-800 mb-4">
+            <Folder className="w-8 h-8 text-zinc-400" />
+          </div>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+            还没有分类，创建一个吧
+          </p>
         </div>
       ) : (
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg overflow-hidden">
+        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden">
           <table className="w-full">
             <thead>
               <tr className="border-b border-zinc-200 dark:border-zinc-800">
-                <th className="text-left px-4 py-3 text-sm font-medium text-zinc-600 dark:text-zinc-400">
-                  Name
+                <th className="px-5 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+                  名称
                 </th>
-                <th className="text-left px-4 py-3 text-sm font-medium text-zinc-600 dark:text-zinc-400">
+                <th className="px-5 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
                   Slug
                 </th>
-                <th className="text-left px-4 py-3 text-sm font-medium text-zinc-600 dark:text-zinc-400">
-                  Posts
+                <th className="px-5 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+                  文章数
                 </th>
-                <th className="text-right px-4 py-3 text-sm font-medium text-zinc-600 dark:text-zinc-400">
-                  Actions
+                <th className="px-5 py-3 text-right text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+                  操作
                 </th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
               {categories.map((category) => (
                 <tr
                   key={category.id}
-                  className="border-b border-zinc-100 dark:border-zinc-800 last:border-0 hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+                  className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors"
                 >
-                  <td className="px-4 py-3">
+                  <td className="px-5 py-3.5">
                     {editId === category.id ? (
                       <div>
                         <input
@@ -175,7 +170,7 @@ export default function AdminCategoriesPage() {
                           value={editName}
                           onChange={(e) => setEditName(e.target.value)}
                           maxLength={50}
-                          className="px-2 py-1 border border-zinc-300 dark:border-zinc-700 rounded bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-500"
+                          className="px-2.5 py-1.5 text-sm border border-zinc-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-200 dark:focus:ring-zinc-700"
                           autoFocus
                         />
                         {editError && (
@@ -190,46 +185,52 @@ export default function AdminCategoriesPage() {
                       </span>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-sm text-zinc-600 dark:text-zinc-400">
+                  <td className="px-5 py-3.5 text-sm text-zinc-500 dark:text-zinc-400 font-mono">
                     {category.slug}
                   </td>
-                  <td className="px-4 py-3 text-sm text-zinc-600 dark:text-zinc-400">
+                  <td className="px-5 py-3.5 text-sm text-zinc-500 dark:text-zinc-400">
                     {category._count.posts}
                   </td>
-                  <td className="px-4 py-3 text-right">
-                    <div className="flex justify-end gap-2">
+                  <td className="px-5 py-3.5">
+                    <div className="flex items-center justify-end gap-1">
                       {editId === category.id ? (
                         <>
                           <button
                             onClick={() => handleSave(category.id)}
                             disabled={saving}
-                            className="px-3 py-1 text-sm text-white bg-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 rounded-md hover:bg-zinc-800 dark:hover:bg-zinc-200 disabled:opacity-50 transition-colors"
+                            className="p-2 rounded-lg text-zinc-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 disabled:opacity-50 transition-colors"
                           >
-                            {saving ? "Saving..." : "Save"}
+                            <Check className="w-4 h-4" />
                           </button>
                           <button
-                            onClick={handleCancelEdit}
-                            className="px-3 py-1 text-sm text-zinc-600 dark:text-zinc-400 border border-zinc-300 dark:border-zinc-700 rounded-md hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
+                            onClick={() => {
+                              setEditId(null);
+                              setEditName("");
+                              setEditError("");
+                            }}
+                            className="p-2 rounded-lg text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
                           >
-                            Cancel
+                            <X className="w-4 h-4" />
                           </button>
                         </>
                       ) : (
                         <>
                           <button
-                            onClick={() => handleEdit(category)}
-                            className="px-3 py-1 text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 border border-zinc-300 dark:border-zinc-700 rounded-md hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
+                            onClick={() => {
+                              setEditId(category.id);
+                              setEditName(category.name);
+                              setEditError("");
+                            }}
+                            className="p-2 rounded-lg text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
                           >
-                            Edit
+                            <Pencil className="w-4 h-4" />
                           </button>
                           <button
                             onClick={() => handleDelete(category.id)}
                             disabled={deleteId === category.id}
-                            className="px-3 py-1 text-sm text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 border border-red-300 dark:border-red-700 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50 transition-colors"
+                            className="p-2 rounded-lg text-zinc-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50 transition-colors"
                           >
-                            {deleteId === category.id
-                              ? "Deleting..."
-                              : "Delete"}
+                            <Trash2 className="w-4 h-4" />
                           </button>
                         </>
                       )}

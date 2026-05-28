@@ -22,7 +22,7 @@ function truncate(text: string, maxLength: number): string {
 
 function formatDate(date: Date | null): string {
   if (!date) return "";
-  return new Date(date).toLocaleDateString("en-US", {
+  return new Date(date).toLocaleDateString("zh-CN", {
     month: "short",
     day: "numeric",
     year: "numeric",
@@ -35,7 +35,7 @@ export function RelatedPosts({ posts }: RelatedPostsProps) {
   return (
     <section className="mt-12 pt-8 border-t border-zinc-200 dark:border-zinc-800">
       <h2 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 mb-6">
-        Related Posts
+        相关文章
       </h2>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">

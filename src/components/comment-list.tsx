@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 interface Comment {
   id: number;
@@ -11,6 +11,7 @@ interface Comment {
 
 interface CommentListProps {
   postId: number;
+  refreshKey?: number;
 }
 
 function formatRelativeTime(dateString: string): string {
@@ -22,44 +23,44 @@ function formatRelativeTime(dateString: string): string {
   const diffHours = Math.floor(diffMinutes / 60);
   const diffDays = Math.floor(diffHours / 24);
 
-  if (diffSeconds < 60) return "just now";
-  if (diffMinutes < 60) return `${diffMinutes} minute${diffMinutes === 1 ? "" : "s"} ago`;
-  if (diffHours < 24) return `${diffHours} hour${diffHours === 1 ? "" : "s"} ago`;
-  if (diffDays < 30) return `${diffDays} day${diffDays === 1 ? "" : "s"} ago`;
+  if (diffSeconds < 60) return "刚刚";
+  if (diffMinutes < 60) return `${diffMinutes} 分钟前`;
+  if (diffHours < 24) return `${diffHours} 小时前`;
+  if (diffDays < 30) return `${diffDays} 天前`;
 
-  return date.toLocaleDateString("en-US", {
+  return date.toLocaleDateString("zh-CN", {
     year: "numeric",
     month: "long",
     day: "numeric",
   });
 }
 
-export function CommentList({ postId }: CommentListProps) {
+export function CommentList({ postId, refreshKey }: CommentListProps) {
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchComments = async () => {
-      try {
-        const res = await fetch(`/api/posts/${postId}/comments`);
-        if (res.ok) {
-          const data = await res.json();
-          setComments(data.comments);
-        }
-      } catch {
-        // Silently fail — comments are non-critical
-      } finally {
-        setLoading(false);
+  const fetchComments = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/posts/${postId}/comments`);
+      if (res.ok) {
+        const data = await res.json();
+        setComments(data.comments);
       }
-    };
-
-    fetchComments();
+    } catch {
+      // Silently fail — comments are non-critical
+    } finally {
+      setLoading(false);
+    }
   }, [postId]);
+
+  useEffect(() => {
+    fetchComments();
+  }, [fetchComments, refreshKey]);
 
   if (loading) {
     return (
       <div className="text-sm text-zinc-500 dark:text-zinc-400">
-        Loading comments...
+        加载评论中...
       </div>
     );
   }
@@ -67,7 +68,7 @@ export function CommentList({ postId }: CommentListProps) {
   if (comments.length === 0) {
     return (
       <p className="text-sm text-zinc-500 dark:text-zinc-400">
-        No comments yet. Be the first to share your thoughts!
+        还没有评论，来分享你的想法吧！
       </p>
     );
   }

@@ -63,7 +63,7 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="fixed bottom-6 right-6 z-50 md:hidden lg:hidden xl:hidden bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-full w-12 h-12 flex items-center justify-center shadow-lg hover:scale-105 transition-transform"
-        aria-label="Toggle table of contents"
+        aria-label="切换目录"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -92,12 +92,12 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
           <div className="absolute right-0 top-0 h-full w-72 bg-white dark:bg-zinc-900 border-l border-zinc-200 dark:border-zinc-800 p-6 overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
               <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                Table of Contents
+                目录
               </span>
               <button
                 onClick={() => setIsOpen(false)}
                 className="text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
-                aria-label="Close table of contents"
+                aria-label="关闭目录"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -128,7 +128,7 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
       <aside className="hidden md:block w-56 shrink-0">
         <nav
           className="sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto pr-2"
-          aria-label="Table of contents"
+          aria-label="文章目录"
         >
           <TocList
             headings={headings}

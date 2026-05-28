@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import TiptapEditor from "./tiptap-editor";
 import ImageUpload from "./image-upload";
 import { slugify } from "@/lib/slugify";
+import { useAutoSave, getDraft, clearDraft } from "@/hooks/use-auto-save";
+import { TemplatePicker } from "./template-picker";
 
 interface Category {
   id: number;
@@ -20,6 +22,8 @@ interface Tag {
 
 interface PostFormProps {
   mode: "create" | "edit";
+  apiEndpoint?: string;
+  redirectPath?: string;
   initialData?: {
     id?: number;
     title: string;
@@ -33,17 +37,22 @@ interface PostFormProps {
   };
 }
 
-export default function PostForm({ mode, initialData }: PostFormProps) {
+export default function PostForm({ mode, apiEndpoint, redirectPath, initialData }: PostFormProps) {
   const router = useRouter();
-  const [title, setTitle] = useState(initialData?.title || "");
-  const [slug, setSlug] = useState(initialData?.slug || "");
+  const draftKey = mode === "create" ? "new-post" : `post-${initialData?.id}`;
+
+  // Load draft for new posts
+  const draft = mode === "create" ? getDraft(draftKey) : null;
+
+  const [title, setTitle] = useState(draft?.title || initialData?.title || "");
+  const [slug, setSlug] = useState(draft ? slugify(draft.title) : initialData?.slug || "");
   const [slugEdited, setSlugEdited] = useState(false);
-  const [content, setContent] = useState(initialData?.content || "");
-  const [excerpt, setExcerpt] = useState(initialData?.excerpt || "");
-  const [coverImageUrl, setCoverImageUrl] = useState(initialData?.coverImageUrl || "");
-  const [categoryId, setCategoryId] = useState<string>(initialData?.categoryId?.toString() || "");
+  const [content, setContent] = useState(draft?.content || initialData?.content || "");
+  const [excerpt, setExcerpt] = useState(draft?.excerpt || initialData?.excerpt || "");
+  const [coverImageUrl, setCoverImageUrl] = useState(draft?.coverImageUrl || initialData?.coverImageUrl || "");
+  const [categoryId, setCategoryId] = useState<string>(draft?.categoryId || initialData?.categoryId?.toString() || "");
   const [selectedTags, setSelectedTags] = useState<string[]>(
-    initialData?.tags?.map((t) => t.id.toString()) || []
+    draft?.tags || initialData?.tags?.map((t) => t.id.toString()) || []
   );
   const [status, setStatus] = useState<"DRAFT" | "PUBLISHED">(initialData?.status || "DRAFT");
   const [categories, setCategories] = useState<Category[]>([]);
@@ -51,6 +60,14 @@ export default function PostForm({ mode, initialData }: PostFormProps) {
   const [newTag, setNewTag] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [showDraftNotice, setShowDraftNotice] = useState(!!draft);
+
+  // Auto-save drafts (only for create mode or unsaved edits)
+  const { lastSaveTime, hasUnsavedChanges } = useAutoSave(
+    draftKey,
+    { title, content, excerpt, coverImageUrl, categoryId, tags: selectedTags },
+    mode === "create" && (title.length > 0 || content.length > 0)
+  );
 
   useEffect(() => {
     Promise.all([
@@ -105,7 +122,7 @@ export default function PostForm({ mode, initialData }: PostFormProps) {
       status,
     };
 
-    const url = mode === "create" ? "/api/posts" : `/api/posts/${initialData?.id}`;
+    const url = apiEndpoint || (mode === "create" ? "/api/posts" : `/api/posts/${initialData?.id}`);
     const method = mode === "create" ? "POST" : "PUT";
 
     const res = await fetch(url, {
@@ -122,8 +139,21 @@ export default function PostForm({ mode, initialData }: PostFormProps) {
       return;
     }
 
-    router.push("/admin/posts");
+    // Clear draft after successful save
+    clearDraft(draftKey);
+    router.push(redirectPath || "/admin/posts");
     router.refresh();
+  };
+
+  const handleDiscardDraft = () => {
+    clearDraft(draftKey);
+    setTitle("");
+    setContent("");
+    setExcerpt("");
+    setCoverImageUrl("");
+    setCategoryId("");
+    setSelectedTags([]);
+    setShowDraftNotice(false);
   };
 
   return (
@@ -131,6 +161,38 @@ export default function PostForm({ mode, initialData }: PostFormProps) {
       {error && (
         <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md text-red-700 dark:text-red-300 text-sm">
           {error}
+        </div>
+      )}
+
+      {showDraftNotice && draft && (
+        <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md text-blue-700 dark:text-blue-300 text-sm flex items-center justify-between">
+          <span>
+            检测到未保存的草稿 (保存于 {new Date(draft.savedAt).toLocaleString("zh-CN")})
+          </span>
+          <button
+            type="button"
+            onClick={handleDiscardDraft}
+            className="text-blue-600 dark:text-blue-400 underline hover:no-underline"
+          >
+            丢弃草稿
+          </button>
+        </div>
+      )}
+
+      {/* Auto-save indicator */}
+      {mode === "create" && title.length > 0 && (
+        <div className="flex items-center gap-2 text-xs text-zinc-400">
+          {hasUnsavedChanges ? (
+            <span className="flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse" />
+              未保存
+            </span>
+          ) : lastSaveTime ? (
+            <span className="flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-green-400" />
+              已自动保存 {lastSaveTime.toLocaleTimeString("zh-CN")}
+            </span>
+          ) : null}
         </div>
       )}
 
@@ -165,9 +227,12 @@ export default function PostForm({ mode, initialData }: PostFormProps) {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
-          Content
-        </label>
+        <div className="flex items-center justify-between mb-1">
+          <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+            Content
+          </label>
+          <TemplatePicker onSelect={(t) => setContent(content + t)} />
+        </div>
         <TiptapEditor content={content} onChange={setContent} />
       </div>
 

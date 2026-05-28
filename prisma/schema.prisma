@@ -19,6 +19,51 @@ model AdminUser {
   @@map("admin_users")
 }
 
+model User {
+  id           Int       @id @default(autoincrement())
+  email        String    @unique
+  passwordHash String    @map("password_hash")
+  name         String
+  username     String?   @unique
+  avatar       String?
+  bio          String?   @db.Text
+  website      String?
+  location     String?
+  aiApiKey     String?   @map("ai_api_key")
+  aiApiUrl     String?   @map("ai_api_url")
+  aiModel      String?   @map("ai_model")
+  emailNotifications Boolean @default(true) @map("email_notifications")
+  points       Int       @default(0)
+  level        Int       @default(1)
+  role         UserRole  @default(USER)
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  comments           Comment[]
+  messages           Message[]
+  likes              Like[]
+  bookmarks          Bookmark[]
+  readHistory        ReadHistory[]
+  notifications      Notification[]
+  posts              Post[]               @relation("UserPosts")
+  followers          Follow[]             @relation("following")
+  following          Follow[]             @relation("follower")
+  sentMessages       DirectMessage[]      @relation("sender")
+  conversationMembers ConversationMember[]
+  prompts            Prompt[]
+  postSeries         PostSeries[]
+  bookmarkCollections BookmarkCollection[]
+  activities         Activity[]
+  groupMembers       GroupMember[]
+  collaborations     PostCollaborator[]
+  postVotes          PostVote[]
+  ownedGroups        Group[]
+  donations          Donation[]       @relation("donor")
+  donationsReceived  Donation[]       @relation("recipient")
+  templates          PostTemplate[]
+
+  @@map("users")
+}
+
 model Post {
   id           Int       @id @default(autoincrement())
   title        String
@@ -28,15 +73,32 @@ model Post {
   coverImageUrl String?  @map("cover_image_url")
   status       PostStatus @default(DRAFT)
   publishedAt  DateTime? @map("published_at")
+  scheduledAt  DateTime? @map("scheduled_at")
+  isPinned     Boolean   @default(false) @map("is_pinned")
+  score        Int       @default(0)
   authorId     Int       @map("author_id")
+  userId       Int?      @map("user_id")
   categoryId   Int?      @map("category_id")
   createdAt    DateTime  @default(now()) @map("created_at")
   updatedAt    DateTime  @updatedAt @map("updated_at")
 
-  author   AdminUser  @relation(fields: [authorId], references: [id])
-  category Category? @relation(fields: [categoryId], references: [id])
-  tags     PostTag[]
-  comments Comment[]
+  author        AdminUser  @relation(fields: [authorId], references: [id])
+  user          User?      @relation("UserPosts", fields: [userId], references: [id])
+  category      Category? @relation(fields: [categoryId], references: [id])
+  tags          PostTag[]
+  comments      Comment[]
+  likes         Like[]
+  bookmarks     Bookmark[]
+  readHistory   ReadHistory[]
+  shareStats    ShareStat[]
+  versions      PostVersion[]
+  seriesPosts   SeriesPost[]
+  votes         PostVote[]
+  collaborators PostCollaborator[]
+  groupPosts    GroupPost[]
+  bookmarkItems BookmarkItem[]
+  topicPosts    TopicPost[]
+  donations     Donation[]
 
   @@map("posts")
 }
@@ -81,13 +143,15 @@ model PostTag {
 model Comment {
   id          Int           @id @default(autoincrement())
   postId      Int           @map("post_id")
+  userId      Int?          @map("user_id")
   authorName  String        @map("author_name")
   authorEmail String        @map("author_email")
   content     String        @db.LongText
   status      CommentStatus @default(PENDING)
   createdAt   DateTime      @default(now()) @map("created_at")
 
-  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  post Post  @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User? @relation(fields: [userId], references: [id])
 
   @@map("comments")
 }
@@ -96,4 +160,467 @@ enum CommentStatus {
   PENDING
   APPROVED
   REJECTED
+}
+
+model Message {
+  id        Int      @id @default(autoincrement())
+  userId    Int?     @map("user_id")
+  name      String
+  content   String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@map("messages")
+}
+
+model Like {
+  id        Int      @id @default(autoincrement())
+  postId    Int      @map("post_id")
+  userId    Int      @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([postId, userId])
+  @@map("likes")
+}
+
+model Bookmark {
+  id        Int      @id @default(autoincrement())
+  postId    Int      @map("post_id")
+  userId    Int      @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([postId, userId])
+  @@map("bookmarks")
+}
+
+model ReadHistory {
+  id        Int      @id @default(autoincrement())
+  postId    Int      @map("post_id")
+  userId    Int      @map("user_id")
+  readAt    DateTime @default(now()) @map("read_at")
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId, readAt])
+  @@map("read_history")
+}
+
+model ShareStat {
+  id        Int      @id @default(autoincrement())
+  postId    Int      @map("post_id")
+  platform  String
+  count     Int      @default(0)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, platform])
+  @@map("share_stats")
+}
+
+model Notification {
+  id          Int               @id @default(autoincrement())
+  userId      Int               @map("user_id")
+  type        NotificationType
+  message     String
+  link        String?
+  isRead      Boolean           @default(false) @map("is_read")
+  createdAt   DateTime          @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId, isRead])
+  @@map("notifications")
+}
+
+enum NotificationType {
+  COMMENT_REPLY
+  LIKE
+  SYSTEM
+  FOLLOW
+  DIRECT_MESSAGE
+}
+
+model Follow {
+  id          Int      @id @default(autoincrement())
+  followerId  Int      @map("follower_id")
+  followingId Int      @map("following_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  follower  User @relation("follower", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("following", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@map("follows")
+}
+
+model Conversation {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  members  ConversationMember[]
+  messages DirectMessage[]
+
+  @@map("conversations")
+}
+
+model ConversationMember {
+  id             Int          @id @default(autoincrement())
+  conversationId Int          @map("conversation_id")
+  userId         Int          @map("user_id")
+  lastReadAt     DateTime?    @map("last_read_at")
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([conversationId, userId])
+  @@map("conversation_members")
+}
+
+model DirectMessage {
+  id             Int      @id @default(autoincrement())
+  conversationId Int      @map("conversation_id")
+  senderId       Int      @map("sender_id")
+  content        String   @db.Text
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User         @relation("sender", fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@map("direct_messages")
+}
+
+model Prompt {
+  id         Int      @id @default(autoincrement())
+  userId     Int      @map("user_id")
+  title      String
+  content    String   @db.Text
+  category   String   @default("通用")
+  tags       String?  @db.Text
+  variables  String?  @db.Text
+  isPinned   Boolean  @default(false) @map("is_pinned")
+  usageCount Int      @default(0) @map("usage_count")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, category])
+  @@index([userId, isPinned])
+  @@map("prompts")
+}
+
+model PostSeries {
+  id          Int      @id @default(autoincrement())
+  name        String
+  slug        String   @unique
+  description String?  @db.Text
+  coverImage  String?  @map("cover_image")
+  userId      Int      @map("user_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  user  User         @relation(fields: [userId], references: [id])
+  posts SeriesPost[]
+
+  @@map("post_series")
+}
+
+model SeriesPost {
+  id       Int @id @default(autoincrement())
+  seriesId Int @map("series_id")
+  postId   Int @map("post_id")
+  order    Int @default(0)
+
+  series PostSeries @relation(fields: [seriesId], references: [id], onDelete: Cascade)
+  post   Post       @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([seriesId, postId])
+  @@map("series_posts")
+}
+
+model PostVersion {
+  id        Int      @id @default(autoincrement())
+  postId    Int      @map("post_id")
+  title     String
+  content   String   @db.LongText
+  excerpt   String?
+  version   Int
+  createdAt DateTime @default(now()) @map("created_at")
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([postId, version])
+  @@map("post_versions")
+}
+
+model BookmarkCollection {
+  id          Int      @id @default(autoincrement())
+  userId      Int      @map("user_id")
+  name        String
+  description String?
+  isDefault   Boolean  @default(false) @map("is_default")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user  User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items BookmarkItem[]
+
+  @@unique([userId, name])
+  @@map("bookmark_collections")
+}
+
+model BookmarkItem {
+  id           Int               @id @default(autoincrement())
+  collectionId Int               @map("collection_id")
+  postId       Int               @map("post_id")
+  createdAt    DateTime          @default(now()) @map("created_at")
+
+  collection BookmarkCollection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  post       Post              @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([collectionId, postId])
+  @@map("bookmark_items")
+}
+
+model PostVote {
+  id        Int      @id @default(autoincrement())
+  postId    Int      @map("post_id")
+  userId    Int      @map("user_id")
+  value     Int
+  createdAt DateTime @default(now()) @map("created_at")
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([postId, userId])
+  @@map("post_votes")
+}
+
+model SiteStat {
+  id          Int      @id @default(autoincrement())
+  date        DateTime @unique
+  pageViews   Int      @default(0) @map("page_views")
+  uniqueUsers Int      @default(0) @map("unique_users")
+  newPosts    Int      @default(0) @map("new_posts")
+  newComments Int      @default(0) @map("new_comments")
+  newUsers    Int      @default(0) @map("new_users")
+
+  @@map("site_stats")
+}
+
+model Activity {
+  id        Int            @id @default(autoincrement())
+  userId    Int            @map("user_id")
+  type      ActivityType
+  targetId  Int?
+  metadata  String?        @db.Text
+  createdAt DateTime       @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([type, createdAt])
+  @@map("activities")
+}
+
+enum ActivityType {
+  POST_PUBLISHED
+  COMMENT_ADDED
+  LIKE_ADDED
+  FOLLOW_USER
+  BOOKMARK_ADDED
+}
+
+model Group {
+  id          Int      @id @default(autoincrement())
+  name        String
+  slug        String   @unique
+  description String?  @db.Text
+  coverImage  String?  @map("cover_image")
+  ownerId     Int      @map("owner_id")
+  isPublic    Boolean  @default(true) @map("is_public")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  owner   User         @relation(fields: [ownerId], references: [id])
+  members GroupMember[]
+  posts   GroupPost[]
+
+  @@map("groups")
+}
+
+model GroupMember {
+  id       Int       @id @default(autoincrement())
+  groupId  Int       @map("group_id")
+  userId   Int       @map("user_id")
+  role     GroupRole @default(MEMBER)
+  joinedAt DateTime  @default(now()) @map("joined_at")
+
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+  @@map("group_members")
+}
+
+enum GroupRole {
+  ADMIN
+  MODERATOR
+  MEMBER
+}
+
+model GroupPost {
+  id        Int      @id @default(autoincrement())
+  groupId   Int      @map("group_id")
+  postId    Int      @map("post_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  post  Post  @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, postId])
+  @@map("group_posts")
+}
+
+model PostCollaborator {
+  id      Int              @id @default(autoincrement())
+  postId  Int              @map("post_id")
+  userId  Int              @map("user_id")
+  role    CollaboratorRole @default(EDITOR)
+  addedAt DateTime         @default(now()) @map("added_at")
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@map("post_collaborators")
+}
+
+enum CollaboratorRole {
+  EDITOR
+  VIEWER
+}
+
+enum UserRole {
+  USER
+  EDITOR
+  ADMIN
+}
+
+model Topic {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  slug        String   @unique
+  description String?  @db.Text
+  coverImage  String?  @map("cover_image")
+  postCount   Int      @default(0) @map("post_count")
+  isHot       Boolean  @default(false) @map("is_hot")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  posts TopicPost[]
+
+  @@map("topics")
+}
+
+model TopicPost {
+  id        Int      @id @default(autoincrement())
+  topicId   Int      @map("topic_id")
+  postId    Int      @map("post_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  topic Topic @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  post  Post  @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([topicId, postId])
+  @@map("topic_posts")
+}
+
+model SiteConfig {
+  id    Int    @id @default(autoincrement())
+  key   String @unique
+  value String @db.Text
+
+  @@map("site_configs")
+}
+
+model Donation {
+  id        Int      @id @default(autoincrement())
+  donorId   Int      @map("donor_id")
+  recipientId Int    @map("recipient_id")
+  postId    Int?     @map("post_id")
+  amount    Int      // in cents
+  message   String?  @db.Text
+  status    DonationStatus @default(COMPLETED)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  donor     User     @relation("donor", fields: [donorId], references: [id])
+  recipient User     @relation("recipient", fields: [recipientId], references: [id])
+  post      Post?    @relation(fields: [postId], references: [id])
+
+  @@map("donations")
+}
+
+enum DonationStatus {
+  PENDING
+  COMPLETED
+  REFUNDED
+}
+
+model PostTemplate {
+  id          Int      @id @default(autoincrement())
+  userId      Int      @map("user_id")
+  name        String
+  description String?
+  content     String   @db.LongText
+  category    String   @default("通用")
+  isDefault   Boolean  @default(false) @map("is_default")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, category])
+  @@map("post_templates")
+}
+
+model VisitLog {
+  id        Int      @id @default(autoincrement())
+  path      String   @db.VarChar(500)
+  userId    Int?     @map("user_id")
+  ip        String?  @db.VarChar(45)
+  userAgent String?  @map("user_agent") @db.VarChar(500)
+  referer   String?  @db.VarChar(500)
+  duration  Int?     // milliseconds
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([createdAt])
+  @@index([path, createdAt])
+  @@map("visit_logs")
+}
+
+model MediaFile {
+  id         Int      @id @default(autoincrement())
+  userId     Int      @map("user_id")
+  filename   String
+  originalName String @map("original_name")
+  mimeType   String   @map("mime_type")
+  size       Int
+  width      Int?
+  height     Int?
+  alt        String?
+  tags       String?  @db.Text
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([userId, createdAt])
+  @@index([mimeType])
+  @@map("media_files")
 }

@@ -1,0 +1,207 @@
+{
+  "meta": {
+    "url": "https://mimo.xiaomi.com/",
+    "title": "Xiaomi MiMo, Explore and Love",
+    "generator": "Rspress v1.46.2",
+    "languages": ["en", "zh"]
+  },
+  "layout": {
+    "type": "single-page",
+    "structure": ["navbar", "hero", "showcase", "experience", "blog", "joinUs", "footer"],
+    "containerWidth": "full-width",
+    "displayMode": "flex-column"
+  },
+  "navbar": {
+    "position": "sticky",
+    "height": "56px",
+    "padding": "0 24px",
+    "display": "flex",
+    "justifyContent": "space-between",
+    "alignItems": "center",
+    "items": ["logo", "Blog", "Join us", "languageSwitcher"],
+    "logo": {
+      "type": "image",
+      "src": "static/image/logo.99baaffe.png"
+    },
+    "links": {
+      "fontSize": "14px",
+      "fontWeight": 500,
+      "margin": "0 6px",
+      "padding": "8px 12px"
+    },
+    "mobile": {
+      "hamburgerIcon": "three-dots-horizontal",
+      "menuType": "fullscreen-overlay"
+    }
+  },
+  "hero": {
+    "type": "flip-card",
+    "animation": {
+      "type": "3d-flip",
+      "property": "transform: rotateX",
+      "trigger": "click/interaction"
+    },
+    "front": {
+      "title": "HELLO, I'M MiMo",
+      "background": {
+        "type": "text-pattern",
+        "text": "M I M O",
+        "repetition": "grid-fill",
+        "rows": 12,
+        "columnsPerRow": 20
+      },
+      "altTitleLayer": {
+        "text": "你好，我是 MiMo",
+        "clipPath": "circle(0px at -300px -300px)",
+        "animation": "circle-expand-on-hover",
+        "label": "About Me"
+      },
+      "invertedPattern": {
+        "description": "Same M I M O pattern with inverted colors revealed by clip-path"
+      }
+    },
+    "back": {
+      "type": "content-card",
+      "content": "long-form-text",
+      "topic": "AI philosophy and MiMo introduction"
+    }
+  },
+  "showcase": {
+    "layout": "horizontal-cards",
+    "cards": [
+      {
+        "title": "Xiaomi MiMo-V2.5-Pro",
+        "description": "A leap in agentic and long horizon coherence.",
+        "image": "mimo-v2-5-pro.90790f9c.png"
+      },
+      {
+        "title": "Xiaomi MiMo-V2.5",
+        "description": "A leap in agency and multimodality.",
+        "image": "mimo-v2-5.89c256d5.png"
+      },
+      {
+        "title": "Xiaomi MiMo-V2.5-TTS Series",
+        "description": "Give your agent a voice. Give it a soul.",
+        "image": "mimo-v2-tts.c9ebc06f.png"
+      }
+    ],
+    "cardStyle": {
+      "imageDisplay": "cover",
+      "draggable": false,
+      "overlay": true,
+      "infoPosition": "bottom"
+    }
+  },
+  "experienceSection": {
+    "title": "Build with MiMo",
+    "description": "Experience the powerful capabilities of Xiaomi MiMo's large-scale model now and explore the infinite possibilities of AI.",
+    "layout": "numbered-list",
+    "items": [
+      { "index": "01", "title": "Web Demo", "description": "Interact with MiMo directly through the web", "action": "→" },
+      { "index": "02", "title": "API Access", "description": "Developer portal for quick integration of MiMo capabilities", "action": "→" }
+    ]
+  },
+  "blogSection": {
+    "title": "Blog",
+    "layout": "numbered-list",
+    "items": [
+      { "index": "01", "title": "Xiaomi MiMo-V2.5-ASR", "description": "State-of-the-art open-source speech recognition." },
+      { "index": "02", "title": "Xiaomi MiMo-V2.5-TTS Series", "description": "Voice synthesis for the agent era." },
+      { "index": "03", "title": "Xiaomi MiMo-V2.5-Pro", "description": "A leap in agentic and long horizon coherence." },
+      { "index": "04", "title": "Xiaomi MiMo-V2.5", "description": "A leap in agency and multimodality." },
+      { "index": "05", "title": "Xiaomi MiMo-V2-Pro", "description": "Global Top-tier agent capabilities." },
+      { "index": "06", "title": "Xiaomi MiMo-V2-Omni", "description": "See, hear, act in the agentic era." },
+      { "index": "07", "title": "Xiaomi MiMo-V2-TTS", "description": "Give your agent a voice. Give it a soul." },
+      { "index": "08", "title": "Xiaomi MiMo-V2-Flash", "description": "Blazing speed meets frontier performance" },
+      { "index": "09", "title": "MiMo Humanities and Social Sciences Capability Assessment", "description": "MiMo Humanities and Social Sciences Capability Assessment" }
+    ],
+    "rowStyle": {
+      "display": "flex",
+      "alignItems": "center",
+      "indexStyle": "two-digit-number",
+      "arrow": "→"
+    }
+  },
+  "joinUsSection": {
+    "title": "Join Us",
+    "description": "We are building MiMo, Xiaomi's universal smart platform—making advanced AI technology serve everyone and helping to create a future of human-machine collaboration.",
+    "positions": [
+      "Research Scientist - Pre-training",
+      "Research Scientist - Post-training",
+      "AI Infrastructure Engineer",
+      "Research Scientist - Audio & Speech",
+      "Research Scientist - Multimodal",
+      "Knowledge Engineer"
+    ],
+    "contact": "mimo@xiaomi.com",
+    "layout": "numbered-list-with-arrow"
+  },
+  "footer": {
+    "text": "Copyright © 2010 - 2026 Xiaomi. All Rights Reserved",
+    "style": "minimal-centered"
+  },
+  "designSystem": {
+    "colors": {
+      "text": "var(--rp-c-text-1)",
+      "textSecondary": "var(--rp-c-text-2)",
+      "background": "var(--rp-c-bg)",
+      "divider": "var(--rp-c-divider-light)",
+      "brand": "var(--rp-c-brand)",
+      "mute": "var(--rp-c-bg-mute)"
+    },
+    "typography": {
+      "fontSizes": {
+        "sm": "14px",
+        "base": "16px"
+      },
+      "fontWeights": {
+        "medium": 500,
+        "bold": 700
+      },
+      "heroTitle": {
+        "tag": "h1",
+        "style": "large-bold-uppercase"
+      }
+    },
+    "spacing": {
+      "navPadding": "0 24px",
+      "linkPadding": "8px 12px",
+      "linkMargin": "0 6px",
+      "dropdownPadding": "12px",
+      "dropdownItemPadding": "6.4px 24px 6.4px 12px"
+    },
+    "borderRadius": {
+      "large": "var(--rp-radius-large)",
+      "pill": "16px"
+    },
+    "shadows": {
+      "dropdown": "var(--rp-shadow-3)"
+    },
+    "transitions": {
+      "colorChange": "colors 200ms",
+      "opacity": "opacity 300ms"
+    },
+    "responsive": {
+      "mobileMenu": true,
+      "hamburgerBreakpoint": "mobile",
+      "gridAdaptive": true
+    }
+  },
+  "patterns": {
+    "numberedList": {
+      "description": "Rows with 2-digit index, title, description, and arrow indicator",
+      "usedIn": ["experience", "blog", "joinUs"]
+    },
+    "textPatternBackground": {
+      "description": "Repeated 'M I M O' text filling the hero background in a grid pattern",
+      "effect": "inverted-color-reveal-on-hover via clip-path circle expansion"
+    },
+    "flipCard": {
+      "description": "3D card flip revealing content on interaction",
+      "axis": "X"
+    },
+    "imageCardWithOverlay": {
+      "description": "Full-bleed image card with gradient overlay and bottom-aligned text"
+    }
+  }
+}

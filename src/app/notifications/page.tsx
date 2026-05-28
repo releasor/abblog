@@ -1,0 +1,138 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+
+interface Notification {
+  id: number;
+  type: string;
+  message: string;
+  link: string | null;
+  isRead: boolean;
+  createdAt: string;
+}
+
+export default function NotificationsPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/login");
+      return;
+    }
+    if (status !== "authenticated") return;
+
+    fetchNotifications();
+  }, [status]);
+
+  const fetchNotifications = async () => {
+    const res = await fetch("/api/notifications");
+    if (res.ok) {
+      const data = await res.json();
+      setNotifications(data.notifications);
+      setUnreadCount(data.unreadCount);
+    }
+    setLoading(false);
+  };
+
+  const markAsRead = async (id?: number) => {
+    await fetch("/api/notifications", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(id ? { id } : {}),
+    });
+    fetchNotifications();
+  };
+
+  const getTypeIcon = (type: string) => {
+    switch (type) {
+      case "COMMENT_REPLY": return "💬";
+      case "LIKE": return "❤️";
+      default: return "📢";
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-12">
+        <div className="text-center text-zinc-500">加载中...</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-2xl mx-auto px-4 py-12">
+      <header className="mb-8 flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100">
+            通知中心
+          </h1>
+          {unreadCount > 0 && (
+            <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+              {unreadCount} 条未读通知
+            </p>
+          )}
+        </div>
+        {unreadCount > 0 && (
+          <button
+            onClick={() => markAsRead()}
+            className="px-3 py-1.5 text-sm bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+          >
+            全部已读
+          </button>
+        )}
+      </header>
+
+      <div className="space-y-2">
+        {notifications.length === 0 ? (
+          <p className="text-center text-zinc-500 dark:text-zinc-400 py-12">
+            暂无通知
+          </p>
+        ) : (
+          notifications.map((n) => (
+            <div
+              key={n.id}
+              className={`flex items-start gap-3 p-4 rounded-lg border transition-colors ${
+                n.isRead
+                  ? "border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900"
+                  : "border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50"
+              }`}
+            >
+              <span className="text-lg">{getTypeIcon(n.type)}</span>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm text-zinc-900 dark:text-zinc-100">{n.message}</p>
+                <time className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 block">
+                  {new Date(n.createdAt).toLocaleString("zh-CN")}
+                </time>
+              </div>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                {n.link && (
+                  <Link
+                    href={n.link}
+                    onClick={() => !n.isRead && markAsRead(n.id)}
+                    className="text-xs text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
+                  >
+                    查看
+                  </Link>
+                )}
+                {!n.isRead && (
+                  <button
+                    onClick={() => markAsRead(n.id)}
+                    className="w-2 h-2 rounded-full bg-blue-500"
+                    title="标记已读"
+                  />
+                )}
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+}

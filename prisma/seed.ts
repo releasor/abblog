@@ -1,9 +1,10 @@
+import "dotenv/config";
 import { PrismaClient } from "../generated/prisma/client";
 import { PrismaMariaDb } from "@prisma/adapter-mariadb";
 import bcrypt from "bcrypt";
 
-const url = process.env.DATABASE_URL!;
-const adapter = new PrismaMariaDb(url);
+const dbUrl = process.env.DATABASE_URL!.replace(/^mysql:\/\//, "mariadb://");
+const adapter = new PrismaMariaDb(dbUrl);
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
@@ -20,9 +21,9 @@ async function main() {
   });
 
   const categories = [
-    { name: "Technology", slug: "technology", description: "Tech news and insights" },
-    { name: "Programming", slug: "programming", description: "Coding tutorials and tips" },
-    { name: "Life", slug: "life", description: "Life and personal thoughts" },
+    { name: "技术", slug: "technology", description: "技术动态与见解" },
+    { name: "编程", slug: "programming", description: "编程教程与技巧" },
+    { name: "生活", slug: "life", description: "生活与个人思考" },
   ];
 
   for (const cat of categories) {
@@ -40,8 +41,8 @@ async function main() {
     { name: "Next.js", slug: "nextjs" },
     { name: "CSS", slug: "css" },
     { name: "Node.js", slug: "nodejs" },
-    { name: "Tutorial", slug: "tutorial" },
-    { name: "Tips", slug: "tips" },
+    { name: "教程", slug: "tutorial" },
+    { name: "技巧", slug: "tips" },
   ];
 
   for (const tag of tags) {

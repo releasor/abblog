@@ -14,12 +14,12 @@ export default async function CategoriesPage() {
   return (
     <div className="max-w-6xl mx-auto px-4 py-12">
       <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-8">
-        Categories
+        分类
       </h1>
 
       {categories.length === 0 ? (
         <p className="text-zinc-500 dark:text-zinc-500 text-center py-12">
-          No categories yet.
+          暂无分类。
         </p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -33,8 +33,7 @@ export default async function CategoriesPage() {
                 {category.name}
               </h2>
               <p className="text-sm text-zinc-500 dark:text-zinc-500">
-                {category._count.posts}{" "}
-                {category._count.posts === 1 ? "post" : "posts"}
+                {category._count.posts} 篇文章
               </p>
             </Link>
           ))}

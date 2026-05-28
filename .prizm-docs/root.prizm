@@ -1,5 +1,5 @@
 PRIZM_VERSION: 1.0
-PROJECT: KitTest
+PROJECT: billionaire
 LANG: TypeScript
 PROJECT_TYPE: fullstack
 TECH_STACK: TypeScript, Next.js 16, Tailwind CSS v4, ESLint (personal blog, user-provided)

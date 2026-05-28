@@ -27,10 +27,10 @@ export default async function SearchPage({ searchParams }: PageProps) {
     return (
       <div className="max-w-6xl mx-auto px-4 py-12">
         <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-8">
-          Search
+          搜索
         </h1>
         <p className="text-zinc-500 dark:text-zinc-500 text-center py-12">
-          Please enter a search term
+          请输入搜索关键词
         </p>
       </div>
     );
@@ -85,10 +85,10 @@ export default async function SearchPage({ searchParams }: PageProps) {
     return (
       <div className="max-w-6xl mx-auto px-4 py-12">
         <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-8">
-          Search
+          搜索
         </h1>
         <p className="text-red-500 text-center py-12">
-          Search failed. Please try again.
+          搜索失败，请重试。
         </p>
       </div>
     );
@@ -98,23 +98,23 @@ export default async function SearchPage({ searchParams }: PageProps) {
     <div className="max-w-6xl mx-auto px-4 py-12">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">
-          Search
+          搜索
         </h1>
         <p className="text-zinc-500 dark:text-zinc-400">
-          {results.length} result{results.length !== 1 ? "s" : ""} for &ldquo;{query}&rdquo;
+          找到 {results.length} 条关于 &ldquo;{query}&rdquo; 的结果
         </p>
       </div>
 
       {results.length === 0 ? (
         <div className="text-center py-12">
           <p className="text-zinc-500 dark:text-zinc-500 mb-4">
-            No posts found matching your query
+            未找到匹配的文章
           </p>
           <Link
             href="/posts"
             className="text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 underline"
           >
-            Browse all posts
+            浏览所有文章
           </Link>
         </div>
       ) : (
@@ -164,8 +164,8 @@ function SearchResultCard({
 }) {
   const formatDate = (date: Date | null) => {
     if (!date) return "";
-    return new Date(date).toLocaleDateString("en-US", {
-      month: "short",
+    return new Date(date).toLocaleDateString("zh-CN", {
+      month: "long",
       day: "numeric",
       year: "numeric",
     });
@@ -196,7 +196,7 @@ function SearchResultCard({
             {formatDate(publishedAt)}
           </time>
         )}
-        <span>{readingTime} min read</span>
+        <span>{readingTime} 分钟阅读</span>
       </div>
     </Link>
   );

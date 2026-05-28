@@ -8,10 +8,20 @@ import { absoluteUrl } from "@/lib/site-url";
 import { getRelatedPosts } from "@/lib/related-posts";
 import { injectHeadingIds, extractHeadings, countWords } from "@/lib/toc";
 import { PostContent } from "./post-content";
-import { CommentList } from "@/components/comment-list";
-import { CommentForm } from "@/components/comment-form";
+import { CommentSection } from "@/components/comment-section";
 import { RelatedPosts } from "@/components/related-posts";
 import { TableOfContents } from "@/components/table-of-contents";
+import { ReadingProgress } from "@/components/reading-progress";
+import { ShareButtons } from "@/components/share-buttons";
+import { PostActions } from "@/components/post-actions";
+import { ReadingTracker } from "@/components/reading-tracker";
+import { RecommendedPosts } from "@/components/recommended-posts";
+import { AiSummary } from "@/components/ai-summary";
+import { AiChat } from "@/components/ai-chat";
+import { DonateButton } from "@/components/donate-button";
+import { SEOPanel } from "@/components/seo-panel";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 export const revalidate = 3600;
 
@@ -39,14 +49,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       publishedAt: true,
       updatedAt: true,
       slug: true,
-      author: { select: { name: true } },
+      author: { select: { id: true, name: true } },
       tags: { include: { tag: { select: { name: true } } } },
     },
   });
 
   if (!post) return {};
 
-  const description = post.excerpt || `Read ${post.title} on KitTest`;
+  const description = post.excerpt || `阅读 ${post.title} — billionaire`;
   const url = absoluteUrl(`/posts/${post.slug}`);
 
   return {
@@ -81,7 +91,7 @@ export default async function PublicPostPage({ params }: PageProps) {
     include: {
       category: { select: { name: true, slug: true } },
       tags: { include: { tag: { select: { id: true, name: true, slug: true } } } },
-      author: { select: { name: true } },
+      author: { select: { id: true, name: true } },
     },
   });
 
@@ -96,6 +106,7 @@ export default async function PublicPostPage({ params }: PageProps) {
   const showToc = wordCount >= 1500 && headings.length > 0;
 
   const relatedPosts = await getRelatedPosts(post.id);
+  const session = await getServerSession(authOptions);
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -117,7 +128,7 @@ export default async function PublicPostPage({ params }: PageProps) {
 
   const formatDate = (date: Date | null) => {
     if (!date) return "";
-    return new Date(date).toLocaleDateString("en-US", {
+    return new Date(date).toLocaleDateString("zh-CN", {
       year: "numeric",
       month: "long",
       day: "numeric",
@@ -126,6 +137,8 @@ export default async function PublicPostPage({ params }: PageProps) {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-12">
+      <ReadingProgress />
+      <ReadingTracker postId={post.id} />
       <div className="flex gap-8">
       <article className="max-w-3xl flex-1 min-w-0">
       <script
@@ -157,7 +170,7 @@ export default async function PublicPostPage({ params }: PageProps) {
             </time>
           )}
           <span className="text-zinc-300 dark:text-zinc-700">|</span>
-          <span>{readingTime} min read</span>
+          <span>{readingTime} 分钟阅读</span>
           {post.category && (
             <>
               <span className="text-zinc-300 dark:text-zinc-700">|</span>
@@ -167,7 +180,7 @@ export default async function PublicPostPage({ params }: PageProps) {
             </>
           )}
           <span className="text-zinc-300 dark:text-zinc-700">|</span>
-          <span>By {post.author.name}</span>
+          <span>作者：{post.author.name}</span>
         </div>
 
         {post.tags.length > 0 && (
@@ -191,19 +204,31 @@ export default async function PublicPostPage({ params }: PageProps) {
         </p>
       )}
 
+      <AiSummary postId={post.id} />
+
       <PostContent content={processedContent} />
 
-      <section className="mt-12 pt-8 border-t border-zinc-200 dark:border-zinc-800">
-        <CommentList postId={post.id} />
-        <div className="mt-8">
-          <CommentForm postId={post.id} />
-        </div>
-      </section>
+      <div className="flex items-center justify-between py-6 my-8 border-t border-b border-zinc-200 dark:border-zinc-800">
+        <PostActions postId={post.id} />
+        <DonateButton recipientId={post.author.id} recipientName={post.author.name} postId={post.id} />
+        <ShareButtons title={post.title} url={absoluteUrl(`/posts/${post.slug}`)} postId={post.id} />
+      </div>
+
+      <CommentSection postId={post.id} />
 
       <RelatedPosts posts={relatedPosts} />
+      <RecommendedPosts postId={post.id} />
     </article>
     {showToc && <TableOfContents headings={headings} />}
+    {(session?.user as { role?: string })?.role === "ADMIN" && (
+      <div className="hidden xl:block w-72 flex-shrink-0">
+        <div className="sticky top-24">
+          <SEOPanel postId={post.id} />
+        </div>
       </div>
+    )}
+      </div>
+      <AiChat postId={post.id} />
     </div>
   );
 }
