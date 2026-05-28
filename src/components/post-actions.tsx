@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
+import { showToast } from "@/components/toast";
 
 interface PostActionsProps {
   postId: number;
@@ -14,6 +15,7 @@ export function PostActions({ postId }: PostActionsProps) {
   const [isLiked, setIsLiked] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [liking, setLiking] = useState(false);
+  const [bookmarking, setBookmarking] = useState(false);
 
   const fetchStatus = useCallback(async () => {
     try {
@@ -32,7 +34,9 @@ export function PostActions({ postId }: PostActionsProps) {
         const data = await bookmarkRes.json();
         setIsBookmarked(data.isBookmarked);
       }
-    } catch {}
+    } catch {
+      showToast("加载互动状态失败", "error");
+    }
   }, [postId]);
 
   useEffect(() => {
@@ -52,12 +56,14 @@ export function PostActions({ postId }: PostActionsProps) {
   };
 
   const toggleBookmark = async () => {
-    if (!session) return;
+    if (!session || bookmarking) return;
+    setBookmarking(true);
     const res = await fetch(`/api/posts/${postId}/bookmark`, { method: "POST" });
     if (res.ok) {
       const data = await res.json();
       setIsBookmarked(data.isBookmarked);
     }
+    setBookmarking(false);
   };
 
   return (
@@ -92,6 +98,7 @@ export function PostActions({ postId }: PostActionsProps) {
       {session ? (
         <button
           onClick={toggleBookmark}
+          disabled={bookmarking}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors ${
             isBookmarked
               ? "bg-yellow-50 dark:bg-yellow-900/20 text-yellow-600 dark:text-yellow-400"

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { getAiConfig } from "@/lib/ai-config";
+import { checkRateLimit, RATE_LIMITS, getRateLimitHeaders } from "@/lib/rate-limit";
 
 export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -9,6 +10,15 @@ export async function POST(request: NextRequest) {
 
   if (!userId) {
     return NextResponse.json({ error: "请先登录" }, { status: 401 });
+  }
+
+  // Rate limit AI requests
+  const rl = checkRateLimit(`ai:${userId}`, { windowMs: 60_000, max: 10 });
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "AI 请求过于频繁，请稍后再试" },
+      { status: 429, headers: getRateLimitHeaders(rl) }
+    );
   }
 
   const { messages, mode } = await request.json();
@@ -57,8 +67,6 @@ export async function POST(request: NextRequest) {
     : `你是一个友好的 AI 助手。用中文回复，保持简洁有帮助。`;
 
   try {
-    console.log("AI request:", { apiUrl: config.apiUrl, model: config.model, hasKey: !!config.apiKey });
-
     const res = await fetch(config.apiUrl, {
       method: "POST",
       headers: {
@@ -75,8 +83,6 @@ export async function POST(request: NextRequest) {
         temperature: 0.7,
       }),
     });
-
-    console.log("AI response status:", res.status);
 
     if (!res.ok) {
       const errText = await res.text().catch(() => "");

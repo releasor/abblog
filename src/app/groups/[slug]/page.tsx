@@ -100,7 +100,7 @@ export default function GroupDetailPage() {
         <div className="relative h-48 rounded-xl overflow-hidden mb-6">
           <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 to-teal-600" />
           {group.coverImage && (
-            <img src={group.coverImage} alt="" className="w-full h-full object-cover" />
+            <img src={group.coverImage} alt="" className="w-full h-full object-cover" loading="lazy" />
           )}
           <div className="absolute inset-0 bg-black/30" />
           <div className="absolute bottom-4 left-4 right-4">

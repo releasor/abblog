@@ -3,8 +3,24 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getAiConfig } from "@/lib/ai-config";
+import { checkRateLimit, getRateLimitHeaders } from "@/lib/rate-limit";
 
 export async function POST(request: NextRequest) {
+  const session = await getServerSession(authOptions);
+  const userId = (session?.user as { id?: string })?.id;
+  if (!userId) {
+    return NextResponse.json({ error: "请先登录" }, { status: 401 });
+  }
+
+  // Rate limit AI requests
+  const rl = checkRateLimit(`ai:${userId}`, { windowMs: 60_000, max: 10 });
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "AI 请求过于频繁，请稍后再试" },
+      { status: 429, headers: getRateLimitHeaders(rl) }
+    );
+  }
+
   const { postId, question } = await request.json();
 
   if (!postId || !question) {
@@ -19,9 +35,6 @@ export async function POST(request: NextRequest) {
   if (!post) {
     return NextResponse.json({ error: "文章不存在" }, { status: 404 });
   }
-
-  const session = await getServerSession(authOptions);
-  const userId = (session?.user as { id?: string })?.id;
 
   // Use user config if logged in, otherwise fall back to env vars
   const config = userId

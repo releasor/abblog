@@ -110,8 +110,8 @@ export default function BookmarksPage() {
       <div className="max-w-6xl mx-auto">
         <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-8">我的收藏</h1>
 
-        <div className="flex gap-6">
-          <div className="w-64 flex-shrink-0">
+        <div className="flex flex-col md:flex-row gap-6">
+          <div className="w-full md:w-64 flex-shrink-0">
             <div className="sticky top-24 space-y-2">
               <button
                 onClick={() => setShowNew(!showNew)}

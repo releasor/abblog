@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { Plus, Pencil, Trash2, Search, ChevronLeft, ChevronRight, FileText } from "lucide-react";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 
 interface Post {
   id: number;
@@ -32,6 +33,7 @@ export default function AdminPostsPage() {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<number | null>(null);
 
   const fetchPosts = useCallback(async () => {
     setLoading(true);
@@ -57,11 +59,11 @@ export default function AdminPostsPage() {
   }, [fetchPosts]);
 
   const handleDelete = async (id: number) => {
-    if (!confirm("确定要删除这篇文章吗？相关的评论和标签关联也会被删除。")) return;
     setDeleteId(id);
     const res = await fetch(`/api/posts/${id}`, { method: "DELETE" });
     if (res.ok) fetchPosts();
     setDeleteId(null);
+    setConfirmDelete(null);
   };
 
   const formatDate = (date: string | null) => {
@@ -154,8 +156,8 @@ export default function AdminPostsPage() {
           </Link>
         </div>
       ) : (
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden">
-          <table className="w-full">
+        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-x-auto">
+          <table className="w-full min-w-[700px]">
             <thead>
               <tr className="border-b border-zinc-200 dark:border-zinc-800">
                 <th className="px-5 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
@@ -231,7 +233,7 @@ export default function AdminPostsPage() {
                         <Pencil className="w-4 h-4" />
                       </Link>
                       <button
-                        onClick={() => handleDelete(post.id)}
+                        onClick={() => setConfirmDelete(post.id)}
                         disabled={deleteId === post.id}
                         className="p-2 rounded-lg text-zinc-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50 transition-colors"
                       >
@@ -273,6 +275,16 @@ export default function AdminPostsPage() {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        open={confirmDelete !== null}
+        title="删除文章"
+        message="确定要删除这篇文章吗？相关的评论和标签关联也会被删除。"
+        confirmLabel="删除"
+        variant="danger"
+        onConfirm={() => confirmDelete && handleDelete(confirmDelete)}
+        onCancel={() => setConfirmDelete(null)}
+      />
     </div>
   );
 }

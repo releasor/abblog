@@ -20,8 +20,19 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "billionaire",
-  description: "一个面向开发者的个人博客",
+  title: {
+    default: "billionaire",
+    template: "%s | billionaire",
+  },
+  description: "AI 与数字生活的无限可能 — 分享前沿工具、效率技巧和生活方式的思考",
+  openGraph: {
+    type: "website",
+    locale: "zh_CN",
+    siteName: "billionaire",
+  },
+  twitter: {
+    card: "summary_large_image",
+  },
 };
 
 export default function RootLayout({

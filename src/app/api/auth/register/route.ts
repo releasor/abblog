@@ -1,8 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcrypt";
 import { prisma } from "@/lib/prisma";
+import { checkRateLimit, RATE_LIMITS, getRateLimitHeaders } from "@/lib/rate-limit";
 
 export async function POST(request: NextRequest) {
+  // Rate limit by IP
+  const ip = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown";
+  const rl = checkRateLimit(`register:${ip}`, RATE_LIMITS.auth);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "注册请求过于频繁，请稍后再试" },
+      { status: 429, headers: getRateLimitHeaders(rl) }
+    );
+  }
+
   const body = await request.json();
   const { email, password, name } = body;
 

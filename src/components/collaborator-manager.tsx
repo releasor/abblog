@@ -123,7 +123,7 @@ export function CollaboratorManager({ postId, isAuthor }: CollaboratorManagerPro
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center">
                 {c.user.avatar ? (
-                  <img src={c.user.avatar} alt="" className="w-8 h-8 rounded-full" />
+                  <img src={c.user.avatar} alt="" className="w-8 h-8 rounded-full" loading="lazy" />
                 ) : (
                   <span className="text-sm font-medium">{c.user.name[0]}</span>
                 )}

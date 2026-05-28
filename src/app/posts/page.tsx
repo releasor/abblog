@@ -1,8 +1,14 @@
+import { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { estimateReadingTime } from "@/lib/reading-time";
 import { PostCard } from "@/components/post-card";
 import { Pagination } from "@/components/pagination";
 import { notFound } from "next/navigation";
+
+export const metadata: Metadata = {
+  title: "所有文章",
+  description: "浏览所有已发布的文章",
+};
 
 export const dynamic = "force-dynamic";
 
