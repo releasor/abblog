@@ -15,8 +15,11 @@ export async function GET(
   }
 
   const { id } = await params;
+  const promptId = parseInt(id);
+  if (isNaN(promptId)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+
   const prompt = await prisma.prompt.findFirst({
-    where: { id: parseInt(id), userId: parseInt(userId) },
+    where: { id: promptId, userId: parseInt(userId) },
   });
 
   if (!prompt) {
@@ -38,8 +41,11 @@ export async function PATCH(
   }
 
   const { id } = await params;
+  const promptId = parseInt(id);
+  if (isNaN(promptId)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+
   const existing = await prisma.prompt.findFirst({
-    where: { id: parseInt(id), userId: parseInt(userId) },
+    where: { id: promptId, userId: parseInt(userId) },
   });
 
   if (!existing) {
@@ -50,7 +56,7 @@ export async function PATCH(
   const { title, content, category, tags, variables, isPinned } = body;
 
   const prompt = await prisma.prompt.update({
-    where: { id: parseInt(id) },
+    where: { id: promptId },
     data: {
       ...(title !== undefined && { title }),
       ...(content !== undefined && { content }),
@@ -76,15 +82,18 @@ export async function DELETE(
   }
 
   const { id } = await params;
+  const promptId = parseInt(id);
+  if (isNaN(promptId)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+
   const existing = await prisma.prompt.findFirst({
-    where: { id: parseInt(id), userId: parseInt(userId) },
+    where: { id: promptId, userId: parseInt(userId) },
   });
 
   if (!existing) {
     return NextResponse.json({ error: "提示词不存在" }, { status: 404 });
   }
 
-  await prisma.prompt.delete({ where: { id: parseInt(id) } });
+  await prisma.prompt.delete({ where: { id: promptId } });
 
   return NextResponse.json({ success: true });
 }
