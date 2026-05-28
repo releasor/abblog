@@ -5,8 +5,11 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  const seriesId = parseInt(id);
+  if (isNaN(seriesId)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+
   const series = await prisma.postSeries.findUnique({
-    where: { id: parseInt(id) },
+    where: { id: seriesId },
     include: {
       user: { select: { id: true, name: true, username: true, avatar: true } },
       posts: {
@@ -25,13 +28,16 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id } = await params;
-  const series = await prisma.postSeries.findUnique({ where: { id: parseInt(id) } });
+  const seriesId = parseInt(id);
+  if (isNaN(seriesId)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+
+  const series = await prisma.postSeries.findUnique({ where: { id: seriesId } });
   if (!series) return NextResponse.json({ error: "Not found" }, { status: 404 });
   if (series.userId !== parseInt(userId)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const body = await request.json();
   const updated = await prisma.postSeries.update({
-    where: { id: parseInt(id) },
+    where: { id: seriesId },
     data: {
       name: body.name ?? undefined,
       description: body.description ?? undefined,
@@ -47,10 +53,13 @@ export async function DELETE(_request: NextRequest, { params }: { params: Promis
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id } = await params;
-  const series = await prisma.postSeries.findUnique({ where: { id: parseInt(id) } });
+  const seriesId = parseInt(id);
+  if (isNaN(seriesId)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+
+  const series = await prisma.postSeries.findUnique({ where: { id: seriesId } });
   if (!series) return NextResponse.json({ error: "Not found" }, { status: 404 });
   if (series.userId !== parseInt(userId)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-  await prisma.postSeries.delete({ where: { id: parseInt(id) } });
+  await prisma.postSeries.delete({ where: { id: seriesId } });
   return NextResponse.json({ success: true });
 }
