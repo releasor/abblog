@@ -8,6 +8,7 @@ import { UserAvatar } from "@/components/user-avatar";
 import { FollowButton } from "@/components/follow-button";
 import { formatDate } from "@/lib/format-date";
 import { EmptyState } from "@/components/empty-state";
+import { Skeleton } from "@/components/skeleton";
 
 interface UserProfile {
   id: number;
@@ -47,31 +48,65 @@ export default function UserProfilePage() {
 
   useEffect(() => {
     fetch(`/api/users/${username}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.error) {
+      .then((res) => {
+        if (!res.ok) {
           router.push("/");
-          return;
+          return null;
         }
-        setProfile(data);
-        setLoading(false);
+        return res.json();
+      })
+      .then((data) => {
+        if (data) {
+          setProfile(data);
+        }
       })
       .catch((e) => {
         console.error("[Profile] Failed to fetch user profile:", e);
-        setLoading(false);
-      });
-  }, [username]);
+      })
+      .finally(() => setLoading(false));
+  }, [username, router]);
 
   useEffect(() => {
     if (!profile) return;
     fetch(`/api/users/${username}/posts?tab=${tab}`)
-      .then((res) => res.json())
+      .then((res) => res.ok ? res.json() : [])
       .then(setPosts)
       .catch((e) => console.error("[Profile] Failed to fetch user posts:", e));
-  }, [profile, tab]);
+  }, [profile, tab, username]);
 
   if (loading) {
-    return <div className="max-w-3xl mx-auto px-4 py-12 text-center text-zinc-500">加载中...</div>;
+    return (
+      <div className="max-w-3xl mx-auto px-4 py-12">
+        <div className="flex items-start gap-6 mb-8">
+          <Skeleton className="w-20 h-20 rounded-full flex-shrink-0" />
+          <div className="flex-1 space-y-3">
+            <Skeleton className="h-6 w-1/3" />
+            <Skeleton className="h-4 w-1/4" />
+            <Skeleton className="h-4 w-2/3" />
+            <div className="flex gap-4">
+              <Skeleton className="h-4 w-16" />
+              <Skeleton className="h-4 w-16" />
+            </div>
+          </div>
+        </div>
+        <div className="flex gap-1 p-1 bg-zinc-100 dark:bg-zinc-800 rounded-xl mb-6">
+          <Skeleton className="h-9 flex-1 rounded-lg" />
+          <Skeleton className="h-9 flex-1 rounded-lg" />
+        </div>
+        <div className="space-y-4">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="flex gap-4 p-5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl">
+              <div className="flex-1 space-y-3">
+                <Skeleton className="h-5 w-3/4" />
+                <Skeleton className="h-3 w-full" />
+                <Skeleton className="h-3 w-2/3" />
+              </div>
+              <Skeleton className="w-24 h-24 rounded-lg flex-shrink-0" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
   }
 
   if (!profile) return null;

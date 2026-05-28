@@ -7,6 +7,8 @@ import Link from "next/link";
 import { UserAvatar } from "@/components/user-avatar";
 import { formatMonthDay } from "@/lib/format-date";
 import { EmptyState } from "@/components/empty-state";
+import { showToast } from "@/components/toast";
+import { Skeleton } from "@/components/skeleton";
 
 interface Conversation {
   id: number;
@@ -36,26 +38,39 @@ function MessagesContent() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ targetUserId }),
       })
-        .then((res) => res.json())
+        .then((res) => {
+          if (res.ok) return res.json();
+          showToast("创建会话失败", "error");
+          return null;
+        })
         .then((data) => {
-          if (data.id) {
+          if (data?.id) {
             router.push(`/messages/${data.id}`);
           }
         })
-        .catch((e) => console.error("[Messages] Failed to create conversation:", e));
+        .catch((e) => {
+          console.error("[Messages] Failed to create conversation:", e);
+          showToast("创建会话失败", "error");
+        });
       return;
     }
 
     fetch("/api/conversations")
-      .then((res) => res.json())
+      .then((res) => {
+        if (res.ok) return res.json();
+        showToast("加载会话列表失败", "error");
+        return [];
+      })
       .then((data) => {
-        setConversations(data);
-        setLoading(false);
+        if (Array.isArray(data)) {
+          setConversations(data);
+        }
       })
       .catch((e) => {
         console.error("[Messages] Failed to fetch conversations:", e);
-        setLoading(false);
-      });
+        showToast("加载会话列表失败", "error");
+      })
+      .finally(() => setLoading(false));
   }, [status, targetUserId]);
 
   const isUnread = (conv: Conversation) => {
@@ -64,7 +79,25 @@ function MessagesContent() {
   };
 
   if (status !== "authenticated" || loading) {
-    return <div className="max-w-2xl mx-auto px-4 py-12 text-center text-zinc-500">加载中...</div>;
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-12">
+        <Skeleton className="h-9 w-16 mb-8" />
+        <div className="space-y-2">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="flex items-center gap-4 p-4 rounded-lg border border-zinc-200 dark:border-zinc-800">
+              <Skeleton className="w-12 h-12 rounded-full flex-shrink-0" />
+              <div className="flex-1 space-y-2">
+                <div className="flex items-center justify-between">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-3 w-12" />
+                </div>
+                <Skeleton className="h-3 w-3/4" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -116,7 +149,25 @@ function MessagesContent() {
 
 export default function MessagesPage() {
   return (
-    <Suspense fallback={<div className="max-w-2xl mx-auto px-4 py-12 text-center text-zinc-500">加载中...</div>}>
+    <Suspense fallback={
+      <div className="max-w-2xl mx-auto px-4 py-12">
+        <Skeleton className="h-9 w-16 mb-8" />
+        <div className="space-y-2">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="flex items-center gap-4 p-4 rounded-lg border border-zinc-200 dark:border-zinc-800">
+              <Skeleton className="w-12 h-12 rounded-full flex-shrink-0" />
+              <div className="flex-1 space-y-2">
+                <div className="flex items-center justify-between">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-3 w-12" />
+                </div>
+                <Skeleton className="h-3 w-3/4" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    }>
       <MessagesContent />
     </Suspense>
   );

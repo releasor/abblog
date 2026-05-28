@@ -6,6 +6,8 @@ import Link from "next/link";
 import { UserAvatar } from "@/components/user-avatar";
 import { FollowButton } from "@/components/follow-button";
 import { EmptyState } from "@/components/empty-state";
+import { showToast } from "@/components/toast";
+import { Skeleton } from "@/components/skeleton";
 
 interface FollowUser {
   id: number;
@@ -23,18 +25,39 @@ export default function FollowingPage() {
 
   useEffect(() => {
     fetch(`/api/users/${username}/following`)
-      .then((res) => res.json())
-      .then((data) => {
-        setUsers(data);
-        setLoading(false);
+      .then((res) => {
+        if (res.ok) return res.json();
+        showToast("加载关注列表失败", "error");
+        return [];
       })
+      .then((data) => { if (Array.isArray(data)) setUsers(data); })
       .catch((e) => {
         console.error("[Following] Failed to fetch following list:", e);
-        setLoading(false);
-      });
+        showToast("加载关注列表失败", "error");
+      })
+      .finally(() => setLoading(false));
   }, [username]);
 
-  if (loading) return <div className="max-w-2xl mx-auto px-4 py-12 text-center text-zinc-500">加载中...</div>;
+  if (loading) {
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-12">
+        <Skeleton className="h-4 w-16 mb-6" />
+        <Skeleton className="h-9 w-32 mb-6" />
+        <div className="space-y-3">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="flex items-center gap-3 p-3 border border-zinc-200 dark:border-zinc-800 rounded-lg">
+              <Skeleton className="w-10 h-10 rounded-full flex-shrink-0" />
+              <div className="flex-1 space-y-2">
+                <Skeleton className="h-4 w-1/3" />
+                <Skeleton className="h-3 w-2/3" />
+              </div>
+              <Skeleton className="h-8 w-16 rounded-lg" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-12">

@@ -6,6 +6,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { formatDateTime } from "@/lib/format-date";
 import { EmptyState } from "@/components/empty-state";
+import { showToast } from "@/components/toast";
+import { Skeleton } from "@/components/skeleton";
 
 interface Notification {
   id: number;
@@ -50,14 +52,19 @@ export default function NotificationsPage() {
 
   const markAsRead = async (id?: number) => {
     try {
-      await fetch("/api/notifications", {
+      const res = await fetch("/api/notifications", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(id ? { id } : {}),
       });
-      fetchNotifications();
+      if (res.ok) {
+        fetchNotifications();
+      } else {
+        showToast("操作失败", "error");
+      }
     } catch (e) {
       console.error("[Notifications] Failed to mark as read:", e);
+      showToast("操作失败", "error");
     }
   };
 
@@ -72,7 +79,24 @@ export default function NotificationsPage() {
   if (loading) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-12">
-        <div className="text-center text-zinc-500">加载中...</div>
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <Skeleton className="h-9 w-32 mb-2" />
+            <Skeleton className="h-4 w-24" />
+          </div>
+          <Skeleton className="h-8 w-20 rounded-lg" />
+        </div>
+        <div className="space-y-2">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="flex items-start gap-3 p-4 rounded-lg border border-zinc-200 dark:border-zinc-800">
+              <Skeleton className="w-6 h-6 rounded flex-shrink-0" />
+              <div className="flex-1 space-y-2">
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-3 w-24" />
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     );
   }

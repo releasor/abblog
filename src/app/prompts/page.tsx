@@ -3,6 +3,8 @@
 import { useState, useRef, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { showToast } from "@/components/toast";
+import { Skeleton } from "@/components/skeleton";
 
 type Tab = "chat" | "optimizer";
 
@@ -16,7 +18,15 @@ export default function PromptsPage() {
   }, [status]);
 
   if (status !== "authenticated") {
-    return <div className="max-w-4xl mx-auto px-4 py-12 text-center text-zinc-500">加载中...</div>;
+    return (
+      <div className="max-w-4xl mx-auto px-4 py-12">
+        <div className="flex gap-1 p-1 bg-zinc-100 dark:bg-zinc-800 rounded-xl mb-6">
+          <Skeleton className="h-10 flex-1 rounded-lg" />
+          <Skeleton className="h-10 flex-1 rounded-lg" />
+        </div>
+        <Skeleton className="h-64 w-full rounded-xl" />
+      </div>
+    );
   }
 
   return (
@@ -89,8 +99,12 @@ function ChatTab() {
           mode: "chat",
         }),
       });
-      const data = await res.json();
-      setMessages((prev) => [...prev, { role: "assistant", content: data.reply }]);
+      if (res.ok) {
+        const data = await res.json();
+        setMessages((prev) => [...prev, { role: "assistant", content: data.reply }]);
+      } else {
+        setMessages((prev) => [...prev, { role: "assistant", content: "请求失败，请重试" }]);
+      }
     } catch {
       setMessages((prev) => [...prev, { role: "assistant", content: "请求失败，请重试" }]);
     }
@@ -192,10 +206,16 @@ function OptimizerTab() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ content: input }),
       });
-      const data = await res.json();
-      setOptimized(data.optimized || "优化失败");
+      if (res.ok) {
+        const data = await res.json();
+        setOptimized(data.optimized || "优化失败");
+      } else {
+        const data = await res.json().catch(() => null);
+        showToast(data?.error || "优化失败", "error");
+        setOptimized("");
+      }
     } catch {
-      setOptimized("请求失败，请重试");
+      showToast("请求失败，请重试", "error");
     }
     setLoading(false);
   };

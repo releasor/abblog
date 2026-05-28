@@ -5,6 +5,8 @@ import { useSession } from "next-auth/react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { UserAvatar } from "@/components/user-avatar";
+import { showToast } from "@/components/toast";
+import { Skeleton } from "@/components/skeleton";
 
 interface Message {
   id: number;
@@ -43,7 +45,7 @@ export default function ChatPage() {
         const conv = convs.find((c: { id: number }) => c.id === parseInt(conversationId));
         if (conv) setInfo({ otherUser: conv.otherUser });
       })
-      .catch(() => {});
+      .catch((e) => console.error("[Conversation] Failed to fetch conversation info:", e));
 
     // Fetch messages
     fetch(`/api/conversations/${conversationId}/messages`)
@@ -52,7 +54,10 @@ export default function ChatPage() {
         setMessages(data);
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch((e) => {
+        console.error("[Conversation] Failed to fetch messages:", e);
+        setLoading(false);
+      });
   }, [status, conversationId]);
 
   useEffect(() => {
@@ -65,17 +70,24 @@ export default function ChatPage() {
     const content = input.trim();
     setInput("");
 
-    const res = await fetch(`/api/conversations/${conversationId}/messages`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ content }),
-    });
+    try {
+      const res = await fetch(`/api/conversations/${conversationId}/messages`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content }),
+      });
 
-    if (res.ok) {
-      const msg = await res.json();
-      setMessages((prev) => [...prev, msg]);
+      if (res.ok) {
+        const msg = await res.json();
+        setMessages((prev) => [...prev, msg]);
+      } else {
+        showToast("发送失败", "error");
+      }
+    } catch (e) {
+      console.error("[Conversation] Failed to send message:", e);
+    } finally {
+      setSending(false);
     }
-    setSending(false);
   };
 
   const formatTime = (date: string) => {
@@ -83,7 +95,28 @@ export default function ChatPage() {
   };
 
   if (status !== "authenticated" || loading) {
-    return <div className="max-w-2xl mx-auto px-4 py-12 text-center text-zinc-500">加载中...</div>;
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-12">
+        <div className="flex items-center gap-3 mb-6">
+          <Skeleton className="h-4 w-16" />
+          <Skeleton className="h-6 w-32" />
+        </div>
+        <div className="space-y-4 mb-6">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className={`flex ${i % 2 === 0 ? "justify-start" : "justify-end"}`}>
+              <div className="flex items-end gap-2 max-w-[70%]">
+                {i % 2 === 0 && <Skeleton className="w-8 h-8 rounded-full flex-shrink-0" />}
+                <Skeleton className={`h-12 ${i % 2 === 0 ? "w-48" : "w-40"} rounded-2xl`} />
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="flex gap-2">
+          <Skeleton className="h-10 flex-1 rounded-full" />
+          <Skeleton className="h-10 w-16 rounded-full" />
+        </div>
+      </div>
+    );
   }
 
   return (

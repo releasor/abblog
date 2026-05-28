@@ -4,6 +4,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import PostForm from "@/components/post-form";
+import { Skeleton } from "@/components/skeleton";
 
 export default function NewPostPage() {
   const { data: session, status } = useSession();
@@ -18,7 +19,16 @@ export default function NewPostPage() {
   if (status === "loading") {
     return (
       <div className="max-w-4xl mx-auto px-4 py-12">
-        <div className="text-zinc-500">加载中...</div>
+        <Skeleton className="h-8 w-48 mb-6" />
+        <div className="space-y-6">
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-64 w-full rounded-xl" />
+          <div className="flex gap-3">
+            <Skeleton className="h-10 w-24 rounded-lg" />
+            <Skeleton className="h-10 w-24 rounded-lg" />
+          </div>
+        </div>
       </div>
     );
   }
