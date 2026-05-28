@@ -208,7 +208,7 @@ export default async function PublicPostPage({ params }: PageProps) {
 
       <PostContent content={processedContent} />
 
-      <div className="flex items-center justify-between py-6 my-8 border-t border-b border-zinc-200 dark:border-zinc-800">
+      <div className="flex flex-wrap items-center justify-between gap-4 py-6 my-8 border-t border-b border-zinc-200 dark:border-zinc-800">
         <PostActions postId={post.id} />
         <DonateButton recipientId={post.author.id} recipientName={post.author.name} postId={post.id} />
         <ShareButtons title={post.title} url={absoluteUrl(`/posts/${post.slug}`)} postId={post.id} />
