@@ -5,8 +5,10 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  const groupId = parseInt(id);
+  if (isNaN(groupId)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
   const group = await prisma.group.findUnique({
-    where: { id: parseInt(id) },
+    where: { id: groupId },
     include: {
       owner: { select: { id: true, name: true, username: true, avatar: true } },
       members: { include: { user: { select: { id: true, name: true, username: true, avatar: true } } } },
@@ -23,12 +25,15 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id } = await params;
-  const group = await prisma.group.findUnique({ where: { id: parseInt(id) } });
+  const groupId = parseInt(id);
+  if (isNaN(groupId)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+
+  const group = await prisma.group.findUnique({ where: { id: groupId } });
   if (!group || group.ownerId !== parseInt(userId)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const body = await request.json();
   const updated = await prisma.group.update({
-    where: { id: parseInt(id) },
+    where: { id: groupId },
     data: {
       name: body.name ?? undefined,
       description: body.description ?? undefined,
@@ -45,9 +50,12 @@ export async function DELETE(_request: NextRequest, { params }: { params: Promis
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id } = await params;
-  const group = await prisma.group.findUnique({ where: { id: parseInt(id) } });
+  const groupId = parseInt(id);
+  if (isNaN(groupId)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+
+  const group = await prisma.group.findUnique({ where: { id: groupId } });
   if (!group || group.ownerId !== parseInt(userId)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-  await prisma.group.delete({ where: { id: parseInt(id) } });
+  await prisma.group.delete({ where: { id: groupId } });
   return NextResponse.json({ success: true });
 }
