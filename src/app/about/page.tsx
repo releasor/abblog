@@ -1,3 +1,10 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "关于 - billionaire",
+  description: "关于 billionaire 博客 — 专注于 AI 与数字生活的个人博客",
+};
+
 export default function AboutPage() {
   return (
     <div className="max-w-3xl mx-auto px-4 py-12">
