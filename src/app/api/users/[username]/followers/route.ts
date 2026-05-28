@@ -5,26 +5,33 @@ export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ username: string }> }
 ) {
-  const { username } = await params;
+  try {
+    const { username } = await params;
 
-  const user = await prisma.user.findUnique({
-    where: { username },
-    select: { id: true },
-  });
+    const user = await prisma.user.findUnique({
+      where: { username },
+      select: { id: true },
+    });
 
-  if (!user) {
-    return NextResponse.json({ error: "用户不存在" }, { status: 404 });
-  }
+    if (!user) {
+      return NextResponse.json({ error: "用户不存在" }, { status: 404 });
+    }
 
-  const follows = await prisma.follow.findMany({
-    where: { followingId: user.id },
-    include: {
-      follower: {
-        select: { id: true, name: true, username: true, avatar: true, bio: true },
+    const follows = await prisma.follow.findMany({
+      where: { followingId: user.id },
+      include: {
+        follower: {
+          select: { id: true, name: true, username: true, avatar: true, bio: true },
+        },
       },
-    },
-    orderBy: { createdAt: "desc" },
-  });
+      orderBy: { createdAt: "desc" },
+    });
 
-  return NextResponse.json(follows.map((f) => f.follower));
+    return NextResponse.json(follows.map((f) => f.follower), {
+      headers: { "Cache-Control": "public, s-maxage=60, stale-while-revalidate=120" },
+    });
+  } catch (e) {
+    console.error("[Followers] Failed to fetch followers list:", e);
+    return NextResponse.json({ error: "Failed to fetch followers list" }, { status: 500 });
+  }
 }
