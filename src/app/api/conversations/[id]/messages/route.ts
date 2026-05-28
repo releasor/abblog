@@ -9,6 +9,8 @@ export async function GET(
 ) {
   const { id } = await params;
   const conversationId = parseInt(id);
+  if (isNaN(conversationId)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+
   const session = await getServerSession(authOptions);
   const userId = (session?.user as { id?: string })?.id;
 
@@ -27,12 +29,14 @@ export async function GET(
 
   const { searchParams } = new URL(request.url);
   const before = searchParams.get("before");
+  const beforeId = before ? parseInt(before) : undefined;
+  if (before && isNaN(beforeId!)) return NextResponse.json({ error: "Invalid before parameter" }, { status: 400 });
   const limit = 30;
 
   const messages = await prisma.directMessage.findMany({
     where: {
       conversationId,
-      ...(before ? { id: { lt: parseInt(before) } } : {}),
+      ...(beforeId ? { id: { lt: beforeId } } : {}),
     },
     orderBy: { createdAt: "desc" },
     take: limit,
@@ -54,6 +58,8 @@ export async function POST(
 ) {
   const { id } = await params;
   const conversationId = parseInt(id);
+  if (isNaN(conversationId)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+
   const session = await getServerSession(authOptions);
   const userId = (session?.user as { id?: string })?.id;
 
