@@ -10,6 +10,7 @@ export async function POST(_request: NextRequest, { params }: { params: Promise<
 
   const { id } = await params;
   const groupId = parseInt(id);
+  if (isNaN(groupId)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
   const uid = parseInt(userId);
 
   const existing = await prisma.groupMember.findUnique({
@@ -30,6 +31,7 @@ export async function DELETE(_request: NextRequest, { params }: { params: Promis
 
   const { id } = await params;
   const groupId = parseInt(id);
+  if (isNaN(groupId)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
   const uid = parseInt(userId);
 
   await prisma.groupMember.delete({
