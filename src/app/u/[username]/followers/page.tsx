@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { UserAvatar } from "@/components/user-avatar";
 import { FollowButton } from "@/components/follow-button";
+import { EmptyState } from "@/components/empty-state";
 
 interface FollowUser {
   id: number;
@@ -27,7 +28,10 @@ export default function FollowersPage() {
         setUsers(data);
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch((e) => {
+        console.error("[Followers] Failed to fetch followers list:", e);
+        setLoading(false);
+      });
   }, [username]);
 
   if (loading) return <div className="max-w-2xl mx-auto px-4 py-12 text-center text-zinc-500">加载中...</div>;
@@ -40,7 +44,7 @@ export default function FollowersPage() {
       </div>
       <div className="space-y-3">
         {users.length === 0 ? (
-          <p className="text-center text-zinc-500 dark:text-zinc-400 py-12">暂无粉丝</p>
+          <EmptyState compact message="暂无粉丝" />
         ) : (
           users.map((user) => (
             <div key={user.id} className="flex items-center gap-4 p-4 rounded-lg border border-zinc-200 dark:border-zinc-800">

@@ -3,7 +3,10 @@
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import { EmptyState } from "@/components/empty-state";
+import Image from "next/image";
 import { showToast } from "@/components/toast";
+import { formatDate } from "@/lib/format-date";
 import { Users, FileText } from "lucide-react";
 
 interface Group {
@@ -100,7 +103,7 @@ export default function GroupDetailPage() {
         <div className="relative h-48 rounded-xl overflow-hidden mb-6">
           <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 to-teal-600" />
           {group.coverImage && (
-            <img src={group.coverImage} alt="" className="w-full h-full object-cover" loading="lazy" />
+            <Image src={group.coverImage} alt="" fill className="object-cover" sizes="(max-width: 768px) 100vw, 768px" />
           )}
           <div className="absolute inset-0 bg-black/30" />
           <div className="absolute bottom-4 left-4 right-4">
@@ -145,9 +148,7 @@ export default function GroupDetailPage() {
             圈子文章
           </h2>
           {posts.length === 0 ? (
-            <div className="text-center py-8 text-zinc-500">
-              <p>暂无文章</p>
-            </div>
+            <EmptyState compact message="暂无文章" />
           ) : (
             <div className="space-y-4">
               {posts.map((post) => (
@@ -167,7 +168,7 @@ export default function GroupDetailPage() {
                     {post.publishedAt && (
                       <>
                         <span>-</span>
-                        <span>{new Date(post.publishedAt).toLocaleDateString("zh-CN")}</span>
+                        <span>{formatDate(post.publishedAt)}</span>
                       </>
                     )}
                   </div>

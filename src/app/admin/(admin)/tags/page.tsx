@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Tag, Plus, Pencil, Trash2, Check, X } from "lucide-react";
+import { SkeletonRow } from "@/components/skeleton";
+import { EmptyState } from "@/components/empty-state";
 
 interface TagItem {
   id: number;
@@ -23,11 +25,16 @@ export default function AdminTagsPage() {
   const [deleteId, setDeleteId] = useState<number | null>(null);
 
   const fetchTags = useCallback(async () => {
-    setLoading(true);
-    const res = await fetch("/api/tags");
-    const data = await res.json();
-    setTags(data);
-    setLoading(false);
+    try {
+      setLoading(true);
+      const res = await fetch("/api/tags");
+      const data = await res.json();
+      setTags(data);
+    } catch (e) {
+      console.error("[AdminTags] Failed to fetch tags:", e);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -39,49 +46,66 @@ export default function AdminTagsPage() {
     setCreateError("");
     setCreating(true);
 
-    const res = await fetch("/api/tags", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: newName }),
-    });
+    try {
+      const res = await fetch("/api/tags", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: newName }),
+      });
 
-    const data = await res.json();
-    if (!res.ok) {
-      setCreateError(data.error);
-    } else {
-      setNewName("");
-      fetchTags();
+      const data = await res.json();
+      if (!res.ok) {
+        setCreateError(data.error);
+      } else {
+        setNewName("");
+        fetchTags();
+      }
+    } catch (e) {
+      console.error("[AdminTags] Failed to create tag:", e);
+      setCreateError("创建标签失败");
+    } finally {
+      setCreating(false);
     }
-    setCreating(false);
   };
 
   const handleSave = async (id: number) => {
     setEditError("");
     setSaving(true);
 
-    const res = await fetch(`/api/tags/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: editName }),
-    });
+    try {
+      const res = await fetch(`/api/tags/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: editName }),
+      });
 
-    const data = await res.json();
-    if (!res.ok) {
-      setEditError(data.error);
-    } else {
-      setEditId(null);
-      setEditName("");
-      fetchTags();
+      const data = await res.json();
+      if (!res.ok) {
+        setEditError(data.error);
+      } else {
+        setEditId(null);
+        setEditName("");
+        fetchTags();
+      }
+    } catch (e) {
+      console.error("[AdminTags] Failed to save tag:", e);
+      setEditError("保存标签失败");
+    } finally {
+      setSaving(false);
     }
-    setSaving(false);
   };
 
   const handleDelete = async (id: number) => {
     if (!confirm("确定要删除此标签吗？该标签会从所有文章中移除。")) return;
-    setDeleteId(id);
-    const res = await fetch(`/api/tags/${id}`, { method: "DELETE" });
-    if (res.ok) fetchTags();
-    setDeleteId(null);
+    try {
+      setDeleteId(id);
+      const res = await fetch(`/api/tags/${id}`, { method: "DELETE" });
+      if (res.ok) fetchTags();
+    } catch (e) {
+      console.error("[AdminTags] Failed to delete tag:", e);
+    } finally {
+      setDeleteId(null);
+    }
   };
 
   return (
@@ -118,23 +142,9 @@ export default function AdminTagsPage() {
       </form>
 
       {loading ? (
-        <div className="space-y-3">
-          {[...Array(4)].map((_, i) => (
-            <div
-              key={i}
-              className="h-14 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl animate-pulse"
-            />
-          ))}
-        </div>
+        <SkeletonRow count={4} height="h-14" />
       ) : tags.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 text-center">
-          <div className="p-4 rounded-2xl bg-zinc-100 dark:bg-zinc-800 mb-4">
-            <Tag className="w-8 h-8 text-zinc-400" />
-          </div>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
-            还没有标签，创建一个吧
-          </p>
-        </div>
+        <EmptyState icon={<Tag className="w-8 h-8" />} message="还没有标签，创建一个吧" />
       ) : (
         <div className="flex flex-wrap gap-2">
           {tags.map((tag) => (

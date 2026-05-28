@@ -5,6 +5,8 @@ import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { UserAvatar } from "@/components/user-avatar";
+import { formatMonthDay } from "@/lib/format-date";
+import { EmptyState } from "@/components/empty-state";
 
 interface Conversation {
   id: number;
@@ -40,7 +42,7 @@ function MessagesContent() {
             router.push(`/messages/${data.id}`);
           }
         })
-        .catch(() => {});
+        .catch((e) => console.error("[Messages] Failed to create conversation:", e));
       return;
     }
 
@@ -50,7 +52,10 @@ function MessagesContent() {
         setConversations(data);
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch((e) => {
+        console.error("[Messages] Failed to fetch conversations:", e);
+        setLoading(false);
+      });
   }, [status, targetUserId]);
 
   const isUnread = (conv: Conversation) => {
@@ -67,10 +72,7 @@ function MessagesContent() {
       <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-8">私信</h1>
 
       {conversations.length === 0 ? (
-        <div className="text-center py-12">
-          <p className="text-zinc-500 dark:text-zinc-400 mb-4">暂无私信</p>
-          <p className="text-sm text-zinc-400 dark:text-zinc-500">访问其他用户的个人主页可以发送私信</p>
-        </div>
+        <EmptyState message="暂无私信" description="访问其他用户的个人主页可以发送私信" />
       ) : (
         <div className="space-y-2">
           {conversations.map((conv) => (
@@ -91,7 +93,7 @@ function MessagesContent() {
                   </span>
                   {conv.lastMessage && (
                     <time className="text-xs text-zinc-400">
-                      {new Date(conv.lastMessage.createdAt).toLocaleDateString("zh-CN", { month: "short", day: "numeric" })}
+                      {formatMonthDay(conv.lastMessage.createdAt)}
                     </time>
                   )}
                 </div>

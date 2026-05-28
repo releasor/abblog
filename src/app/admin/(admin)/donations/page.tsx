@@ -2,6 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { Heart, ChevronLeft, ChevronRight } from "lucide-react";
+import { formatDate } from "@/lib/format-date";
+import { SkeletonRow } from "@/components/skeleton";
+import { EmptyState } from "@/components/empty-state";
 
 interface Donation {
   id: number;
@@ -31,7 +34,7 @@ export default function AdminDonationsPage() {
         setDonations(data.donations || []);
         setTotalPages(data.pagination?.totalPages || 1);
       })
-      .catch(() => {})
+      .catch((e) => console.error("[Donations] Failed to fetch donations:", e))
       .finally(() => setLoading(false));
   }, [page, tab]);
 
@@ -86,21 +89,9 @@ export default function AdminDonationsPage() {
       </div>
 
       {loading ? (
-        <div className="space-y-3">
-          {[...Array(5)].map((_, i) => (
-            <div
-              key={i}
-              className="h-16 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl animate-pulse"
-            />
-          ))}
-        </div>
+        <SkeletonRow count={5} height="h-16" />
       ) : donations.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 text-center">
-          <div className="p-4 rounded-2xl bg-zinc-100 dark:bg-zinc-800 mb-4">
-            <Heart className="w-8 h-8 text-zinc-400" />
-          </div>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">暂无赞赏记录</p>
-        </div>
+        <EmptyState icon={<Heart className="w-8 h-8" />} message="暂无赞赏记录" />
       ) : (
         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-x-auto">
           <table className="w-full min-w-[600px]">
@@ -155,7 +146,7 @@ export default function AdminDonationsPage() {
                       </span>
                     </td>
                     <td className="px-5 py-3.5 text-sm text-zinc-500 dark:text-zinc-400">
-                      {new Date(d.createdAt).toLocaleDateString("zh-CN")}
+                      {formatDate(d.createdAt)}
                     </td>
                   </tr>
                 );

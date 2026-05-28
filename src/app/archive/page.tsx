@@ -1,11 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { formatMonthDay } from "@/lib/format-date";
+import { EmptyState } from "@/components/empty-state";
 
 export const metadata: Metadata = {
   title: "文章归档 - billionaire",
   description: "所有已发布文章的时间线归档",
 };
+
+export const revalidate = 3600;
 
 export default async function ArchivePage() {
   const posts = await prisma.post.findMany({
@@ -30,11 +34,6 @@ export default async function ArchivePage() {
   }
 
   const years = Object.keys(grouped).map(Number).sort((a, b) => b - a);
-
-  const formatDate = (date: Date | null) => {
-    if (!date) return "";
-    return new Date(date).toLocaleDateString("zh-CN", { month: "long", day: "numeric" });
-  };
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-12">
@@ -65,7 +64,7 @@ export default async function ArchivePage() {
                     {grouped[year][month].map((post) => (
                       <div key={post.slug} className="flex items-baseline gap-3">
                         <time className="text-sm text-zinc-500 dark:text-zinc-500 w-20 flex-shrink-0">
-                          {formatDate(post.publishedAt)}
+                          {formatMonthDay(post.publishedAt)}
                         </time>
                         <Link
                           href={`/posts/${post.slug}`}
@@ -88,9 +87,7 @@ export default async function ArchivePage() {
       </div>
 
       {posts.length === 0 && (
-        <p className="text-center text-zinc-500 dark:text-zinc-400 py-12">
-          暂无已发布文章
-        </p>
+        <EmptyState compact message="暂无已发布文章" />
       )}
     </div>
   );

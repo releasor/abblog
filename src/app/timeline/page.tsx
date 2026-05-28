@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { ActivityItem } from "@/components/activity-item";
+import { EmptyState } from "@/components/empty-state";
 
 export const metadata: Metadata = {
   title: "动态",
@@ -25,9 +26,7 @@ export default async function TimelinePage() {
         </div>
 
         {activities.length === 0 ? (
-          <div className="text-center py-16">
-            <p className="text-zinc-500 dark:text-zinc-400">暂无动态</p>
-          </div>
+          <EmptyState compact message="暂无动态" />
         ) : (
           <div className="divide-y divide-zinc-200 dark:divide-zinc-800">
             {activities.map((activity) => (

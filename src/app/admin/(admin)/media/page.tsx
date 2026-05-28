@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import { ImageIcon, Copy, Check, Trash2 } from "lucide-react";
+import { EmptyState } from "@/components/empty-state";
 
 interface MediaFile {
   filename: string;
@@ -23,7 +25,10 @@ export default function MediaPage() {
         setImages(data);
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch((e) => {
+        console.error("[Media] Failed to fetch media:", e);
+        setLoading(false);
+      });
   }, []);
 
   const copyUrl = async (url: string) => {
@@ -44,13 +49,18 @@ export default function MediaPage() {
   const handleDelete = async (filename: string) => {
     if (!confirm("确定要删除此文件吗？")) return;
     setDeleteFile(filename);
-    const res = await fetch(`/api/media/manage?filename=${encodeURIComponent(filename)}`, {
-      method: "DELETE",
-    });
-    if (res.ok) {
-      setImages((prev) => prev.filter((img) => img.filename !== filename));
+    try {
+      const res = await fetch(`/api/media/manage?filename=${encodeURIComponent(filename)}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        setImages((prev) => prev.filter((img) => img.filename !== filename));
+      }
+    } catch (e) {
+      console.error("[Media] Failed to delete file:", e);
+    } finally {
+      setDeleteFile(null);
     }
-    setDeleteFile(null);
   };
 
   const formatSize = (bytes: number) => {
@@ -87,14 +97,7 @@ export default function MediaPage() {
       </h1>
 
       {images.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 text-center">
-          <div className="p-4 rounded-2xl bg-zinc-100 dark:bg-zinc-800 mb-4">
-            <ImageIcon className="w-8 h-8 text-zinc-400" />
-          </div>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
-            还没有上传过文件
-          </p>
-        </div>
+        <EmptyState icon={<ImageIcon className="w-8 h-8" />} message="还没有上传过文件" />
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
           {images.map((img) => (
@@ -103,11 +106,12 @@ export default function MediaPage() {
               className="group bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors"
             >
               <div className="aspect-square bg-zinc-100 dark:bg-zinc-800 relative overflow-hidden">
-                <img
+                <Image
                   src={img.url}
                   alt={img.filename}
-                  className="w-full h-full object-cover"
-                  loading="lazy"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
                 />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
                   <button

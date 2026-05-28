@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, memo } from "react";
 import { formatRelativeTime } from "@/lib/format-date";
+import { EmptyState } from "@/components/empty-state";
 
 interface Comment {
   id: number;
@@ -64,11 +65,7 @@ export function CommentList({ postId, refreshKey }: CommentListProps) {
   }
 
   if (comments.length === 0) {
-    return (
-      <p className="text-sm text-zinc-500 dark:text-zinc-400">
-        还没有评论，来分享你的想法吧！
-      </p>
-    );
+    return <EmptyState compact message="还没有评论，来分享你的想法吧！" />;
   }
 
   return (

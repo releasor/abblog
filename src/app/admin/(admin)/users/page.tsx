@@ -1,7 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import { Search, ChevronLeft, ChevronRight, Users, Star } from "lucide-react";
+import { formatDate } from "@/lib/format-date";
+import { SkeletonRow } from "@/components/skeleton";
+import { EmptyState } from "@/components/empty-state";
 
 interface User {
   id: number;
@@ -24,12 +28,17 @@ export default function AdminUsersPage() {
   const [loading, setLoading] = useState(true);
 
   const fetchUsers = async () => {
-    setLoading(true);
-    const res = await fetch(`/api/admin/users?page=${page}&q=${encodeURIComponent(query)}`);
-    const data = await res.json();
-    setUsers(data.users || []);
-    setTotalPages(data.pagination?.totalPages || 1);
-    setLoading(false);
+    try {
+      setLoading(true);
+      const res = await fetch(`/api/admin/users?page=${page}&q=${encodeURIComponent(query)}`);
+      const data = await res.json();
+      setUsers(data.users || []);
+      setTotalPages(data.pagination?.totalPages || 1);
+    } catch (e) {
+      console.error("[AdminUsers] Failed to fetch users:", e);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -37,12 +46,16 @@ export default function AdminUsersPage() {
   }, [page, query]);
 
   const handleRoleChange = async (userId: number, role: string) => {
-    await fetch("/api/admin/users", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId, action: "setRole", value: role }),
-    });
-    fetchUsers();
+    try {
+      await fetch("/api/admin/users", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, action: "setRole", value: role }),
+      });
+      fetchUsers();
+    } catch (e) {
+      console.error("[AdminUsers] Failed to change user role:", e);
+    }
   };
 
   const roleLabels: Record<string, string> = { USER: "用户", EDITOR: "编辑", ADMIN: "管理员" };
@@ -73,21 +86,9 @@ export default function AdminUsersPage() {
       </div>
 
       {loading ? (
-        <div className="space-y-3">
-          {[...Array(5)].map((_, i) => (
-            <div
-              key={i}
-              className="h-16 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl animate-pulse"
-            />
-          ))}
-        </div>
+        <SkeletonRow count={5} height="h-16" />
       ) : users.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 text-center">
-          <div className="p-4 rounded-2xl bg-zinc-100 dark:bg-zinc-800 mb-4">
-            <Users className="w-8 h-8 text-zinc-400" />
-          </div>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">未找到用户</p>
-        </div>
+        <EmptyState icon={<Users className="w-8 h-8" />} message="未找到用户" />
       ) : (
         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-x-auto">
           <table className="w-full min-w-[600px]">
@@ -120,10 +121,12 @@ export default function AdminUsersPage() {
                     <div className="flex items-center gap-3">
                       <div className="w-9 h-9 rounded-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center flex-shrink-0 overflow-hidden">
                         {u.avatar ? (
-                          <img
+                          <Image
                             src={u.avatar}
                             alt=""
-                            className="w-9 h-9 rounded-full object-cover"
+                            width={36}
+                            height={36}
+                            className="rounded-full object-cover"
                           />
                         ) : (
                           <span className="text-sm font-medium text-zinc-600 dark:text-zinc-300">
@@ -165,7 +168,7 @@ export default function AdminUsersPage() {
                     {u._count.posts} 文 / {u._count.comments} 评
                   </td>
                   <td className="px-5 py-3.5 text-sm text-zinc-500 dark:text-zinc-400">
-                    {new Date(u.createdAt).toLocaleDateString("zh-CN")}
+                    {formatDate(u.createdAt)}
                   </td>
                 </tr>
               ))}

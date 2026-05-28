@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Folder, Plus, Pencil, Trash2, Check, X } from "lucide-react";
+import { SkeletonRow } from "@/components/skeleton";
+import { EmptyState } from "@/components/empty-state";
 
 interface Category {
   id: number;
@@ -23,11 +25,16 @@ export default function AdminCategoriesPage() {
   const [deleteId, setDeleteId] = useState<number | null>(null);
 
   const fetchCategories = useCallback(async () => {
-    setLoading(true);
-    const res = await fetch("/api/categories");
-    const data = await res.json();
-    setCategories(data);
-    setLoading(false);
+    try {
+      setLoading(true);
+      const res = await fetch("/api/categories");
+      const data = await res.json();
+      setCategories(data);
+    } catch (e) {
+      console.error("[AdminCategories] Failed to fetch categories:", e);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -39,49 +46,66 @@ export default function AdminCategoriesPage() {
     setCreateError("");
     setCreating(true);
 
-    const res = await fetch("/api/categories", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: newName }),
-    });
+    try {
+      const res = await fetch("/api/categories", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: newName }),
+      });
 
-    const data = await res.json();
-    if (!res.ok) {
-      setCreateError(data.error);
-    } else {
-      setNewName("");
-      fetchCategories();
+      const data = await res.json();
+      if (!res.ok) {
+        setCreateError(data.error);
+      } else {
+        setNewName("");
+        fetchCategories();
+      }
+    } catch (e) {
+      console.error("[AdminCategories] Failed to create category:", e);
+      setCreateError("创建分类失败");
+    } finally {
+      setCreating(false);
     }
-    setCreating(false);
   };
 
   const handleSave = async (id: number) => {
     setEditError("");
     setSaving(true);
 
-    const res = await fetch(`/api/categories/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: editName }),
-    });
+    try {
+      const res = await fetch(`/api/categories/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: editName }),
+      });
 
-    const data = await res.json();
-    if (!res.ok) {
-      setEditError(data.error);
-    } else {
-      setEditId(null);
-      setEditName("");
-      fetchCategories();
+      const data = await res.json();
+      if (!res.ok) {
+        setEditError(data.error);
+      } else {
+        setEditId(null);
+        setEditName("");
+        fetchCategories();
+      }
+    } catch (e) {
+      console.error("[AdminCategories] Failed to save category:", e);
+      setEditError("保存分类失败");
+    } finally {
+      setSaving(false);
     }
-    setSaving(false);
   };
 
   const handleDelete = async (id: number) => {
     if (!confirm("确定要删除此分类吗？该分类下的文章将变为未分类。")) return;
-    setDeleteId(id);
-    const res = await fetch(`/api/categories/${id}`, { method: "DELETE" });
-    if (res.ok) fetchCategories();
-    setDeleteId(null);
+    try {
+      setDeleteId(id);
+      const res = await fetch(`/api/categories/${id}`, { method: "DELETE" });
+      if (res.ok) fetchCategories();
+    } catch (e) {
+      console.error("[AdminCategories] Failed to delete category:", e);
+    } finally {
+      setDeleteId(null);
+    }
   };
 
   return (
@@ -120,23 +144,9 @@ export default function AdminCategoriesPage() {
       </form>
 
       {loading ? (
-        <div className="space-y-3">
-          {[...Array(4)].map((_, i) => (
-            <div
-              key={i}
-              className="h-14 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl animate-pulse"
-            />
-          ))}
-        </div>
+        <SkeletonRow count={4} height="h-14" />
       ) : categories.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 text-center">
-          <div className="p-4 rounded-2xl bg-zinc-100 dark:bg-zinc-800 mb-4">
-            <Folder className="w-8 h-8 text-zinc-400" />
-          </div>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
-            还没有分类，创建一个吧
-          </p>
-        </div>
+        <EmptyState icon={<Folder className="w-8 h-8" />} message="还没有分类，创建一个吧" />
       ) : (
         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-x-auto">
           <table className="w-full min-w-[500px]">

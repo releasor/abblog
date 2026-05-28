@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { formatDateTime } from "@/lib/format-date";
+import { EmptyState } from "@/components/empty-state";
 
 interface Notification {
   id: number;
@@ -32,22 +34,31 @@ export default function NotificationsPage() {
   }, [status]);
 
   const fetchNotifications = async () => {
-    const res = await fetch("/api/notifications");
-    if (res.ok) {
-      const data = await res.json();
-      setNotifications(data.notifications);
-      setUnreadCount(data.unreadCount);
+    try {
+      const res = await fetch("/api/notifications");
+      if (res.ok) {
+        const data = await res.json();
+        setNotifications(data.notifications);
+        setUnreadCount(data.unreadCount);
+      }
+    } catch (e) {
+      console.error("[Notifications] Failed to fetch notifications:", e);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const markAsRead = async (id?: number) => {
-    await fetch("/api/notifications", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(id ? { id } : {}),
-    });
-    fetchNotifications();
+    try {
+      await fetch("/api/notifications", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(id ? { id } : {}),
+      });
+      fetchNotifications();
+    } catch (e) {
+      console.error("[Notifications] Failed to mark as read:", e);
+    }
   };
 
   const getTypeIcon = (type: string) => {
@@ -91,9 +102,7 @@ export default function NotificationsPage() {
 
       <div className="space-y-2">
         {notifications.length === 0 ? (
-          <p className="text-center text-zinc-500 dark:text-zinc-400 py-12">
-            暂无通知
-          </p>
+          <EmptyState compact message="暂无通知" />
         ) : (
           notifications.map((n) => (
             <div
@@ -108,7 +117,7 @@ export default function NotificationsPage() {
               <div className="flex-1 min-w-0">
                 <p className="text-sm text-zinc-900 dark:text-zinc-100">{n.message}</p>
                 <time className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 block">
-                  {new Date(n.createdAt).toLocaleString("zh-CN")}
+                  {formatDateTime(n.createdAt)}
                 </time>
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">

@@ -1,11 +1,23 @@
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { PostCard } from "@/components/post-card";
+import { EmptyState } from "@/components/empty-state";
 
 export const dynamic = "force-dynamic";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const category = await prisma.category.findUnique({ where: { slug }, select: { name: true } });
+  if (!category) return { title: "分类未找到" };
+  return {
+    title: `${category.name} - 分类`,
+    description: `浏览 ${category.name} 分类下的所有文章`,
+  };
 }
 
 export default async function CategoryPage({ params }: PageProps) {
@@ -49,9 +61,7 @@ export default async function CategoryPage({ params }: PageProps) {
       </div>
 
       {category.posts.length === 0 ? (
-        <p className="text-zinc-500 dark:text-zinc-500 text-center py-12">
-          此分类下暂无文章。
-        </p>
+        <EmptyState compact message="此分类下暂无文章。" />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {category.posts.map((post) => (

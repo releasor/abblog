@@ -2,6 +2,9 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { MessageSquare, Check, X, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
+import { truncate } from "@/lib/text";
+import { SkeletonRow } from "@/components/skeleton";
+import { EmptyState } from "@/components/empty-state";
 
 interface Comment {
   id: number;
@@ -30,20 +33,25 @@ export default function AdminCommentsPage() {
   const [actionId, setActionId] = useState<number | null>(null);
 
   const fetchComments = useCallback(async () => {
-    setLoading(true);
-    const params = new URLSearchParams({
-      page: page.toString(),
-      limit: "20",
-    });
-    if (statusFilter !== "all") {
-      params.set("status", statusFilter);
-    }
+    try {
+      setLoading(true);
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: "20",
+      });
+      if (statusFilter !== "all") {
+        params.set("status", statusFilter);
+      }
 
-    const res = await fetch(`/api/admin/comments?${params}`);
-    const data = await res.json();
-    setComments(data.comments);
-    setPagination(data.pagination);
-    setLoading(false);
+      const res = await fetch(`/api/admin/comments?${params}`);
+      const data = await res.json();
+      setComments(data.comments);
+      setPagination(data.pagination);
+    } catch (e) {
+      console.error("[AdminComments] Failed to fetch comments:", e);
+    } finally {
+      setLoading(false);
+    }
   }, [page, statusFilter]);
 
   useEffect(() => {
@@ -51,26 +59,33 @@ export default function AdminCommentsPage() {
   }, [fetchComments]);
 
   const updateStatus = async (id: number, status: "APPROVED" | "REJECTED") => {
-    setActionId(id);
-    const res = await fetch(`/api/comments/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status }),
-    });
-    if (res.ok) fetchComments();
-    setActionId(null);
+    try {
+      setActionId(id);
+      const res = await fetch(`/api/comments/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+      if (res.ok) fetchComments();
+    } catch (e) {
+      console.error("[AdminComments] Failed to update comment status:", e);
+    } finally {
+      setActionId(null);
+    }
   };
 
   const deleteComment = async (id: number) => {
     if (!confirm("确定要删除这条评论吗？")) return;
-    setActionId(id);
-    const res = await fetch(`/api/comments/${id}`, { method: "DELETE" });
-    if (res.ok) fetchComments();
-    setActionId(null);
+    try {
+      setActionId(id);
+      const res = await fetch(`/api/comments/${id}`, { method: "DELETE" });
+      if (res.ok) fetchComments();
+    } catch (e) {
+      console.error("[AdminComments] Failed to delete comment:", e);
+    } finally {
+      setActionId(null);
+    }
   };
-
-  const truncate = (text: string, maxLen: number) =>
-    text.length > maxLen ? text.slice(0, maxLen) + "..." : text;
 
   const statusConfig: Record<string, { label: string; dot: string; bg: string; text: string }> = {
     PENDING: {
@@ -126,21 +141,9 @@ export default function AdminCommentsPage() {
       </div>
 
       {loading ? (
-        <div className="space-y-3">
-          {[...Array(5)].map((_, i) => (
-            <div
-              key={i}
-              className="h-20 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl animate-pulse"
-            />
-          ))}
-        </div>
+        <SkeletonRow count={5} height="h-20" />
       ) : comments.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 text-center">
-          <div className="p-4 rounded-2xl bg-zinc-100 dark:bg-zinc-800 mb-4">
-            <MessageSquare className="w-8 h-8 text-zinc-400" />
-          </div>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">暂无评论</p>
-        </div>
+        <EmptyState icon={<MessageSquare className="w-8 h-8" />} message="暂无评论" />
       ) : (
         <div className="space-y-3">
           {comments.map((comment) => {

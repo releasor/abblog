@@ -7,6 +7,7 @@ import Link from "next/link";
 import { UserAvatar } from "@/components/user-avatar";
 import { FollowButton } from "@/components/follow-button";
 import { formatDate } from "@/lib/format-date";
+import { EmptyState } from "@/components/empty-state";
 
 interface UserProfile {
   id: number;
@@ -55,7 +56,10 @@ export default function UserProfilePage() {
         setProfile(data);
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch((e) => {
+        console.error("[Profile] Failed to fetch user profile:", e);
+        setLoading(false);
+      });
   }, [username]);
 
   useEffect(() => {
@@ -63,7 +67,7 @@ export default function UserProfilePage() {
     fetch(`/api/users/${username}/posts?tab=${tab}`)
       .then((res) => res.json())
       .then(setPosts)
-      .catch(() => {});
+      .catch((e) => console.error("[Profile] Failed to fetch user posts:", e));
   }, [profile, tab]);
 
   if (loading) {
@@ -147,9 +151,7 @@ export default function UserProfilePage() {
 
       <div className="space-y-4">
         {posts.length === 0 ? (
-          <p className="text-center text-zinc-500 dark:text-zinc-400 py-12">
-            {tab === "posts" ? "暂无文章" : tab === "likes" ? "暂无点赞" : "暂无收藏"}
-          </p>
+          <EmptyState compact message={tab === "posts" ? "暂无文章" : tab === "likes" ? "暂无点赞" : "暂无收藏"} />
         ) : (
           posts.map((post) => (
             <Link

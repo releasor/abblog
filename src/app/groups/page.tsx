@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { GroupCard } from "@/components/group-card";
+import { EmptyState } from "@/components/empty-state";
 
 export const metadata: Metadata = {
   title: "圈子",
@@ -26,9 +27,7 @@ export default async function GroupsPage() {
       </div>
 
       {groups.length === 0 ? (
-        <div className="text-center py-16">
-          <p className="text-zinc-500 dark:text-zinc-400">暂无圈子</p>
-        </div>
+        <EmptyState compact message="暂无圈子" />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {groups.map((g) => (

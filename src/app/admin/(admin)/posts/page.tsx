@@ -4,6 +4,9 @@ import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { Plus, Pencil, Trash2, ChevronLeft, ChevronRight, FileText } from "lucide-react";
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import { formatDateShort } from "@/lib/format-date";
+import { SkeletonRow } from "@/components/skeleton";
+import { EmptyState } from "@/components/empty-state";
 
 interface Post {
   id: number;
@@ -47,11 +50,16 @@ export default function AdminPostsPage() {
       params.set("status", statusFilter);
     }
 
-    const res = await fetch(`/api/posts?${params}`);
-    const data = await res.json();
-    setPosts(data.posts);
-    setPagination(data.pagination);
-    setLoading(false);
+    try {
+      const res = await fetch(`/api/posts?${params}`);
+      const data = await res.json();
+      setPosts(data.posts);
+      setPagination(data.pagination);
+    } catch (e) {
+      console.error("[AdminPosts] Failed to fetch posts:", e);
+    } finally {
+      setLoading(false);
+    }
   }, [page, statusFilter, sortBy, sortOrder]);
 
   useEffect(() => {
@@ -59,19 +67,16 @@ export default function AdminPostsPage() {
   }, [fetchPosts]);
 
   const handleDelete = async (id: number) => {
-    setDeleteId(id);
-    const res = await fetch(`/api/posts/${id}`, { method: "DELETE" });
-    if (res.ok) fetchPosts();
-    setDeleteId(null);
-    setConfirmDelete(null);
-  };
-
-  const formatDate = (date: string | null) => {
-    if (!date) return "—";
-    return new Date(date).toLocaleDateString("zh-CN", {
-      month: "short",
-      day: "numeric",
-    });
+    try {
+      setDeleteId(id);
+      const res = await fetch(`/api/posts/${id}`, { method: "DELETE" });
+      if (res.ok) fetchPosts();
+    } catch (e) {
+      console.error("[AdminPosts] Failed to delete post:", e);
+    } finally {
+      setDeleteId(null);
+      setConfirmDelete(null);
+    }
   };
 
   return (
@@ -134,27 +139,20 @@ export default function AdminPostsPage() {
 
       {/* Table */}
       {loading ? (
-        <div className="space-y-3">
-          {[...Array(5)].map((_, i) => (
-            <div
-              key={i}
-              className="h-16 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl animate-pulse"
-            />
-          ))}
-        </div>
+        <SkeletonRow count={5} height="h-16" />
       ) : posts.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 text-center">
-          <div className="p-4 rounded-2xl bg-zinc-100 dark:bg-zinc-800 mb-4">
-            <FileText className="w-8 h-8 text-zinc-400" />
-          </div>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-2">还没有文章</p>
-          <Link
-            href="/admin/posts/new"
-            className="text-sm text-zinc-900 dark:text-zinc-100 underline underline-offset-4 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors"
-          >
-            创建第一篇
-          </Link>
-        </div>
+        <EmptyState
+          icon={<FileText className="w-8 h-8" />}
+          message="还没有文章"
+          action={
+            <Link
+              href="/admin/posts/new"
+              className="text-sm text-zinc-900 dark:text-zinc-100 underline underline-offset-4 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors"
+            >
+              创建第一篇
+            </Link>
+          }
+        />
       ) : (
         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-x-auto">
           <table className="w-full min-w-[700px]">
@@ -222,7 +220,7 @@ export default function AdminPostsPage() {
                     {post.category?.name || "—"}
                   </td>
                   <td className="px-5 py-3.5 text-sm text-zinc-500 dark:text-zinc-400">
-                    {formatDate(post.publishedAt || post.createdAt)}
+                    {formatDateShort(post.publishedAt || post.createdAt) || "—"}
                   </td>
                   <td className="px-5 py-3.5">
                     <div className="flex items-center justify-end gap-1">

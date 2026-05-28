@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Bookmark, Plus, Folder, Trash2 } from "lucide-react";
 import { showToast } from "@/components/toast";
+import { EmptyState } from "@/components/empty-state";
 
 interface Collection {
   id: number;
@@ -188,10 +189,7 @@ export default function BookmarksPage() {
                 </div>
 
                 {currentCollection.items.length === 0 ? (
-                  <div className="text-center py-16 text-zinc-500">
-                    <Bookmark className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                    <p>收藏夹为空</p>
-                  </div>
+                  <EmptyState icon={<Bookmark className="w-8 h-8" />} message="收藏夹为空" />
                 ) : (
                   <div className="space-y-4">
                     {currentCollection.items.map((item) => (
