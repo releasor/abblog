@@ -19,7 +19,6 @@ interface VersionHistoryProps {
 export function VersionHistory({ postId, onRestore }: VersionHistoryProps) {
   const [versions, setVersions] = useState<Version[]>([]);
   const [expanded, setExpanded] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [restoring, setRestoring] = useState<number | null>(null);
 
   useEffect(() => {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Settings, Save, Check } from "lucide-react";
+import { Save, Check } from "lucide-react";
 
 interface ConfigItem {
   key: string;

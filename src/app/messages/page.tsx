@@ -15,7 +15,7 @@ interface Conversation {
 }
 
 function MessagesContent() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
   const targetUserId = searchParams.get("user");

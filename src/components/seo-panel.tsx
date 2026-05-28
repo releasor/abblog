@@ -58,7 +58,6 @@ export function SEOPanel({ postId }: SEOPanelProps) {
   if (!result) return null;
 
   const scoreColor = result.score >= 80 ? "text-green-500" : result.score >= 50 ? "text-yellow-500" : "text-red-500";
-  const scoreBg = result.score >= 80 ? "bg-green-500" : result.score >= 50 ? "bg-yellow-500" : "bg-red-500";
 
   return (
     <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden">

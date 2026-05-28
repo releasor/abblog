@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { Plus, Pencil, Trash2, Search, ChevronLeft, ChevronRight, FileText } from "lucide-react";
+import { Plus, Pencil, Trash2, ChevronLeft, ChevronRight, FileText } from "lucide-react";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 
 interface Post {

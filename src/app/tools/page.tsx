@@ -942,11 +942,6 @@ function CrontabGenerator() {
     { label: "工作日上午9点", value: "0 9 * * 1-5" },
   ];
 
-  const descriptions: Record<string, string> = {
-    "*": "每",
-    "0": "第0",
-  };
-
   const describe = () => {
     const parts: string[] = [];
     if (minute === "*") parts.push("每分钟");

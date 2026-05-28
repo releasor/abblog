@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 type Tab = "chat" | "optimizer";
 
 export default function PromptsPage() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const router = useRouter();
   const [tab, setTab] = useState<Tab>("chat");
 

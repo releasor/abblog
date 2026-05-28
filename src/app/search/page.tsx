@@ -1,6 +1,5 @@
 import { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
-import { PostCard } from "@/components/post-card";
 import Link from "next/link";
 
 export const metadata: Metadata = {

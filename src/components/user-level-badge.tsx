@@ -14,7 +14,7 @@ interface LevelInfo {
   };
 }
 
-export function UserLevelBadge({ userId }: { userId?: number }) {
+export function UserLevelBadge() {
   const [info, setInfo] = useState<LevelInfo | null>(null);
 
   useEffect(() => {

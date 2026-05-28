@@ -24,6 +24,8 @@ export async function GET(request: NextRequest) {
   return NextResponse.json({
     topics,
     pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+  }, {
+    headers: { "Cache-Control": "public, max-age=300" },
   });
 }
 

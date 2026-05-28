@@ -7,7 +7,7 @@ import { UserAvatar } from "@/components/user-avatar";
 import { UserLevelProgress } from "@/components/user-level-badge";
 
 export default function SettingsPage() {
-  const { data: session, status, update } = useSession();
+  const { status, update } = useSession();
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
 

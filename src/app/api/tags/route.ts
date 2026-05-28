@@ -11,7 +11,9 @@ export async function GET() {
       _count: { select: { posts: true } },
     },
   });
-  return NextResponse.json(tags);
+  return NextResponse.json(tags, {
+    headers: { "Cache-Control": "public, max-age=3600" },
+  });
 }
 
 export async function POST(request: NextRequest) {

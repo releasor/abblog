@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Bookmark, Plus, Folder, Trash2, Edit2 } from "lucide-react";
+import { Bookmark, Plus, Folder, Trash2 } from "lucide-react";
 import { showToast } from "@/components/toast";
 
 interface Collection {

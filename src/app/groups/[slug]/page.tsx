@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { showToast } from "@/components/toast";
-import { Users, Calendar, FileText } from "lucide-react";
+import { Users, FileText } from "lucide-react";
 
 interface Group {
   id: number;

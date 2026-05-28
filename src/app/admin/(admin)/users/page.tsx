@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Search, ChevronLeft, ChevronRight, Users, Shield, Star } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, Users, Star } from "lucide-react";
 
 interface User {
   id: number;

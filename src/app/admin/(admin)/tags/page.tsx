@@ -18,7 +18,7 @@ export default function AdminTagsPage() {
   const [creating, setCreating] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
   const [editName, setEditName] = useState("");
-  const [editError, setEditError] = useState("");
+  const [, setEditError] = useState("");
   const [saving, setSaving] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
 
