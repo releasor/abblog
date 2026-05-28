@@ -14,6 +14,8 @@ export async function POST(
 
   const { id } = await params;
   const postId = parseInt(id);
+  if (isNaN(postId)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+
   const { value } = await request.json();
 
   if (value !== 1 && value !== -1) {
@@ -70,6 +72,8 @@ export async function DELETE(
 
   const { id } = await params;
   const postId = parseInt(id);
+  if (isNaN(postId)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+
   const uid = parseInt(userId);
 
   const existing = await prisma.postVote.findUnique({
