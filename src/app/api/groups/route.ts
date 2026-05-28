@@ -23,10 +23,13 @@ export async function GET(request: NextRequest) {
     prisma.group.count({ where: { isPublic: true } }),
   ]);
 
-  return NextResponse.json({
-    groups: groups.map((g) => ({ ...g, memberCount: g._count.members, postCount: g._count.posts })),
-    pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
-  });
+  return NextResponse.json(
+    {
+      groups: groups.map((g) => ({ ...g, memberCount: g._count.members, postCount: g._count.posts })),
+      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    },
+    { headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600" } }
+  );
 }
 
 export async function POST(request: NextRequest) {

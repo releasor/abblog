@@ -26,14 +26,17 @@ export async function GET(request: NextRequest) {
     prisma.postSeries.count(),
   ]);
 
-  return NextResponse.json({
-    series: series.map((s) => ({
-      ...s,
-      posts: s.posts.map((sp) => ({ ...sp.post, order: sp.order })),
-      postCount: s._count.posts,
-    })),
-    pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
-  });
+  return NextResponse.json(
+    {
+      series: series.map((s) => ({
+        ...s,
+        posts: s.posts.map((sp) => ({ ...sp.post, order: sp.order })),
+        postCount: s._count.posts,
+      })),
+      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    },
+    { headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600" } }
+  );
 }
 
 export async function POST(request: NextRequest) {
