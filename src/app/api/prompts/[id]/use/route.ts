@@ -15,8 +15,11 @@ export async function POST(
   }
 
   const { id } = await params;
+  const promptId = parseInt(id);
+  if (isNaN(promptId)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+
   const existing = await prisma.prompt.findFirst({
-    where: { id: parseInt(id), userId: parseInt(userId) },
+    where: { id: promptId, userId: parseInt(userId) },
   });
 
   if (!existing) {
@@ -24,7 +27,7 @@ export async function POST(
   }
 
   const prompt = await prisma.prompt.update({
-    where: { id: parseInt(id) },
+    where: { id: promptId },
     data: { usageCount: { increment: 1 } },
   });
 
