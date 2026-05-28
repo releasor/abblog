@@ -117,7 +117,9 @@ export function CommentForm({ postId, onCommentAdded }: CommentFormProps) {
       )}
 
       <div>
+        <label htmlFor="comment-content" className="sr-only">评论内容</label>
         <textarea
+          id="comment-content"
           value={content}
           onChange={(e) => setContent(e.target.value)}
           maxLength={1000}
