@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { FileText, Plus, Trash2 } from "lucide-react";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 
 interface Template {
   id: number;
@@ -21,6 +22,7 @@ export function TemplatePicker({ onSelect }: TemplatePickerProps) {
   const [showCreate, setShowCreate] = useState(false);
   const [newName, setNewName] = useState("");
   const [newContent, setNewContent] = useState("");
+  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
 
   useEffect(() => {
     fetch("/api/templates")
@@ -48,6 +50,7 @@ export function TemplatePicker({ onSelect }: TemplatePickerProps) {
   const handleDelete = async (id: number) => {
     await fetch(`/api/templates/${id}`, { method: "DELETE" });
     setTemplates(templates.filter((t) => t.id !== id));
+    setConfirmDeleteId(null);
   };
 
   return (
@@ -117,7 +120,7 @@ export function TemplatePicker({ onSelect }: TemplatePickerProps) {
                     {t.name}
                   </button>
                   <button
-                    onClick={() => handleDelete(t.id)}
+                    onClick={() => setConfirmDeleteId(t.id)}
                     className="p-1 text-zinc-400 hover:text-red-500"
                   >
                     <Trash2 className="w-3 h-3" />
@@ -128,6 +131,16 @@ export function TemplatePicker({ onSelect }: TemplatePickerProps) {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        open={confirmDeleteId !== null}
+        title="删除模板"
+        message="确定要删除此模板吗？此操作无法撤销。"
+        confirmLabel="删除"
+        variant="danger"
+        onConfirm={() => confirmDeleteId && handleDelete(confirmDeleteId)}
+        onCancel={() => setConfirmDeleteId(null)}
+      />
     </div>
   );
 }
