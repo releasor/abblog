@@ -10,11 +10,15 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
   const { id } = await params;
   const seriesId = parseInt(id);
+  if (isNaN(seriesId)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+
   const series = await prisma.postSeries.findUnique({ where: { id: seriesId } });
   if (!series || series.userId !== parseInt(userId)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const { postId } = await request.json();
   if (!postId) return NextResponse.json({ error: "postId required" }, { status: 400 });
+  const postIdNum = parseInt(postId);
+  if (isNaN(postIdNum)) return NextResponse.json({ error: "Invalid postId" }, { status: 400 });
 
   const maxOrder = await prisma.seriesPost.findFirst({
     where: { seriesId },
@@ -23,7 +27,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   });
 
   const sp = await prisma.seriesPost.create({
-    data: { seriesId, postId: parseInt(postId), order: (maxOrder?.order ?? -1) + 1 },
+    data: { seriesId, postId: postIdNum, order: (maxOrder?.order ?? -1) + 1 },
   });
   return NextResponse.json(sp, { status: 201 });
 }
@@ -35,6 +39,8 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 
   const { id } = await params;
   const seriesId = parseInt(id);
+  if (isNaN(seriesId)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+
   const series = await prisma.postSeries.findUnique({ where: { id: seriesId } });
   if (!series || series.userId !== parseInt(userId)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
