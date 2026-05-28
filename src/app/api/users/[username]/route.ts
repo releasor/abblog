@@ -33,5 +33,7 @@ export async function GET(
     return NextResponse.json({ error: "用户不存在" }, { status: 404 });
   }
 
-  return NextResponse.json(user);
+  return NextResponse.json(user, {
+    headers: { "Cache-Control": "public, s-maxage=60, stale-while-revalidate=120" },
+  });
 }

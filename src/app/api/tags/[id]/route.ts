@@ -23,7 +23,9 @@ export async function GET(
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  return NextResponse.json(tag);
+  return NextResponse.json(tag, {
+    headers: { "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=7200" },
+  });
 }
 
 export async function PUT(

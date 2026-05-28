@@ -21,8 +21,11 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
 
   if (!topic) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  return NextResponse.json({
-    ...topic,
-    posts: topic.posts.map((tp) => tp.post),
-  });
+  return NextResponse.json(
+    {
+      ...topic,
+      posts: topic.posts.map((tp) => tp.post),
+    },
+    { headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600" } }
+  );
 }

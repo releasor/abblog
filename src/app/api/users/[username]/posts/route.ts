@@ -33,7 +33,9 @@ export async function GET(
         },
       },
     });
-    return NextResponse.json(likes.map((l) => l.post));
+    return NextResponse.json(likes.map((l) => l.post), {
+      headers: { "Cache-Control": "public, s-maxage=60, stale-while-revalidate=120" },
+    });
   }
 
   if (tab === "bookmarks") {
@@ -51,7 +53,9 @@ export async function GET(
         },
       },
     });
-    return NextResponse.json(bookmarks.map((b) => b.post));
+    return NextResponse.json(bookmarks.map((b) => b.post), {
+      headers: { "Cache-Control": "public, s-maxage=60, stale-while-revalidate=120" },
+    });
   }
 
   const posts = await prisma.post.findMany({
@@ -65,5 +69,7 @@ export async function GET(
     },
   });
 
-  return NextResponse.json(posts);
+  return NextResponse.json(posts, {
+    headers: { "Cache-Control": "public, s-maxage=60, stale-while-revalidate=120" },
+  });
 }

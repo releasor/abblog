@@ -44,5 +44,7 @@ export async function GET(request: NextRequest) {
     .sort((a, b) => b.score - a.score)
     .slice(0, limit);
 
-  return NextResponse.json(scored);
+  return NextResponse.json(scored, {
+    headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600" },
+  });
 }
