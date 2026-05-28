@@ -62,7 +62,7 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
       {/* Mobile/tablet floating button — hidden on mobile, visible on md */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-6 right-6 z-50 md:hidden lg:hidden xl:hidden bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-full w-12 h-12 flex items-center justify-center shadow-lg hover:scale-105 transition-transform"
+        className="fixed bottom-6 right-20 z-50 md:hidden lg:hidden xl:hidden bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-full w-12 h-12 flex items-center justify-center shadow-lg hover:scale-105 transition-transform"
         aria-label="切换目录"
       >
         <svg

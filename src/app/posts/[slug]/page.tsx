@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
 import Image from "next/image";
+import dynamic from "next/dynamic";
 import { prisma } from "@/lib/prisma";
 import { estimateReadingTime } from "@/lib/reading-time";
 import { absoluteUrl } from "@/lib/site-url";
@@ -16,12 +17,15 @@ import { ShareButtons } from "@/components/share-buttons";
 import { PostActions } from "@/components/post-actions";
 import { ReadingTracker } from "@/components/reading-tracker";
 import { RecommendedPosts } from "@/components/recommended-posts";
-import { AiSummary } from "@/components/ai-summary";
-import { AiChat } from "@/components/ai-chat";
-import { DonateButton } from "@/components/donate-button";
-import { SEOPanel } from "@/components/seo-panel";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { formatDate } from "@/lib/format-date";
+
+const AiSummary = dynamic(() => import("@/components/ai-summary").then((m) => m.AiSummary));
+const AiChat = dynamic(() => import("@/components/ai-chat").then((m) => m.AiChat));
+const DonateButton = dynamic(() => import("@/components/donate-button").then((m) => m.DonateButton));
+const SEOPanel = dynamic(() => import("@/components/seo-panel").then((m) => m.SEOPanel));
+const ExportButton = dynamic(() => import("@/components/export-button").then((m) => m.ExportButton));
 
 export const revalidate = 3600;
 
@@ -105,8 +109,10 @@ export default async function PublicPostPage({ params }: PageProps) {
   const headings = extractHeadings(processedContent);
   const showToc = wordCount >= 1500 && headings.length > 0;
 
-  const relatedPosts = await getRelatedPosts(post.id);
-  const session = await getServerSession(authOptions);
+  const [relatedPosts, session] = await Promise.all([
+    getRelatedPosts(post.id),
+    getServerSession(authOptions),
+  ]);
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -126,20 +132,11 @@ export default async function PublicPostPage({ params }: PageProps) {
     },
   };
 
-  const formatDate = (date: Date | null) => {
-    if (!date) return "";
-    return new Date(date).toLocaleDateString("zh-CN", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  };
-
   return (
     <div className="max-w-5xl mx-auto px-4 py-12">
       <ReadingProgress />
       <ReadingTracker postId={post.id} />
-      <div className="flex gap-8">
+      <div className="flex md:gap-8">
       <article className="max-w-3xl flex-1 min-w-0">
       <script
         type="application/ld+json"
@@ -210,8 +207,11 @@ export default async function PublicPostPage({ params }: PageProps) {
 
       <div className="flex flex-wrap items-center justify-between gap-4 py-6 my-8 border-t border-b border-zinc-200 dark:border-zinc-800">
         <PostActions postId={post.id} />
-        <DonateButton recipientId={post.author.id} recipientName={post.author.name} postId={post.id} />
-        <ShareButtons title={post.title} url={absoluteUrl(`/posts/${post.slug}`)} postId={post.id} />
+        <div className="flex items-center gap-2">
+          <DonateButton recipientId={post.author.id} recipientName={post.author.name} postId={post.id} />
+          <ExportButton postId={post.id} title={post.title} />
+          <ShareButtons title={post.title} url={absoluteUrl(`/posts/${post.slug}`)} postId={post.id} />
+        </div>
       </div>
 
       <CommentSection postId={post.id} />
