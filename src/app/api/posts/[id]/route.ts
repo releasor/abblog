@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/slugify";
 import { createActivity } from "@/lib/activity";
+import { estimateReadingTime } from "@/lib/reading-time";
 
 export async function GET(
   _request: NextRequest,
@@ -106,18 +107,21 @@ export async function PUT(
       }
     : {};
 
+  const updatedContent = content ?? existing.content;
+
   const post = await prisma.post.update({
     where: { id: postId },
     data: {
       title: title ?? existing.title,
       slug,
-      content: content ?? existing.content,
+      content: updatedContent,
       excerpt: excerpt !== undefined ? excerpt || null : existing.excerpt,
       coverImageUrl: coverImageUrl !== undefined ? coverImageUrl || null : existing.coverImageUrl,
       status: isPublished ? "PUBLISHED" : "DRAFT",
       publishedAt,
       isPinned: isPinned !== undefined ? Boolean(isPinned) : existing.isPinned,
       scheduledAt: scheduledAt !== undefined ? (scheduledAt ? new Date(scheduledAt) : null) : existing.scheduledAt,
+      readingTime: content ? estimateReadingTime(content) : existing.readingTime,
       categoryId: categoryId !== undefined ? (categoryId ? parseInt(categoryId) : null) : existing.categoryId,
       ...tagUpdate,
     },

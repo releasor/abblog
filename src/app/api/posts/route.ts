@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/slugify";
 import { createActivity } from "@/lib/activity";
 import { addPoints, POINTS } from "@/lib/points";
+import { estimateReadingTime } from "@/lib/reading-time";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -91,6 +92,7 @@ export async function POST(request: NextRequest) {
       publishedAt: isPublished ? new Date() : null,
       isPinned: isPinned ? Boolean(isPinned) : false,
       scheduledAt: scheduledAt ? new Date(scheduledAt) : null,
+      readingTime: estimateReadingTime(content),
       authorId: parseInt(userId),
       categoryId: categoryId ? parseInt(categoryId) : null,
       tags: tags?.length

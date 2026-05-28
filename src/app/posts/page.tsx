@@ -1,6 +1,5 @@
 import { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
-import { estimateReadingTime } from "@/lib/reading-time";
 import { PostCard } from "@/components/post-card";
 import { Pagination } from "@/components/pagination";
 import { notFound } from "next/navigation";
@@ -27,7 +26,13 @@ export default async function PostsPage({ searchParams }: PageProps) {
       orderBy: { publishedAt: "desc" },
       skip: (page - 1) * limit,
       take: limit,
-      include: {
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        excerpt: true,
+        publishedAt: true,
+        readingTime: true,
         category: { select: { name: true, slug: true } },
       },
     }),
@@ -61,7 +66,7 @@ export default async function PostsPage({ searchParams }: PageProps) {
                 excerpt={post.excerpt}
                 category={post.category}
                 publishedAt={post.publishedAt}
-                readingTime={estimateReadingTime(post.content)}
+                readingTime={post.readingTime}
               />
             ))}
           </div>

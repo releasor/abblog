@@ -1,5 +1,6 @@
 "use client";
 
+import { memo, useMemo } from "react";
 import Link from "next/link";
 import { BookOpen, ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -23,8 +24,8 @@ interface SeriesTOCProps {
   currentPostId: number;
 }
 
-export function SeriesTOC({ series, posts, currentPostId }: SeriesTOCProps) {
-  const sortedPosts = [...posts].sort((a, b) => a.order - b.order);
+export const SeriesTOC = memo(function SeriesTOC({ series, posts, currentPostId }: SeriesTOCProps) {
+  const sortedPosts = useMemo(() => [...posts].sort((a, b) => a.order - b.order), [posts]);
   const currentIndex = sortedPosts.findIndex((sp) => sp.post.id === currentPostId);
   const prevPost = currentIndex > 0 ? sortedPosts[currentIndex - 1] : null;
   const nextPost = currentIndex < sortedPosts.length - 1 ? sortedPosts[currentIndex + 1] : null;
@@ -83,4 +84,4 @@ export function SeriesTOC({ series, posts, currentPostId }: SeriesTOCProps) {
       </div>
     </div>
   );
-}
+});

@@ -1,5 +1,4 @@
 import { prisma } from "@/lib/prisma";
-import { estimateReadingTime } from "@/lib/reading-time";
 import Link from "next/link";
 import { HeroSection } from "@/components/hero-section";
 import { DailyQuote } from "@/components/daily-quote";
@@ -9,22 +8,28 @@ import { Pin } from "lucide-react";
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
+  const postSelect = {
+    id: true,
+    title: true,
+    slug: true,
+    excerpt: true,
+    publishedAt: true,
+    readingTime: true,
+    category: { select: { name: true, slug: true } },
+  };
+
   const [pinnedPosts, posts, activities] = await Promise.all([
     prisma.post.findMany({
       where: { status: "PUBLISHED", isPinned: true },
       orderBy: { publishedAt: "desc" },
       take: 3,
-      include: {
-        category: { select: { name: true, slug: true } },
-      },
+      select: postSelect,
     }),
     prisma.post.findMany({
       where: { status: "PUBLISHED", isPinned: false },
       orderBy: { publishedAt: "desc" },
       take: 9,
-      include: {
-        category: { select: { name: true, slug: true } },
-      },
+      select: postSelect,
     }),
     prisma.activity.findMany({
       orderBy: { createdAt: "desc" },
@@ -135,7 +140,7 @@ export default async function Home() {
                       {formatDate(post.publishedAt)}
                     </time>
                   )}
-                  <span className="blog-row-reading">{estimateReadingTime(post.content)} min</span>
+                  <span className="blog-row-reading">{post.readingTime} min</span>
                 </div>
                 <span className="blog-row-arrow" aria-hidden="true">→</span>
               </Link>

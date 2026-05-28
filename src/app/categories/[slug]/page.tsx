@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { estimateReadingTime } from "@/lib/reading-time";
 import { PostCard } from "@/components/post-card";
 
 export const dynamic = "force-dynamic";
@@ -18,7 +17,13 @@ export default async function CategoryPage({ params }: PageProps) {
       posts: {
         where: { status: "PUBLISHED" },
         orderBy: { publishedAt: "desc" },
-        include: {
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          excerpt: true,
+          publishedAt: true,
+          readingTime: true,
           category: { select: { name: true, slug: true } },
         },
       },
@@ -57,7 +62,7 @@ export default async function CategoryPage({ params }: PageProps) {
               excerpt={post.excerpt}
               category={post.category}
               publishedAt={post.publishedAt}
-              readingTime={estimateReadingTime(post.content)}
+              readingTime={post.readingTime}
             />
           ))}
         </div>

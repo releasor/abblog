@@ -1,3 +1,4 @@
+import { memo } from "react";
 import Link from "next/link";
 
 interface PostCardProps {
@@ -9,7 +10,7 @@ interface PostCardProps {
   readingTime: number;
 }
 
-export function PostCard({ title, slug, excerpt, category, publishedAt, readingTime }: PostCardProps) {
+export const PostCard = memo(function PostCard({ title, slug, excerpt, category, publishedAt, readingTime }: PostCardProps) {
   const formatDate = (date: Date | null) => {
     if (!date) return "";
     return new Date(date).toLocaleDateString("zh-CN", {
@@ -48,4 +49,4 @@ export function PostCard({ title, slug, excerpt, category, publishedAt, readingT
       </div>
     </Link>
   );
-}
+});

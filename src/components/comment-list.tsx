@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, memo } from "react";
 
 interface Comment {
   id: number;
@@ -34,6 +34,24 @@ function formatRelativeTime(dateString: string): string {
     day: "numeric",
   });
 }
+
+const CommentItem = memo(function CommentItem({ comment }: { comment: Comment }) {
+  return (
+    <div className="border-b border-zinc-200 dark:border-zinc-800 pb-6 last:border-0 last:pb-0">
+      <div className="flex items-center gap-2 mb-2">
+        <span className="font-medium text-sm text-zinc-900 dark:text-zinc-100">
+          {comment.authorName}
+        </span>
+        <span className="text-xs text-zinc-500 dark:text-zinc-500">
+          {formatRelativeTime(comment.createdAt)}
+        </span>
+      </div>
+      <p className="text-sm text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap">
+        {comment.content}
+      </p>
+    </div>
+  );
+});
 
 export function CommentList({ postId, refreshKey }: CommentListProps) {
   const [comments, setComments] = useState<Comment[]>([]);
@@ -76,22 +94,7 @@ export function CommentList({ postId, refreshKey }: CommentListProps) {
   return (
     <div className="space-y-6">
       {comments.map((comment) => (
-        <div
-          key={comment.id}
-          className="border-b border-zinc-200 dark:border-zinc-800 pb-6 last:border-0 last:pb-0"
-        >
-          <div className="flex items-center gap-2 mb-2">
-            <span className="font-medium text-sm text-zinc-900 dark:text-zinc-100">
-              {comment.authorName}
-            </span>
-            <span className="text-xs text-zinc-500 dark:text-zinc-500">
-              {formatRelativeTime(comment.createdAt)}
-            </span>
-          </div>
-          <p className="text-sm text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap">
-            {comment.content}
-          </p>
-        </div>
+        <CommentItem key={comment.id} comment={comment} />
       ))}
     </div>
   );

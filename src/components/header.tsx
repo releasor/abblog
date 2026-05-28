@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { DarkModeToggle } from "./dark-mode-toggle";
 import { SearchInput } from "./search-input";
@@ -107,6 +107,28 @@ function UserMenu() {
 export function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const { data: session } = useSession();
+
+  // Close mobile menu on Escape key
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (e.key === "Escape" && menuOpen) {
+      setMenuOpen(false);
+    }
+  }, [menuOpen]);
+
+  useEffect(() => {
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [handleKeyDown]);
+
+  // Prevent body scroll when menu is open
+  useEffect(() => {
+    if (menuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [menuOpen]);
 
   const handleLinkMouseMove = (e: React.MouseEvent<HTMLAnchorElement>) => {
     const el = e.currentTarget;

@@ -1,6 +1,5 @@
 import { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
-import { estimateReadingTime } from "@/lib/reading-time";
 import { PostCard } from "@/components/post-card";
 import Link from "next/link";
 
@@ -74,6 +73,7 @@ export default async function SearchPage({ searchParams }: PageProps) {
       publishedAt: Date | null;
       categoryName: string | null;
       categorySlug: string | null;
+      readingTime: number;
     }> = await prisma.$queryRaw`
       SELECT
         p.id,
@@ -82,6 +82,7 @@ export default async function SearchPage({ searchParams }: PageProps) {
         p.excerpt,
         p.content,
         p.published_at AS publishedAt,
+        p.reading_time AS readingTime,
         c.name AS categoryName,
         c.slug AS categorySlug
       FROM posts p
@@ -95,7 +96,7 @@ export default async function SearchPage({ searchParams }: PageProps) {
 
     results = rows.map((r) => ({
       ...r,
-      readingTime: estimateReadingTime(r.content),
+      readingTime: r.readingTime || 1,
     }));
   } catch {
     return (

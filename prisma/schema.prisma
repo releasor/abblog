@@ -76,6 +76,7 @@ model Post {
   scheduledAt  DateTime? @map("scheduled_at")
   isPinned     Boolean   @default(false) @map("is_pinned")
   score        Int       @default(0)
+  readingTime  Int       @default(1) @map("reading_time")
   authorId     Int       @map("author_id")
   userId       Int?      @map("user_id")
   categoryId   Int?      @map("category_id")
