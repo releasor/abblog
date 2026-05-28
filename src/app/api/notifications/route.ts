@@ -11,17 +11,23 @@ export async function GET() {
     return NextResponse.json({ error: "请先登录" }, { status: 401 });
   }
 
-  const notifications = await prisma.notification.findMany({
-    where: { userId: parseInt(userId) },
-    orderBy: { createdAt: "desc" },
-    take: 50,
-  });
+  try {
+    const [notifications, unreadCount] = await Promise.all([
+      prisma.notification.findMany({
+        where: { userId: parseInt(userId) },
+        orderBy: { createdAt: "desc" },
+        take: 50,
+      }),
+      prisma.notification.count({
+        where: { userId: parseInt(userId), isRead: false },
+      }),
+    ]);
 
-  const unreadCount = await prisma.notification.count({
-    where: { userId: parseInt(userId), isRead: false },
-  });
-
-  return NextResponse.json({ notifications, unreadCount });
+    return NextResponse.json({ notifications, unreadCount });
+  } catch (e) {
+    console.error("[Notifications] Failed to fetch notifications:", e);
+    return NextResponse.json({ error: "Failed to fetch notifications" }, { status: 500 });
+  }
 }
 
 export async function PATCH(request: NextRequest) {
@@ -32,19 +38,24 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ error: "请先登录" }, { status: 401 });
   }
 
-  const { id } = await request.json();
+  try {
+    const { id } = await request.json();
 
-  if (id) {
-    await prisma.notification.update({
-      where: { id },
-      data: { isRead: true },
-    });
-  } else {
-    await prisma.notification.updateMany({
-      where: { userId: parseInt(userId), isRead: false },
-      data: { isRead: true },
-    });
+    if (id) {
+      await prisma.notification.update({
+        where: { id },
+        data: { isRead: true },
+      });
+    } else {
+      await prisma.notification.updateMany({
+        where: { userId: parseInt(userId), isRead: false },
+        data: { isRead: true },
+      });
+    }
+
+    return NextResponse.json({ ok: true });
+  } catch (e) {
+    console.error("[Notifications] Failed to update notifications:", e);
+    return NextResponse.json({ error: "Failed to update notifications" }, { status: 500 });
   }
-
-  return NextResponse.json({ ok: true });
 }
