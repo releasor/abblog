@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { MessageSquare, Check, X, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
+import { MessageSquare, Check, X, Trash2 } from "lucide-react";
 import { truncate } from "@/lib/text";
 import { SkeletonRow } from "@/components/skeleton";
 import { EmptyState } from "@/components/empty-state";
+import { SimplePagination } from "@/components/pagination";
 
 interface Comment {
   id: number;
@@ -214,31 +215,13 @@ export default function AdminCommentsPage() {
         </div>
       )}
 
-      {pagination && pagination.totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
-            共 {pagination.total} 条评论
-          </p>
-          <div className="flex items-center gap-1">
-            <button
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={page === 1}
-              className="p-2 rounded-lg text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 disabled:opacity-30 transition-colors"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-            <span className="px-3 py-1.5 text-sm text-zinc-600 dark:text-zinc-400">
-              {page} / {pagination.totalPages}
-            </span>
-            <button
-              onClick={() => setPage((p) => Math.min(pagination.totalPages, p + 1))}
-              disabled={page === pagination.totalPages}
-              className="p-2 rounded-lg text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 disabled:opacity-30 transition-colors"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
+      {pagination && (
+        <SimplePagination
+          page={page}
+          totalPages={pagination.totalPages}
+          totalLabel={`共 ${pagination.total} 条评论`}
+          onPageChange={setPage}
+        />
       )}
     </div>
   );

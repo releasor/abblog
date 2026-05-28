@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface PaginationProps {
   currentPage: number;
@@ -72,5 +73,47 @@ export function Pagination({ currentPage, totalPages, basePath }: PaginationProp
         </Link>
       )}
     </nav>
+  );
+}
+
+interface SimplePaginationProps {
+  page: number;
+  totalPages: number;
+  totalLabel?: string;
+  onPageChange: (page: number) => void;
+}
+
+export function SimplePagination({ page, totalPages, totalLabel, onPageChange }: SimplePaginationProps) {
+  if (totalPages <= 1) return null;
+
+  return (
+    <div className="flex items-center justify-between">
+      {totalLabel ? (
+        <p className="text-sm text-zinc-500 dark:text-zinc-400">{totalLabel}</p>
+      ) : (
+        <span />
+      )}
+      <div className="flex items-center gap-1">
+        <button
+          onClick={() => onPageChange(Math.max(1, page - 1))}
+          disabled={page === 1}
+          className="p-2 rounded-lg text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 disabled:opacity-30 transition-colors"
+          aria-label="上一页"
+        >
+          <ChevronLeft className="w-4 h-4" />
+        </button>
+        <span className="px-3 py-1.5 text-sm text-zinc-600 dark:text-zinc-400">
+          {page} / {totalPages}
+        </span>
+        <button
+          onClick={() => onPageChange(Math.min(totalPages, page + 1))}
+          disabled={page === totalPages}
+          className="p-2 rounded-lg text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 disabled:opacity-30 transition-colors"
+          aria-label="下一页"
+        >
+          <ChevronRight className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
   );
 }
