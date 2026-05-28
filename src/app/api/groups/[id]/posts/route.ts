@@ -10,6 +10,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const limit = 12;
 
   const groupId = parseInt(id);
+  if (isNaN(groupId)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+
   const [posts, total] = await Promise.all([
     prisma.groupPost.findMany({
       where: { groupId },
@@ -41,6 +43,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
   const { id } = await params;
   const groupId = parseInt(id);
+  if (isNaN(groupId)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
 
   const membership = await prisma.groupMember.findUnique({
     where: { groupId_userId: { groupId, userId: parseInt(userId) } },
@@ -49,9 +52,11 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
   const { postId } = await request.json();
   if (!postId) return NextResponse.json({ error: "postId required" }, { status: 400 });
+  const postIdNum = parseInt(postId);
+  if (isNaN(postIdNum)) return NextResponse.json({ error: "Invalid postId" }, { status: 400 });
 
   const gp = await prisma.groupPost.create({
-    data: { groupId, postId: parseInt(postId) },
+    data: { groupId, postId: postIdNum },
   });
   return NextResponse.json(gp, { status: 201 });
 }
