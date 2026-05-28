@@ -1,25 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-
-function escapeHtml(text: string): string {
-  return text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}
-
-function highlightTerms(text: string, query: string): string {
-  const escaped = escapeHtml(text);
-  const words = query.trim().split(/\s+/).filter(Boolean);
-  let result = escaped;
-  for (const word of words) {
-    const escapedWord = word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    result = result.replace(new RegExp(`(${escapedWord})`, "gi"), "<mark>$1</mark>");
-  }
-  return result;
-}
+import { highlightTerms } from "@/lib/highlight";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);

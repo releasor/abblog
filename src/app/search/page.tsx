@@ -1,5 +1,6 @@
 import { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
+import { highlightTerms } from "@/lib/highlight";
 import Link from "next/link";
 
 export const metadata: Metadata = {
@@ -11,26 +12,6 @@ export const dynamic = "force-dynamic";
 
 interface PageProps {
   searchParams: Promise<{ q?: string }>;
-}
-
-function escapeHtml(text: string): string {
-  return text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}
-
-function highlightTerms(text: string, query: string): string {
-  const escaped = escapeHtml(text);
-  const words = query.trim().split(/\s+/).filter(Boolean);
-  let result = escaped;
-  for (const word of words) {
-    const escapedWord = word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    result = result.replace(new RegExp(`(${escapedWord})`, "gi"), "<mark>$1</mark>");
-  }
-  return result;
 }
 
 export default async function SearchPage({ searchParams }: PageProps) {
