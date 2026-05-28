@@ -6,6 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { UserAvatar } from "@/components/user-avatar";
 import { FollowButton } from "@/components/follow-button";
+import { formatDate } from "@/lib/format-date";
 
 interface UserProfile {
   id: number;
@@ -64,10 +65,6 @@ export default function UserProfilePage() {
       .then(setPosts)
       .catch(() => {});
   }, [profile, tab]);
-
-  const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString("zh-CN", { year: "numeric", month: "long", day: "numeric" });
-  };
 
   if (loading) {
     return <div className="max-w-3xl mx-auto px-4 py-12 text-center text-zinc-500">加载中...</div>;

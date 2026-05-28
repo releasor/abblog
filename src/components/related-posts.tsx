@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import { formatDateShort } from "@/lib/format-date";
 
 interface RelatedPostData {
   id: number;
@@ -18,15 +19,6 @@ interface RelatedPostsProps {
 function truncate(text: string, maxLength: number): string {
   if (text.length <= maxLength) return text;
   return text.slice(0, maxLength).replace(/\s+\S*$/, "") + "...";
-}
-
-function formatDate(date: Date | null): string {
-  if (!date) return "";
-  return new Date(date).toLocaleDateString("zh-CN", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
 }
 
 export function RelatedPosts({ posts }: RelatedPostsProps) {
@@ -81,7 +73,7 @@ export function RelatedPosts({ posts }: RelatedPostsProps) {
                   dateTime={post.publishedAt.toISOString()}
                   className="text-xs text-zinc-500 dark:text-zinc-500"
                 >
-                  {formatDate(post.publishedAt)}
+                  {formatDateShort(post.publishedAt)}
                 </time>
               )}
             </div>

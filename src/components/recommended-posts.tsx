@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { formatDateShort } from "@/lib/format-date";
 
 interface RecommendedPost {
   id: number;
@@ -26,14 +27,6 @@ export function RecommendedPosts({ postId }: { postId: number }) {
   }, [postId]);
 
   if (posts.length === 0) return null;
-
-  const formatDate = (date: string | null) => {
-    if (!date) return "";
-    return new Date(date).toLocaleDateString("zh-CN", {
-      month: "long",
-      day: "numeric",
-    });
-  };
 
   return (
     <section className="mt-12 pt-8 border-t border-zinc-200 dark:border-zinc-800">
@@ -77,7 +70,7 @@ export function RecommendedPosts({ postId }: { postId: number }) {
                 {post.publishedAt && (
                   <>
                     <span className="text-zinc-300 dark:text-zinc-700">·</span>
-                    <span>{formatDate(post.publishedAt)}</span>
+                    <span>{formatDateShort(post.publishedAt)}</span>
                   </>
                 )}
               </div>

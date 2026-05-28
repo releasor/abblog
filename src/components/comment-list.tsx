@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, memo } from "react";
+import { formatRelativeTime } from "@/lib/format-date";
 
 interface Comment {
   id: number;
@@ -12,27 +13,6 @@ interface Comment {
 interface CommentListProps {
   postId: number;
   refreshKey?: number;
-}
-
-function formatRelativeTime(dateString: string): string {
-  const date = new Date(dateString);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffSeconds = Math.floor(diffMs / 1000);
-  const diffMinutes = Math.floor(diffSeconds / 60);
-  const diffHours = Math.floor(diffMinutes / 60);
-  const diffDays = Math.floor(diffHours / 24);
-
-  if (diffSeconds < 60) return "刚刚";
-  if (diffMinutes < 60) return `${diffMinutes} 分钟前`;
-  if (diffHours < 24) return `${diffHours} 小时前`;
-  if (diffDays < 30) return `${diffDays} 天前`;
-
-  return date.toLocaleDateString("zh-CN", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
 }
 
 const CommentItem = memo(function CommentItem({ comment }: { comment: Comment }) {
