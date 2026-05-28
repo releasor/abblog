@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { EmptyState } from "@/components/empty-state";
 
 export const metadata: Metadata = {
   title: "标签云 - billionaire",
@@ -60,9 +61,7 @@ export default async function TagsPage() {
       </div>
 
       {tags.length === 0 && (
-        <p className="text-center text-zinc-500 dark:text-zinc-400 py-12">
-          暂无标签
-        </p>
+        <EmptyState message="暂无标签" />
       )}
     </div>
   );

@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { EmptyState } from "@/components/empty-state";
 
 export const metadata: Metadata = {
   title: "分类",
@@ -24,9 +25,7 @@ export default async function CategoriesPage() {
       </h1>
 
       {categories.length === 0 ? (
-        <p className="text-zinc-500 dark:text-zinc-500 text-center py-12">
-          暂无分类。
-        </p>
+        <EmptyState message="暂无分类。" />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {categories.map((category) => (
