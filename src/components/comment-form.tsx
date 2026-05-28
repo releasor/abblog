@@ -3,6 +3,7 @@
 import { useState, FormEvent } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
+import { Skeleton } from "@/components/skeleton";
 
 interface CommentFormProps {
   postId: number;
@@ -18,8 +19,13 @@ export function CommentForm({ postId, onCommentAdded }: CommentFormProps) {
 
   if (status === "loading") {
     return (
-      <div className="text-sm text-zinc-500 dark:text-zinc-400">
-        加载中...
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-6 w-24" />
+          <Skeleton className="h-4 w-16" />
+        </div>
+        <Skeleton className="h-24 w-full rounded-md" />
+        <Skeleton className="h-9 w-24 rounded-md" />
       </div>
     );
   }

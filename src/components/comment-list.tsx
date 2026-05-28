@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, memo } from "react";
 import { formatRelativeTime } from "@/lib/format-date";
 import { EmptyState } from "@/components/empty-state";
+import { Skeleton } from "@/components/skeleton";
 
 interface Comment {
   id: number;
@@ -58,8 +59,17 @@ export function CommentList({ postId, refreshKey }: CommentListProps) {
 
   if (loading) {
     return (
-      <div className="text-sm text-zinc-500 dark:text-zinc-400">
-        加载评论中...
+      <div className="space-y-6">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div key={i} className="border-b border-zinc-200 dark:border-zinc-800 pb-6 last:border-0 last:pb-0">
+            <div className="flex items-center gap-2 mb-2">
+              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-3 w-16" />
+            </div>
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-3/4 mt-1" />
+          </div>
+        ))}
       </div>
     );
   }
