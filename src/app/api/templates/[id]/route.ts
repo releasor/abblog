@@ -5,7 +5,10 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const template = await prisma.postTemplate.findUnique({ where: { id: parseInt(id) } });
+  const templateId = parseInt(id);
+  if (isNaN(templateId)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+
+  const template = await prisma.postTemplate.findUnique({ where: { id: templateId } });
   if (!template) return NextResponse.json({ error: "Not found" }, { status: 404 });
   return NextResponse.json(template);
 }
@@ -16,14 +19,17 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id } = await params;
-  const existing = await prisma.postTemplate.findUnique({ where: { id: parseInt(id) } });
+  const templateId = parseInt(id);
+  if (isNaN(templateId)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+
+  const existing = await prisma.postTemplate.findUnique({ where: { id: templateId } });
   if (!existing || existing.userId !== parseInt(userId)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const data = await request.json();
   const template = await prisma.postTemplate.update({
-    where: { id: parseInt(id) },
+    where: { id: templateId },
     data: {
       name: data.name ?? existing.name,
       description: data.description ?? existing.description,
@@ -41,11 +47,14 @@ export async function DELETE(_request: NextRequest, { params }: { params: Promis
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id } = await params;
-  const existing = await prisma.postTemplate.findUnique({ where: { id: parseInt(id) } });
+  const templateId = parseInt(id);
+  if (isNaN(templateId)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+
+  const existing = await prisma.postTemplate.findUnique({ where: { id: templateId } });
   if (!existing || existing.userId !== parseInt(userId)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  await prisma.postTemplate.delete({ where: { id: parseInt(id) } });
+  await prisma.postTemplate.delete({ where: { id: templateId } });
   return NextResponse.json({ success: true });
 }
