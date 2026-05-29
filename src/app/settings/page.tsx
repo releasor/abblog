@@ -184,27 +184,35 @@ export default function SettingsPage() {
     <div className="max-w-2xl mx-auto px-4 py-12">
       <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-8">账号设置</h1>
 
-      <div className="flex gap-4 mb-8 border-b border-zinc-200 dark:border-zinc-800 overflow-x-auto scrollbar-hide">
+      <div className="flex gap-4 mb-8 border-b border-zinc-200 dark:border-zinc-800 overflow-x-auto scrollbar-hide" role="tablist" aria-label="设置分类">
         <button
           onClick={() => { setTab("profile"); setMessage(""); }}
+          role="tab"
+          aria-selected={tab === "profile"}
           className={`pb-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${tab === "profile" ? "border-zinc-900 dark:border-zinc-100 text-zinc-900 dark:text-zinc-100" : "border-transparent text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"}`}
         >
           个人资料
         </button>
         <button
           onClick={() => { setTab("security"); setMessage(""); }}
+          role="tab"
+          aria-selected={tab === "security"}
           className={`pb-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${tab === "security" ? "border-zinc-900 dark:border-zinc-100 text-zinc-900 dark:text-zinc-100" : "border-transparent text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"}`}
         >
           安全设置
         </button>
         <button
           onClick={() => { setTab("ai"); setMessage(""); }}
+          role="tab"
+          aria-selected={tab === "ai"}
           className={`pb-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${tab === "ai" ? "border-zinc-900 dark:border-zinc-100 text-zinc-900 dark:text-zinc-100" : "border-transparent text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"}`}
         >
           AI 设置
         </button>
         <button
           onClick={() => { setTab("notifications"); setMessage(""); }}
+          role="tab"
+          aria-selected={tab === "notifications"}
           className={`pb-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${tab === "notifications" ? "border-zinc-900 dark:border-zinc-100 text-zinc-900 dark:text-zinc-100" : "border-transparent text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"}`}
         >
           通知设置

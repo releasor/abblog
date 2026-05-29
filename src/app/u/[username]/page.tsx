@@ -172,11 +172,13 @@ export default function UserProfilePage() {
         </div>
       </div>
 
-      <div className="flex gap-4 mb-6 border-b border-zinc-200 dark:border-zinc-800">
+      <div className="flex gap-4 mb-6 border-b border-zinc-200 dark:border-zinc-800" role="tablist" aria-label="内容分类">
         {(["posts", "likes", "bookmarks"] as const).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
+            role="tab"
+            aria-selected={tab === t}
             className={`pb-3 text-sm font-medium border-b-2 transition-colors ${tab === t ? "border-zinc-900 dark:border-zinc-100 text-zinc-900 dark:text-zinc-100" : "border-transparent text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"}`}
           >
             {t === "posts" ? "文章" : t === "likes" ? "点赞" : "收藏"}
