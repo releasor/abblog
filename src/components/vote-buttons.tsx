@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import { ArrowBigUp, ArrowBigDown } from "lucide-react";
 import { showToast } from "./toast";
 
@@ -10,7 +10,7 @@ interface VoteButtonsProps {
   initialVote?: number | null;
 }
 
-export function VoteButtons({ postId, initialScore = 0, initialVote = null }: VoteButtonsProps) {
+export const VoteButtons = memo(function VoteButtons({ postId, initialScore = 0, initialVote = null }: VoteButtonsProps) {
   const [score, setScore] = useState(initialScore);
   const [vote, setVote] = useState<number | null>(initialVote);
   const [loading, setLoading] = useState(false);
@@ -78,4 +78,4 @@ export function VoteButtons({ postId, initialScore = 0, initialVote = null }: Vo
       </button>
     </div>
   );
-}
+});
