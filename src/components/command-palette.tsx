@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Search, FileText, Folder, Tag, Sun, Moon, Home, PenSquare } from "lucide-react";
 
@@ -78,14 +78,14 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
     },
   ];
 
-  const filtered = commands.filter((cmd) => {
+  const filtered = useMemo(() => commands.filter((cmd) => {
     if (!query) return true;
     const q = query.toLowerCase();
     return (
       cmd.label.toLowerCase().includes(q) ||
       cmd.keywords?.some((k) => k.toLowerCase().includes(q))
     );
-  });
+  }), [commands, query]);
 
   useEffect(() => {
     setSelectedIndex(0);
