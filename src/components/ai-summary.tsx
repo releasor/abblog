@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import { Loader2 } from "lucide-react";
 
-export function AiSummary({ postId }: { postId: number }) {
+export const AiSummary = memo(function AiSummary({ postId }: { postId: number }) {
   const [summary, setSummary] = useState("");
   const [loading, setLoading] = useState(true);
 
@@ -44,4 +44,4 @@ export function AiSummary({ postId }: { postId: number }) {
       </div>
     </div>
   );
-}
+});
