@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import Image from "next/image";
 import { UserPlus, X, Shield, Eye } from "lucide-react";
 import { showToast } from "./toast";
@@ -22,7 +22,7 @@ interface CollaboratorManagerProps {
   isAuthor: boolean;
 }
 
-export function CollaboratorManager({ postId, isAuthor }: CollaboratorManagerProps) {
+export const CollaboratorManager = memo(function CollaboratorManager({ postId, isAuthor }: CollaboratorManagerProps) {
   const [collaborators, setCollaborators] = useState<Collaborator[]>([]);
   const [showAdd, setShowAdd] = useState(false);
   const [username, setUsername] = useState("");
@@ -162,4 +162,4 @@ export function CollaboratorManager({ postId, isAuthor }: CollaboratorManagerPro
       </div>
     </div>
   );
-}
+});
