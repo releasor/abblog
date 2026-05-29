@@ -2,8 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import PostForm from "@/components/post-form";
+import dynamic from "next/dynamic";
 import { SkeletonPost } from "@/components/skeleton";
+
+const PostForm = dynamic(() => import("@/components/post-form"), {
+  loading: () => <SkeletonPost />,
+});
 
 interface PostData {
   id: number;

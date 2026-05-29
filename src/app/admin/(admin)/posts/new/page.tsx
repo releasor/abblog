@@ -1,6 +1,17 @@
 "use client";
 
-import PostForm from "@/components/post-form";
+import dynamic from "next/dynamic";
+import { Skeleton } from "@/components/skeleton";
+
+const PostForm = dynamic(() => import("@/components/post-form"), {
+  loading: () => (
+    <div className="space-y-6">
+      <Skeleton className="h-10 w-full" />
+      <Skeleton className="h-10 w-full" />
+      <Skeleton className="h-64 w-full rounded-xl" />
+    </div>
+  ),
+});
 
 export default function NewPostPage() {
   return (
