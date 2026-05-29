@@ -8,6 +8,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: "/",
       disallow: ["/admin/", "/api/", "/settings/", "/messages/", "/notifications/"],
     },
-    sitemap: absoluteUrl("/api/sitemap"),
+    sitemap: absoluteUrl("/sitemap.xml"),
   };
 }
