@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, memo } from "react";
 import { X, MessageCircle } from "lucide-react";
 import { showToast } from "@/components/toast";
 
-export function AiChat({ postId }: { postId: number }) {
+export const AiChat = memo(function AiChat({ postId }: { postId: number }) {
   const [isOpen, setIsOpen] = useState(false);
   const [question, setQuestion] = useState("");
   const [messages, setMessages] = useState<{ role: "user" | "ai"; content: string }[]>([]);
@@ -113,4 +113,4 @@ export function AiChat({ postId }: { postId: number }) {
       )}
     </>
   );
-}
+});
