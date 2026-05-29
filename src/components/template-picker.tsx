@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import { FileText, Plus, Trash2 } from "lucide-react";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 
@@ -16,7 +16,7 @@ interface TemplatePickerProps {
   onSelect: (content: string) => void;
 }
 
-export function TemplatePicker({ onSelect }: TemplatePickerProps) {
+export const TemplatePicker = memo(function TemplatePicker({ onSelect }: TemplatePickerProps) {
   const [templates, setTemplates] = useState<Template[]>([]);
   const [show, setShow] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
@@ -153,4 +153,4 @@ export function TemplatePicker({ onSelect }: TemplatePickerProps) {
       />
     </div>
   );
-}
+});
