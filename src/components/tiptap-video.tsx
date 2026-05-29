@@ -39,6 +39,7 @@ function VideoComponent({ node }: { node: { attrs: Record<string, unknown> } }) 
             frameBorder="0"
             allowFullScreen
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            title="嵌入视频"
           />
         </div>
       </NodeViewWrapper>

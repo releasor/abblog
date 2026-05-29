@@ -11,7 +11,7 @@ export default function SettingsPage() {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [tab, setTab] = useState<"profile" | "security" | "ai">("profile");
+  const [tab, setTab] = useState<"profile" | "security" | "ai" | "notifications">("profile");
   const [name, setName] = useState("");
   const [username, setUsername] = useState("");
   const [bio, setBio] = useState("");
@@ -30,65 +30,78 @@ export default function SettingsPage() {
   const [aiModel, setAiModel] = useState("");
   const [showApiKey, setShowApiKey] = useState(false);
 
+  const [emailNotifications, setEmailNotifications] = useState(true);
+
   useEffect(() => {
     if (status === "unauthenticated") router.push("/login");
     if (status !== "authenticated") return;
 
-    fetch("/api/user/profile")
-      .then((res) => res.json())
-      .then((data) => {
-        setName(data.name || "");
-        setUsername(data.username || "");
-        setBio(data.bio || "");
-        setWebsite(data.website || "");
-        setLocation(data.location || "");
-        setAvatar(data.avatar || null);
-      });
-
-    fetch("/api/user/ai-settings")
-      .then((res) => res.json())
-      .then((data) => {
-        setAiApiKey(data.aiApiKey || "");
-        setAiApiUrl(data.aiApiUrl || "");
-        setAiModel(data.aiModel || "");
-      });
+    Promise.all([
+      fetch("/api/user/profile").then((res) => res.json()),
+      fetch("/api/user/ai-settings").then((res) => res.json()),
+      fetch("/api/user/notification-settings").then((res) => res.json()),
+    ])
+      .then(([profileData, aiData, notifData]) => {
+        setName(profileData.name || "");
+        setUsername(profileData.username || "");
+        setBio(profileData.bio || "");
+        setWebsite(profileData.website || "");
+        setLocation(profileData.location || "");
+        setAvatar(profileData.avatar || null);
+        setAiApiKey(aiData.aiApiKey || "");
+        setAiApiUrl(aiData.aiApiUrl || "");
+        setAiModel(aiData.aiModel || "");
+        setEmailNotifications(notifData.emailNotifications ?? true);
+      })
+      .catch((e) => console.error("[Settings] Failed to fetch settings:", e));
   }, [status]);
 
   const saveProfile = async () => {
     setSaving(true);
     setMessage("");
-    const res = await fetch("/api/user/profile", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, username, bio, website, location }),
-    });
-    const data = await res.json();
-    if (res.ok) {
-      setMessage("保存成功");
-      update({ name: data.name });
-    } else {
-      setMessage(data.error || "保存失败");
+    try {
+      const res = await fetch("/api/user/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, username, bio, website, location }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setMessage("保存成功");
+        update({ name: data.name });
+      } else {
+        setMessage(data.error || "保存失败");
+      }
+    } catch (e) {
+      console.error("[Settings] Failed to save profile:", e);
+      setMessage("保存失败，请稍后重试");
+    } finally {
+      setSaving(false);
     }
-    setSaving(false);
   };
 
   const uploadAvatar = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const formData = new FormData();
-    formData.append("file", file);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
 
-    const res = await fetch("/api/user/avatar", {
-      method: "POST",
-      body: formData,
-    });
-    const data = await res.json();
-    if (res.ok) {
-      setAvatar(data.avatar);
-      update({});
-    } else {
-      setMessage(data.error || "上传失败");
+      const res = await fetch("/api/user/avatar", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setAvatar(data.avatar);
+        update({});
+      } else {
+        setMessage(data.error || "上传失败");
+      }
+    } catch (e) {
+      console.error("[Settings] Failed to upload avatar:", e);
+      setMessage("上传失败，请稍后重试");
     }
   };
 
@@ -98,19 +111,47 @@ export default function SettingsPage() {
       setMessage("两次输入的密码不一致");
       return;
     }
-    const res = await fetch("/api/user/password", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ currentPassword, newPassword }),
-    });
-    const data = await res.json();
-    if (res.ok) {
-      setMessage("密码修改成功");
-      setCurrentPassword("");
-      setNewPassword("");
-      setConfirmPassword("");
-    } else {
-      setMessage(data.error || "修改失败");
+    try {
+      const res = await fetch("/api/user/password", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ currentPassword, newPassword }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setMessage("密码修改成功");
+        setCurrentPassword("");
+        setNewPassword("");
+        setConfirmPassword("");
+      } else {
+        setMessage(data.error || "修改失败");
+      }
+    } catch (e) {
+      console.error("[Settings] Failed to change password:", e);
+      setMessage("修改失败，请稍后重试");
+    }
+  };
+
+  const saveNotificationSettings = async () => {
+    setSaving(true);
+    setMessage("");
+    try {
+      const res = await fetch("/api/user/notification-settings", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ emailNotifications }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setMessage("通知设置保存成功");
+      } else {
+        setMessage(data.error || "保存失败");
+      }
+    } catch (e) {
+      console.error("[Settings] Failed to save notification settings:", e);
+      setMessage("保存失败，请稍后重试");
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -132,33 +173,41 @@ export default function SettingsPage() {
         setMessage(data.error || "保存失败");
       }
     } catch (e) {
-      setMessage("保存失败：" + (e as Error).message);
+      console.error("[Settings] Failed to save AI settings:", e);
+      setMessage("保存失败，请稍后重试");
+    } finally {
+      setSaving(false);
     }
-    setSaving(false);
   };
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-12">
       <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-8">账号设置</h1>
 
-      <div className="flex gap-4 mb-8 border-b border-zinc-200 dark:border-zinc-800">
+      <div className="flex gap-4 mb-8 border-b border-zinc-200 dark:border-zinc-800 overflow-x-auto scrollbar-hide">
         <button
           onClick={() => { setTab("profile"); setMessage(""); }}
-          className={`pb-3 text-sm font-medium border-b-2 transition-colors ${tab === "profile" ? "border-zinc-900 dark:border-zinc-100 text-zinc-900 dark:text-zinc-100" : "border-transparent text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"}`}
+          className={`pb-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${tab === "profile" ? "border-zinc-900 dark:border-zinc-100 text-zinc-900 dark:text-zinc-100" : "border-transparent text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"}`}
         >
           个人资料
         </button>
         <button
           onClick={() => { setTab("security"); setMessage(""); }}
-          className={`pb-3 text-sm font-medium border-b-2 transition-colors ${tab === "security" ? "border-zinc-900 dark:border-zinc-100 text-zinc-900 dark:text-zinc-100" : "border-transparent text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"}`}
+          className={`pb-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${tab === "security" ? "border-zinc-900 dark:border-zinc-100 text-zinc-900 dark:text-zinc-100" : "border-transparent text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"}`}
         >
           安全设置
         </button>
         <button
           onClick={() => { setTab("ai"); setMessage(""); }}
-          className={`pb-3 text-sm font-medium border-b-2 transition-colors ${tab === "ai" ? "border-zinc-900 dark:border-zinc-100 text-zinc-900 dark:text-zinc-100" : "border-transparent text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"}`}
+          className={`pb-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${tab === "ai" ? "border-zinc-900 dark:border-zinc-100 text-zinc-900 dark:text-zinc-100" : "border-transparent text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"}`}
         >
           AI 设置
+        </button>
+        <button
+          onClick={() => { setTab("notifications"); setMessage(""); }}
+          className={`pb-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${tab === "notifications" ? "border-zinc-900 dark:border-zinc-100 text-zinc-900 dark:text-zinc-100" : "border-transparent text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"}`}
+        >
+          通知设置
         </button>
       </div>
 
@@ -202,7 +251,7 @@ export default function SettingsPage() {
             <textarea value={bio} onChange={(e) => setBio(e.target.value)} rows={3} className="w-full px-3 py-2 text-sm border border-zinc-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500 resize-none" placeholder="介绍一下自己..." />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">网站</label>
               <input value={website} onChange={(e) => setWebsite(e.target.value)} className="w-full px-3 py-2 text-sm border border-zinc-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500" placeholder="https://..." />
@@ -223,15 +272,15 @@ export default function SettingsPage() {
         <div className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">当前密码</label>
-            <input type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} className="w-full px-3 py-2 text-sm border border-zinc-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500" />
+            <input type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} autoComplete="current-password" className="w-full px-3 py-2 text-sm border border-zinc-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500" />
           </div>
           <div>
             <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">新密码</label>
-            <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="w-full px-3 py-2 text-sm border border-zinc-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500" />
+            <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} autoComplete="new-password" className="w-full px-3 py-2 text-sm border border-zinc-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500" />
           </div>
           <div>
             <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">确认新密码</label>
-            <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="w-full px-3 py-2 text-sm border border-zinc-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500" />
+            <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} autoComplete="new-password" className="w-full px-3 py-2 text-sm border border-zinc-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500" />
           </div>
           <button onClick={changePassword} className="w-full px-4 py-2 text-sm bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-lg hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors">
             修改密码
@@ -292,6 +341,38 @@ export default function SettingsPage() {
 
           <button onClick={saveAiSettings} disabled={saving} className="w-full px-4 py-2 text-sm bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-lg hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors disabled:opacity-50">
             {saving ? "保存中..." : "保存 AI 设置"}
+          </button>
+        </div>
+      )}
+
+      {tab === "notifications" && (
+        <div className="space-y-6">
+          <div className="p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg border border-zinc-200 dark:border-zinc-700">
+            <p className="text-sm text-zinc-700 dark:text-zinc-300">
+              管理你的邮件通知偏好。关闭后将不再收到评论回复、点赞等邮件通知。
+            </p>
+          </div>
+
+          <div className="flex items-center justify-between p-4 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg">
+            <div>
+              <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">邮件通知</p>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                接收评论回复、点赞、关注等邮件通知
+              </p>
+            </div>
+            <button
+              onClick={() => setEmailNotifications(!emailNotifications)}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${emailNotifications ? "bg-zinc-900 dark:bg-zinc-100" : "bg-zinc-300 dark:bg-zinc-600"}`}
+              role="switch"
+              aria-checked={emailNotifications}
+              aria-label="切换邮件通知"
+            >
+              <span className={`inline-block h-4 w-4 transform rounded-full bg-white dark:bg-zinc-900 transition-transform ${emailNotifications ? "translate-x-6" : "translate-x-1"}`} />
+            </button>
+          </div>
+
+          <button onClick={saveNotificationSettings} disabled={saving} className="w-full px-4 py-2 text-sm bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-lg hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors disabled:opacity-50">
+            {saving ? "保存中..." : "保存通知设置"}
           </button>
         </div>
       )}

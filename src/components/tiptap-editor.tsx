@@ -7,6 +7,7 @@ import Image from "@tiptap/extension-image";
 import Placeholder from "@tiptap/extension-placeholder";
 import { VideoExtension } from "./tiptap-video";
 import { useEffect, useRef, useState } from "react";
+import { List, ListOrdered, Quote, Link2, Image as ImageIcon, Video, Film } from "lucide-react";
 
 interface TiptapEditorProps {
   content: string;
@@ -100,53 +101,53 @@ function Toolbar({ editor }: { editor: ReturnType<typeof useEditor> }) {
 
   return (
     <div className="flex flex-wrap items-center gap-1 p-2 border-b border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900">
-      <button type="button" onClick={() => editor.chain().focus().toggleBold().run()} className={btnClass(editor.isActive("bold"))} title="粗体">
+      <button type="button" onClick={() => editor.chain().focus().toggleBold().run()} className={btnClass(editor.isActive("bold"))} title="粗体" aria-label="粗体">
         <strong>B</strong>
       </button>
-      <button type="button" onClick={() => editor.chain().focus().toggleItalic().run()} className={btnClass(editor.isActive("italic"))} title="斜体">
+      <button type="button" onClick={() => editor.chain().focus().toggleItalic().run()} className={btnClass(editor.isActive("italic"))} title="斜体" aria-label="斜体">
         <em>I</em>
       </button>
-      <button type="button" onClick={() => editor.chain().focus().toggleStrike().run()} className={btnClass(editor.isActive("strike"))} title="删除线">
+      <button type="button" onClick={() => editor.chain().focus().toggleStrike().run()} className={btnClass(editor.isActive("strike"))} title="删除线" aria-label="删除线">
         <s>S</s>
       </button>
 
       <span className="w-px h-5 bg-zinc-300 dark:bg-zinc-700 mx-1" />
 
-      <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} className={btnClass(editor.isActive("heading", { level: 2 }))} title="标题2">
+      <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} className={btnClass(editor.isActive("heading", { level: 2 }))} title="标题2" aria-label="标题2">
         H2
       </button>
-      <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} className={btnClass(editor.isActive("heading", { level: 3 }))} title="标题3">
+      <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} className={btnClass(editor.isActive("heading", { level: 3 }))} title="标题3" aria-label="标题3">
         H3
       </button>
 
       <span className="w-px h-5 bg-zinc-300 dark:bg-zinc-700 mx-1" />
 
-      <button type="button" onClick={() => editor.chain().focus().toggleBulletList().run()} className={btnClass(editor.isActive("bulletList"))} title="无序列表">
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
+      <button type="button" onClick={() => editor.chain().focus().toggleBulletList().run()} className={btnClass(editor.isActive("bulletList"))} title="无序列表" aria-label="无序列表">
+        <List className="w-4 h-4" />
       </button>
-      <button type="button" onClick={() => editor.chain().focus().toggleOrderedList().run()} className={btnClass(editor.isActive("orderedList"))} title="有序列表">
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h10M7 16h10M3 8h.01M3 12h.01M3 16h.01" /></svg>
+      <button type="button" onClick={() => editor.chain().focus().toggleOrderedList().run()} className={btnClass(editor.isActive("orderedList"))} title="有序列表" aria-label="有序列表">
+        <ListOrdered className="w-4 h-4" />
       </button>
-      <button type="button" onClick={() => editor.chain().focus().toggleBlockquote().run()} className={btnClass(editor.isActive("blockquote"))} title="引用">
-        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M6 17h3l2-4V7H5v6h3zm8 0h3l2-4V7h-6v6h3z" /></svg>
+      <button type="button" onClick={() => editor.chain().focus().toggleBlockquote().run()} className={btnClass(editor.isActive("blockquote"))} title="引用" aria-label="引用">
+        <Quote className="w-4 h-4" />
       </button>
-      <button type="button" onClick={() => editor.chain().focus().toggleCodeBlock().run()} className={btnClass(editor.isActive("codeBlock"))} title="代码块">
+      <button type="button" onClick={() => editor.chain().focus().toggleCodeBlock().run()} className={btnClass(editor.isActive("codeBlock"))} title="代码块" aria-label="代码块">
         {"</>"}
       </button>
 
       <span className="w-px h-5 bg-zinc-300 dark:bg-zinc-700 mx-1" />
 
-      <button type="button" onClick={addLink} className={btnClass(editor.isActive("link"))} title="插入链接">
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
+      <button type="button" onClick={addLink} className={btnClass(editor.isActive("link"))} title="插入链接" aria-label="插入链接">
+        <Link2 className="w-4 h-4" />
       </button>
-      <button type="button" onClick={addImage} disabled={uploading} className={btnClass(false)} title="上传图片">
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+      <button type="button" onClick={addImage} disabled={uploading} className={btnClass(false)} title="上传图片" aria-label="上传图片">
+        <ImageIcon className="w-4 h-4" />
       </button>
-      <button type="button" onClick={addVideoEmbed} className={btnClass(false)} title="嵌入视频链接">
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+      <button type="button" onClick={addVideoEmbed} className={btnClass(false)} title="嵌入视频链接" aria-label="嵌入视频链接">
+        <Video className="w-4 h-4" />
       </button>
-      <button type="button" onClick={addVideoUpload} disabled={uploading} className={btnClass(false)} title="上传视频">
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+      <button type="button" onClick={addVideoUpload} disabled={uploading} className={btnClass(false)} title="上传视频" aria-label="上传视频">
+        <Film className="w-4 h-4" />
       </button>
 
       {uploading && <span className="text-xs text-zinc-500 ml-2">上传中...</span>}

@@ -5,4 +5,4 @@ Disallow: /admin/
 Disallow: /settings/
 Disallow: /messages/
 
-Sitemap: https://billionaire.blog/sitemap
+Sitemap: https://billionaire.blog/sitemap.xml

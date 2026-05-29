@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 
-export function ReadingProgress() {
+export const ReadingProgress = memo(function ReadingProgress() {
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
@@ -25,4 +25,4 @@ export function ReadingProgress() {
       />
     </div>
   );
-}
+});

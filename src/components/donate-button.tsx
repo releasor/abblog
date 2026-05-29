@@ -34,6 +34,9 @@ export function DonateButton({ recipientId, recipientName, postId }: DonateButto
           setDone(false);
           setMessage("");
         }, 2000);
+      } else {
+        const data = await res.json().catch(() => null);
+        showToast(data?.error || "赞赏失败，请稍后重试", "error");
       }
     } catch {
       showToast("赞赏失败，请稍后重试", "error");
@@ -59,6 +62,7 @@ export function DonateButton({ recipientId, recipientName, postId }: DonateButto
             <button
               onClick={() => setShow(false)}
               className="absolute top-3 right-3 p-1 text-zinc-400 hover:text-zinc-600"
+              aria-label="关闭"
             >
               <X className="w-4 h-4" />
             </button>
@@ -76,7 +80,7 @@ export function DonateButton({ recipientId, recipientName, postId }: DonateButto
                 </h3>
                 <p className="text-sm text-zinc-500 mb-4">用实际行动支持创作者</p>
 
-                <div className="grid grid-cols-5 gap-2 mb-4">
+                <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 mb-4">
                   {amounts.map((a) => (
                     <button
                       key={a}

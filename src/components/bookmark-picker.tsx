@@ -36,8 +36,12 @@ export function BookmarkPicker({ postId, initialBookmarked = false }: BookmarkPi
     setLoading(true);
     try {
       const res = await fetch(`/api/posts/${postId}/bookmark`, { method: "POST" });
-      const data = await res.json();
-      setIsBookmarked(data.isBookmarked);
+      if (res.ok) {
+        const data = await res.json();
+        setIsBookmarked(data.isBookmarked);
+      } else {
+        showToast("收藏失败", "error");
+      }
     } catch {
       showToast("收藏失败", "error");
     } finally {
@@ -49,13 +53,17 @@ export function BookmarkPicker({ postId, initialBookmarked = false }: BookmarkPi
     if (loading) return;
     setLoading(true);
     try {
-      await fetch(`/api/bookmarks/collections/${collectionId}/items`, {
+      const res = await fetch(`/api/bookmarks/collections/${collectionId}/items`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ postId }),
       });
-      setIsBookmarked(true);
-      setShowPicker(false);
+      if (res.ok) {
+        setIsBookmarked(true);
+        setShowPicker(false);
+      } else {
+        showToast("添加到收藏夹失败", "error");
+      }
     } catch {
       showToast("添加到收藏夹失败", "error");
     } finally {
@@ -88,7 +96,7 @@ export function BookmarkPicker({ postId, initialBookmarked = false }: BookmarkPi
       </div>
 
       {showPicker && (
-        <div className="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-zinc-900 rounded-lg shadow-lg border border-zinc-200 dark:border-zinc-800 z-10">
+        <div className="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-zinc-900 rounded-lg shadow-lg border border-zinc-200 dark:border-zinc-800 z-10" role="dialog" aria-modal="true" aria-label="选择收藏夹">
           <div className="p-2 border-b border-zinc-200 dark:border-zinc-800">
             <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400">添加到收藏夹</p>
           </div>

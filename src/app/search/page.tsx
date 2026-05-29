@@ -1,6 +1,8 @@
 import { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { highlightTerms } from "@/lib/highlight";
+import { formatDate } from "@/lib/format-date";
+import { PageHeader } from "@/components/page-header";
 import Link from "next/link";
 
 export const metadata: Metadata = {
@@ -21,9 +23,7 @@ export default async function SearchPage({ searchParams }: PageProps) {
   if (!query) {
     return (
       <div className="max-w-6xl mx-auto px-4 py-12">
-        <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-8">
-          搜索
-        </h1>
+        <PageHeader title="搜索" />
         <p className="text-zinc-500 dark:text-zinc-500 text-center py-12">
           请输入搜索关键词
         </p>
@@ -81,9 +81,7 @@ export default async function SearchPage({ searchParams }: PageProps) {
   } catch {
     return (
       <div className="max-w-6xl mx-auto px-4 py-12">
-        <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-8">
-          搜索
-        </h1>
+        <PageHeader title="搜索" />
         <p className="text-red-500 text-center py-12">
           搜索失败，请重试。
         </p>
@@ -93,14 +91,7 @@ export default async function SearchPage({ searchParams }: PageProps) {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-12">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">
-          搜索
-        </h1>
-        <p className="text-zinc-500 dark:text-zinc-400">
-          找到 {results.length} 条关于 &ldquo;{query}&rdquo; 的结果
-        </p>
-      </div>
+      <PageHeader title="搜索" description={`找到 ${results.length} 条关于 "${query}" 的结果`} />
 
       {results.length === 0 ? (
         <div className="text-center py-12">
@@ -159,15 +150,6 @@ function SearchResultCard({
   publishedAt: Date | null;
   readingTime: number;
 }) {
-  const formatDate = (date: Date | null) => {
-    if (!date) return "";
-    return new Date(date).toLocaleDateString("zh-CN", {
-      month: "long",
-      day: "numeric",
-      year: "numeric",
-    });
-  };
-
   return (
     <Link
       href={`/posts/${slug}`}

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { authOptions, getAuthUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -11,7 +11,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const limit = 12;
 
     const groupId = parseInt(id);
-    if (isNaN(groupId)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+    if (isNaN(groupId)) return NextResponse.json({ error: "无效ID" }, { status: 400 });
 
     const [posts, total] = await Promise.all([
       prisma.groupPost.findMany({
@@ -40,29 +40,29 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     );
   } catch (e) {
     console.error("[GroupPosts] Failed to fetch group posts:", e);
-    return NextResponse.json({ error: "Failed to fetch group posts" }, { status: 500 });
+    return NextResponse.json({ error: "获取圈子文章失败" }, { status: 500 });
   }
 }
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getServerSession(authOptions);
-    const userId = (session?.user as { id?: string })?.id;
-    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const userId = getAuthUserId(session);
+    if (!userId) return NextResponse.json({ error: "请先登录" }, { status: 401 });
 
     const { id } = await params;
     const groupId = parseInt(id);
-    if (isNaN(groupId)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+    if (isNaN(groupId)) return NextResponse.json({ error: "无效ID" }, { status: 400 });
 
     const membership = await prisma.groupMember.findUnique({
-      where: { groupId_userId: { groupId, userId: parseInt(userId) } },
+      where: { groupId_userId: { groupId, userId } },
     });
-    if (!membership) return NextResponse.json({ error: "Not a member" }, { status: 403 });
+    if (!membership) return NextResponse.json({ error: "请先加入圈子" }, { status: 403 });
 
     const { postId } = await request.json();
-    if (!postId) return NextResponse.json({ error: "postId required" }, { status: 400 });
+    if (!postId) return NextResponse.json({ error: "请选择文章" }, { status: 400 });
     const postIdNum = parseInt(postId);
-    if (isNaN(postIdNum)) return NextResponse.json({ error: "Invalid postId" }, { status: 400 });
+    if (isNaN(postIdNum)) return NextResponse.json({ error: "无效文章ID" }, { status: 400 });
 
     const gp = await prisma.groupPost.create({
       data: { groupId, postId: postIdNum },
@@ -70,6 +70,6 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     return NextResponse.json(gp, { status: 201 });
   } catch (e) {
     console.error("[GroupPosts] Failed to add post to group:", e);
-    return NextResponse.json({ error: "Failed to add post to group" }, { status: 500 });
+    return NextResponse.json({ error: "分享文章到圈子失败" }, { status: 500 });
   }
 }

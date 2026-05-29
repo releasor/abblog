@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { authOptions, getAuthUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { checkRateLimit, getRateLimitHeaders } from "@/lib/rate-limit";
 
 export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions);
-  const userId = (session?.user as { id?: string })?.id;
+  const userId = getAuthUserId(session);
   if (!userId) {
     return NextResponse.json({ error: "请先登录" }, { status: 401 });
   }
@@ -80,7 +80,8 @@ export async function POST(request: NextRequest) {
     const data = await res.json();
     const summary = data.choices?.[0]?.message?.content || "暂无摘要";
     return NextResponse.json({ summary });
-  } catch {
+  } catch (e) {
+    console.error("[AI Summarize]", e);
     const plainTextFallback = post.content.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
     const summary = plainTextFallback.slice(0, 150) + (plainTextFallback.length > 150 ? "..." : "");
     return NextResponse.json({ summary });

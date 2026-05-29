@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { GroupCard } from "@/components/group-card";
 import { EmptyState } from "@/components/empty-state";
+import { PageHeader } from "@/components/page-header";
 
 export const metadata: Metadata = {
   title: "圈子",
@@ -19,12 +20,7 @@ export default async function GroupsPage() {
 
   return (
     <main className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100">圈子</h1>
-        <p className="mt-2 text-zinc-600 dark:text-zinc-400">
-          加入感兴趣的圈子，与志同道合的人交流
-        </p>
-      </div>
+      <PageHeader title="圈子" description="加入感兴趣的圈子，与志同道合的人交流" />
 
       {groups.length === 0 ? (
         <EmptyState compact message="暂无圈子" />

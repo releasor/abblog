@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import Link from "next/link";
 
 interface PopularPost {
@@ -12,15 +12,18 @@ interface PopularPost {
   score: number;
 }
 
-export function PopularPosts() {
+export const PopularPosts = memo(function PopularPosts() {
   const [posts, setPosts] = useState<PopularPost[]>([]);
   const [period, setPeriod] = useState<"week" | "month">("week");
 
   useEffect(() => {
     fetch(`/api/posts/popular?period=${period}&limit=5`)
-      .then((res) => res.json())
-      .then(setPosts)
-      .catch(() => {});
+      .then((res) => {
+        if (res.ok) return res.json();
+        return [];
+      })
+      .then((data) => { if (Array.isArray(data)) setPosts(data); })
+      .catch((e) => console.error("[PopularPosts] Failed to fetch popular posts:", e));
   }, [period]);
 
   return (
@@ -75,4 +78,4 @@ export function PopularPosts() {
       </div>
     </div>
   );
-}
+});

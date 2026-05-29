@@ -1,9 +1,17 @@
 import { prisma } from "@/lib/prisma";
+import { formatDate } from "@/lib/format-date";
 import Link from "next/link";
 import { HeroSection } from "@/components/hero-section";
 import { DailyQuote } from "@/components/daily-quote";
 import { ActivityItem } from "@/components/activity-item";
 import { Pin } from "lucide-react";
+import { EmptyState } from "@/components/empty-state";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "billionaire - 技术博客",
+  description: "分享前端开发、后端架构、AI 技术和编程实践的技术博客",
+};
 
 export const dynamic = "force-dynamic";
 
@@ -42,15 +50,6 @@ export default async function Home() {
 
   const featured = posts.slice(0, 3);
   const remaining = posts.slice(3);
-
-  const formatDate = (date: Date | null) => {
-    if (!date) return "";
-    return new Date(date).toLocaleDateString("zh-CN", {
-      month: "long",
-      day: "numeric",
-      year: "numeric",
-    });
-  };
 
   return (
     <div>
@@ -111,9 +110,7 @@ export default async function Home() {
         <h2 className="blog-section-title">最新文章</h2>
 
         {(remaining.length === 0 && featured.length === 0) ? (
-          <p className="text-zinc-500 dark:text-zinc-500 text-center py-12">
-            暂无文章，请稍后再来！
-          </p>
+          <EmptyState compact message="暂无文章，请稍后再来！" />
         ) : (
           <div className="blog-list">
             {(remaining.length > 0 ? remaining : featured).map((post, index) => (
@@ -140,7 +137,7 @@ export default async function Home() {
                       {formatDate(post.publishedAt)}
                     </time>
                   )}
-                  <span className="blog-row-reading">{post.readingTime} min</span>
+                  <span className="blog-row-reading">{post.readingTime} 分钟</span>
                 </div>
                 <span className="blog-row-arrow" aria-hidden="true">→</span>
               </Link>

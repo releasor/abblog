@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { authOptions, getAuthUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getAiConfig } from "@/lib/ai-config";
 import { checkRateLimit, getRateLimitHeaders } from "@/lib/rate-limit";
 
 export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions);
-  const userId = (session?.user as { id?: string })?.id;
+  const userId = getAuthUserId(session);
   if (!userId) {
     return NextResponse.json({ error: "请先登录" }, { status: 401 });
   }
@@ -87,7 +87,8 @@ export async function POST(request: NextRequest) {
     const data = await res.json();
     const answer = data.choices?.[0]?.message?.content || "无法生成回答";
     return NextResponse.json({ answer });
-  } catch {
+  } catch (e) {
+    console.error("[AI Chat]", e);
     return NextResponse.json({ answer: "AI 服务暂时不可用，请稍后再试。" });
   }
 }

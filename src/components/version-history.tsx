@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { History, RotateCcw, ChevronDown, ChevronUp } from "lucide-react";
 import { showToast } from "./toast";
+import { formatDateTime } from "@/lib/format-date";
 
 interface Version {
   id: number;
@@ -38,7 +39,11 @@ export function VersionHistory({ postId, onRestore }: VersionHistoryProps) {
         body: JSON.stringify({ versionId }),
       });
       if (res.ok) {
+        showToast("版本已恢复", "success");
         onRestore?.();
+      } else {
+        const data = await res.json().catch(() => null);
+        showToast(data?.error || "恢复版本失败", "error");
       }
     } catch {
       showToast("恢复版本失败", "error");
@@ -80,7 +85,7 @@ export function VersionHistory({ postId, onRestore }: VersionHistoryProps) {
                   v{v.version}: {v.title}
                 </p>
                 <p className="text-xs text-zinc-500">
-                  {new Date(v.createdAt).toLocaleString("zh-CN")}
+                  {formatDateTime(v.createdAt)}
                 </p>
               </div>
               <button

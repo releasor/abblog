@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef, useCallback } from "react";
+import { List, X } from "lucide-react";
 import type { TocHeading } from "@/lib/toc";
 
 interface TableOfContentsProps {
@@ -65,21 +66,7 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
         className="fixed bottom-6 right-20 z-50 md:hidden lg:hidden xl:hidden bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-full w-12 h-12 flex items-center justify-center shadow-lg hover:scale-105 transition-transform"
         aria-label="切换目录"
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <line x1="3" y1="6" x2="21" y2="6" />
-          <line x1="3" y1="12" x2="15" y2="12" />
-          <line x1="3" y1="18" x2="18" y2="18" />
-        </svg>
+        <List className="w-5 h-5" />
       </button>
 
       {/* Mobile/tablet overlay */}
@@ -99,20 +86,7 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
                 className="text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
                 aria-label="关闭目录"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
+                <X className="w-[18px] h-[18px]" />
               </button>
             </div>
             <TocList

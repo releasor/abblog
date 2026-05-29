@@ -1,8 +1,8 @@
 import { prisma } from "./prisma";
 
-export async function getAiConfig(userId: string) {
+export async function getAiConfig(userId: number) {
   const user = await prisma.user.findUnique({
-    where: { id: parseInt(userId) },
+    where: { id: userId },
     select: { aiApiKey: true, aiApiUrl: true, aiModel: true },
   });
 

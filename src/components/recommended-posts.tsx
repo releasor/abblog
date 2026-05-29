@@ -21,9 +21,12 @@ export function RecommendedPosts({ postId }: { postId: number }) {
 
   useEffect(() => {
     fetch(`/api/posts/recommend?postId=${postId}&limit=4`)
-      .then((res) => res.json())
-      .then(setPosts)
-      .catch(() => {});
+      .then((res) => {
+        if (res.ok) return res.json();
+        return [];
+      })
+      .then((data) => { if (Array.isArray(data)) setPosts(data); })
+      .catch((e) => console.error("[RecommendedPosts] Failed to fetch recommendations:", e));
   }, [postId]);
 
   if (posts.length === 0) return null;

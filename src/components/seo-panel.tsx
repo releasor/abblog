@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Search, AlertTriangle, Lightbulb, CheckCircle } from "lucide-react";
 import { showToast } from "./toast";
 
@@ -27,7 +27,7 @@ export function SEOPanel({ postId }: SEOPanelProps) {
   const [result, setResult] = useState<SEOResult | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const analyze = async () => {
+  const analyze = useCallback(async () => {
     setLoading(true);
     try {
       const res = await fetch(`/api/posts/${postId}/seo`);
@@ -38,11 +38,11 @@ export function SEOPanel({ postId }: SEOPanelProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [postId]);
 
   useEffect(() => {
     analyze();
-  }, [postId]);
+  }, [analyze]);
 
   if (loading) {
     return (
@@ -107,28 +107,29 @@ export function SEOPanel({ postId }: SEOPanelProps) {
         </div>
       </div>
 
-      {(result.issues.length > 0 || result.suggestions.length > 0) && (
-        <div className="p-4 space-y-3">
-          {result.issues.map((issue, i) => (
-            <div key={i} className="flex items-start gap-2 text-sm">
-              <AlertTriangle className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
-              <span className="text-red-600 dark:text-red-400">{issue}</span>
-            </div>
-          ))}
-          {result.suggestions.map((sug, i) => (
-            <div key={i} className="flex items-start gap-2 text-sm">
-              <Lightbulb className="w-4 h-4 text-yellow-500 mt-0.5 flex-shrink-0" />
-              <span className="text-zinc-600 dark:text-zinc-400">{sug}</span>
-            </div>
-          ))}
-          {result.issues.length === 0 && result.suggestions.length === 0 && (
-            <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
-              <CheckCircle className="w-4 h-4" />
-              <span>SEO 表现良好！</span>
-            </div>
-          )}
-        </div>
-      )}
+      <div className="p-4 space-y-3">
+        {result.issues.length === 0 && result.suggestions.length === 0 ? (
+          <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
+            <CheckCircle className="w-4 h-4" />
+            <span>SEO 表现良好！</span>
+          </div>
+        ) : (
+          <>
+            {result.issues.map((issue, i) => (
+              <div key={i} className="flex items-start gap-2 text-sm">
+                <AlertTriangle className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
+                <span className="text-red-600 dark:text-red-400">{issue}</span>
+              </div>
+            ))}
+            {result.suggestions.map((sug, i) => (
+              <div key={i} className="flex items-start gap-2 text-sm">
+                <Lightbulb className="w-4 h-4 text-yellow-500 mt-0.5 flex-shrink-0" />
+                <span className="text-zinc-600 dark:text-zinc-400">{sug}</span>
+              </div>
+            ))}
+          </>
+        )}
+      </div>
     </div>
   );
 }

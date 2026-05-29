@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, memo } from "react";
 
-export function ReadingTracker({ postId }: { postId: number }) {
+export const ReadingTracker = memo(function ReadingTracker({ postId }: { postId: number }) {
   const tracked = useRef(false);
 
   useEffect(() => {
@@ -10,11 +10,12 @@ export function ReadingTracker({ postId }: { postId: number }) {
 
     const timer = setTimeout(() => {
       tracked.current = true;
-      fetch(`/api/posts/${postId}/read`, { method: "POST" }).catch(() => {});
+      fetch(`/api/posts/${postId}/read`, { method: "POST" })
+        .catch((e) => console.error("[ReadingTracker] Failed to record read:", e));
     }, 5000);
 
     return () => clearTimeout(timer);
   }, [postId]);
 
   return null;
-}
+});

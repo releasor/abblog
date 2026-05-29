@@ -1,41 +1,61 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { authOptions, getAuthUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const session = await getServerSession(authOptions);
-  const userId = (session?.user as { id?: string })?.id;
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  try {
+    const session = await getServerSession(authOptions);
+    const userId = getAuthUserId(session);
+    if (!userId) return NextResponse.json({ error: "请先登录" }, { status: 401 });
 
-  const { id } = await params;
-  const postId = parseInt(id);
+    const { id } = await params;
+    const postId = parseInt(id);
+    if (isNaN(postId)) {
+      return NextResponse.json({ error: "无效ID" }, { status: 400 });
+    }
 
-  const versions = await prisma.postVersion.findMany({
-    where: { postId },
-    orderBy: { version: "desc" },
-    select: { id: true, title: true, excerpt: true, version: true, createdAt: true },
-  });
+    const versions = await prisma.postVersion.findMany({
+      where: { postId },
+      orderBy: { version: "desc" },
+      select: { id: true, title: true, excerpt: true, version: true, createdAt: true },
+    });
 
-  return NextResponse.json(versions);
+    return NextResponse.json({ versions }, { headers: { "Cache-Control": "private, max-age=30, stale-while-revalidate=60" } });
+  } catch (e) {
+    console.error("[Versions] Failed to fetch versions:", e);
+    return NextResponse.json({ error: "获取版本历史失败" }, { status: 500 });
+  }
 }
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const session = await getServerSession(authOptions);
-  const userId = (session?.user as { id?: string })?.id;
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  try {
+    const session = await getServerSession(authOptions);
+    const userId = getAuthUserId(session);
+    if (!userId) return NextResponse.json({ error: "请先登录" }, { status: 401 });
 
-  const { id } = await params;
-  const postId = parseInt(id);
-  const { versionId } = await request.json();
+    const { id } = await params;
+    const postId = parseInt(id);
+    if (isNaN(postId)) {
+      return NextResponse.json({ error: "无效ID" }, { status: 400 });
+    }
 
-  const version = await prisma.postVersion.findUnique({ where: { id: parseInt(versionId) } });
-  if (!version || version.postId !== postId) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    const { versionId } = await request.json();
+    if (!versionId) {
+      return NextResponse.json({ error: "缺少版本ID" }, { status: 400 });
+    }
 
-  await prisma.post.update({
-    where: { id: postId },
-    data: { title: version.title, content: version.content, excerpt: version.excerpt },
-  });
+    const version = await prisma.postVersion.findUnique({ where: { id: parseInt(versionId) } });
+    if (!version || version.postId !== postId) return NextResponse.json({ error: "版本不存在" }, { status: 404 });
 
-  return NextResponse.json({ success: true });
+    await prisma.post.update({
+      where: { id: postId },
+      data: { title: version.title, content: version.content, excerpt: version.excerpt },
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (e) {
+    console.error("[Versions] Failed to restore version:", e);
+    return NextResponse.json({ error: "恢复版本失败" }, { status: 500 });
+  }
 }

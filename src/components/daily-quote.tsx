@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, memo } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const quotes = [
   { text: "AI 不会取代你，但会使用 AI 的人会取代你。", author: "佚名" },
@@ -20,7 +21,7 @@ const quotes = [
   { text: "简单是终极的复杂。", author: "列奥纳多·达·芬奇" },
 ];
 
-export function DailyQuote() {
+export const DailyQuote = memo(function DailyQuote() {
   const [index, setIndex] = useState(0);
 
   const prev = () => setIndex((i) => (i - 1 + quotes.length) % quotes.length);
@@ -48,9 +49,7 @@ export function DailyQuote() {
             className="p-2 rounded-full text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
             aria-label="上一句"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
+            <ChevronLeft className="w-5 h-5" />
           </button>
           <span className="text-xs text-zinc-400 tabular-nums">
             {index + 1} / {quotes.length}
@@ -60,12 +59,10 @@ export function DailyQuote() {
             className="p-2 rounded-full text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
             aria-label="下一句"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
+            <ChevronRight className="w-5 h-5" />
           </button>
         </div>
       </div>
     </section>
   );
-}
+});

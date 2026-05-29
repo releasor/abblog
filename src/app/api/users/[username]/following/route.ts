@@ -32,6 +32,6 @@ export async function GET(
     });
   } catch (e) {
     console.error("[Following] Failed to fetch following list:", e);
-    return NextResponse.json({ error: "Failed to fetch following list" }, { status: 500 });
+    return NextResponse.json({ error: "获取关注列表失败" }, { status: 500 });
   }
 }

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import PostForm from "@/components/post-form";
+import { SkeletonPost } from "@/components/skeleton";
 
 interface PostData {
   id: number;
@@ -27,7 +28,7 @@ export default function EditPostPage() {
     const fetchPost = async () => {
       const res = await fetch(`/api/posts/${params.id}`);
       if (!res.ok) {
-        setError("Post not found");
+        setError("文章未找到");
         setLoading(false);
         return;
       }
@@ -49,18 +50,18 @@ export default function EditPostPage() {
   }, [params.id]);
 
   if (loading) {
-    return <div className="text-center py-12 text-zinc-500">Loading...</div>;
+    return <SkeletonPost />;
   }
 
   if (error || !post) {
     return (
       <div className="text-center py-12">
-        <p className="text-zinc-500 mb-4">{error || "Post not found"}</p>
+        <p className="text-zinc-500 mb-4">{error || "文章未找到"}</p>
         <button
           onClick={() => router.push("/admin/posts")}
           className="text-zinc-900 dark:text-zinc-100 underline"
         >
-          Back to posts
+          返回文章列表
         </button>
       </div>
     );
@@ -69,7 +70,7 @@ export default function EditPostPage() {
   return (
     <div>
       <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 mb-6">
-        Edit Post
+        编辑文章
       </h1>
       <PostForm mode="edit" initialData={post} />
     </div>

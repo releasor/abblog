@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { authOptions, getAuthUserId } from "@/lib/auth";
 import { getAiConfig } from "@/lib/ai-config";
 import { checkRateLimit, getRateLimitHeaders } from "@/lib/rate-limit";
 
 export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions);
-  const userId = (session?.user as { id?: string })?.id;
+  const userId = getAuthUserId(session);
 
   if (!userId) {
     return NextResponse.json({ error: "请先登录" }, { status: 401 });
@@ -95,6 +95,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ reply });
   } catch (e) {
     console.error("AI fetch error:", e);
-    return NextResponse.json({ reply: `请求失败: ${(e as Error).message}` });
+    return NextResponse.json({ reply: "请求失败，请检查AI设置后重试" });
   }
 }

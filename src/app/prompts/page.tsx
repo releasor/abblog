@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { MessageCircle, Zap, Trash2, Copy, Check } from "lucide-react";
 import { showToast } from "@/components/toast";
 import { Skeleton } from "@/components/skeleton";
 
@@ -41,9 +42,7 @@ export default function PromptsPage() {
               : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300"
           }`}
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-          </svg>
+          <MessageCircle className="w-4 h-4" />
           AI 对话
         </button>
         <button
@@ -54,9 +53,7 @@ export default function PromptsPage() {
               : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300"
           }`}
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-          </svg>
+          <Zap className="w-4 h-4" />
           提示词优化
         </button>
       </div>
@@ -120,9 +117,7 @@ function ChatTab() {
       <div className="h-[500px] overflow-y-auto p-4 space-y-4 bg-zinc-50 dark:bg-zinc-950 flex-1 min-h-0">
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-center">
-            <svg className="w-16 h-16 text-zinc-300 dark:text-zinc-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-            </svg>
+            <MessageCircle className="w-16 h-16 text-zinc-300 dark:text-zinc-600 mb-4" />
             <p className="text-zinc-500 dark:text-zinc-400">和 AI 聊聊吧</p>
           </div>
         )}
@@ -162,9 +157,7 @@ function ChatTab() {
               className="px-3 py-2.5 text-sm text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors"
               title="清空对话"
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-              </svg>
+              <Trash2 className="w-4 h-4" />
             </button>
           )}
           <input
@@ -220,8 +213,11 @@ function OptimizerTab() {
     setLoading(false);
   };
 
+  const [copied, setCopied] = useState(false);
   const copyResult = () => {
     navigator.clipboard.writeText(optimized);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   return (
@@ -241,9 +237,7 @@ function OptimizerTab() {
           disabled={loading || !input.trim()}
           className="flex items-center gap-2 px-6 py-2.5 text-sm font-medium bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl hover:from-amber-600 hover:to-orange-600 transition-all disabled:opacity-50 shadow-lg shadow-amber-500/20"
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-          </svg>
+          <Zap className="w-4 h-4" />
           {loading ? "优化中..." : "AI 优化"}
         </button>
       </div>
@@ -256,10 +250,8 @@ function OptimizerTab() {
               onClick={copyResult}
               className="flex items-center gap-1.5 px-3 py-1 text-xs font-medium bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors"
             >
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-              </svg>
-              复制
+              {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+              {copied ? "已复制!" : "复制"}
             </button>
           </div>
           <div className="p-4 max-h-[400px] overflow-auto">

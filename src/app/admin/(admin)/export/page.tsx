@@ -12,6 +12,10 @@ export default function AdminExportPage() {
     setExporting(true);
     try {
       const res = await fetch("/api/admin/export");
+      if (!res.ok) {
+        showToast("导出失败", "error");
+        return;
+      }
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");

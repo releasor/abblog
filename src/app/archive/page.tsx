@@ -5,7 +5,7 @@ import { formatMonthDay } from "@/lib/format-date";
 import { EmptyState } from "@/components/empty-state";
 
 export const metadata: Metadata = {
-  title: "文章归档 - billionaire",
+  title: "文章归档",
   description: "所有已发布文章的时间线归档",
 };
 
@@ -46,6 +46,9 @@ export default async function ArchivePage() {
         </p>
       </header>
 
+      {posts.length === 0 ? (
+        <EmptyState compact message="暂无已发布文章" />
+      ) : (
       <div className="space-y-12">
         {years.map((year) => (
           <div key={year}>
@@ -85,9 +88,6 @@ export default async function ArchivePage() {
           </div>
         ))}
       </div>
-
-      {posts.length === 0 && (
-        <EmptyState compact message="暂无已发布文章" />
       )}
     </div>
   );

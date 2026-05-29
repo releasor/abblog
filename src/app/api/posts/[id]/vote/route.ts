@@ -1,92 +1,137 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { authOptions, getAuthUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { createActivity } from "@/lib/activity";
+
+export async function GET(
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const postId = parseInt(id);
+    if (isNaN(postId)) return NextResponse.json({ error: "无效ID" }, { status: 400 });
+
+    const session = await getServerSession(authOptions);
+    const userId = getAuthUserId(session);
+
+    const post = await prisma.post.findUnique({
+      where: { id: postId },
+      select: { score: true },
+    });
+
+    if (!post) return NextResponse.json({ error: "文章不存在" }, { status: 404 });
+
+    let userVote = null;
+    if (userId) {
+      const vote = await prisma.postVote.findUnique({
+        where: { postId_userId: { postId, userId } },
+      });
+      userVote = vote?.value ?? null;
+    }
+
+    return NextResponse.json(
+      { score: post.score, userVote },
+      { headers: { "Cache-Control": "private, max-age=30, stale-while-revalidate=60" } }
+    );
+  } catch (e) {
+    console.error("[Vote] Failed to fetch vote status:", e);
+    return NextResponse.json({ error: "获取投票状态失败" }, { status: 500 });
+  }
+}
 
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const session = await getServerSession(authOptions);
-  const userId = (session?.user as { id?: string })?.id;
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  try {
+    const session = await getServerSession(authOptions);
+    const userId = getAuthUserId(session);
+    if (!userId) return NextResponse.json({ error: "请先登录" }, { status: 401 });
 
-  const { id } = await params;
-  const postId = parseInt(id);
-  if (isNaN(postId)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+    const { id } = await params;
+    const postId = parseInt(id);
+    if (isNaN(postId)) return NextResponse.json({ error: "无效ID" }, { status: 400 });
 
-  const { value } = await request.json();
+    const { value } = await request.json();
 
-  if (value !== 1 && value !== -1) {
-    return NextResponse.json({ error: "Value must be 1 or -1" }, { status: 400 });
-  }
-
-  const uid = parseInt(userId);
-
-  const existing = await prisma.postVote.findUnique({
-    where: { postId_userId: { postId, userId: uid } },
-  });
-
-  let vote;
-  let scoreDelta = 0;
-
-  if (existing) {
-    if (existing.value === value) {
-      await prisma.postVote.delete({ where: { id: existing.id } });
-      scoreDelta = -value;
-      vote = null;
-    } else {
-      vote = await prisma.postVote.update({
-        where: { id: existing.id },
-        data: { value },
-      });
-      scoreDelta = value * 2;
+    if (value !== 1 && value !== -1) {
+      return NextResponse.json({ error: "投票值必须为 1 或 -1" }, { status: 400 });
     }
-  } else {
-    vote = await prisma.postVote.create({
-      data: { postId, userId: uid, value },
+
+    const existing = await prisma.postVote.findUnique({
+      where: { postId_userId: { postId, userId } },
     });
-    scoreDelta = value;
-    if (value === 1) {
-      await createActivity(uid, "LIKE_ADDED", postId);
+
+    let vote;
+    let scoreDelta = 0;
+
+    if (existing) {
+      if (existing.value === value) {
+        await prisma.postVote.delete({ where: { id: existing.id } });
+        scoreDelta = -value;
+        vote = null;
+      } else {
+        vote = await prisma.postVote.update({
+          where: { id: existing.id },
+          data: { value },
+        });
+        scoreDelta = value * 2;
+      }
+    } else {
+      vote = await prisma.postVote.create({
+        data: { postId, userId, value },
+      });
+      scoreDelta = value;
+      if (value === 1) {
+        await createActivity(userId, "LIKE_ADDED", postId);
+      }
     }
+
+    const post = await prisma.post.update({
+      where: { id: postId },
+      data: { score: { increment: scoreDelta } },
+      select: { score: true },
+    });
+
+    return NextResponse.json({ userVote: vote?.value ?? null, score: post.score });
+  } catch (e) {
+    console.error("[Vote] Failed to vote:", e);
+    return NextResponse.json({ error: "投票失败" }, { status: 500 });
   }
-
-  const post = await prisma.post.update({
-    where: { id: postId },
-    data: { score: { increment: scoreDelta } },
-    select: { score: true },
-  });
-
-  return NextResponse.json({ vote, score: post.score });
 }
 
 export async function DELETE(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const session = await getServerSession(authOptions);
-  const userId = (session?.user as { id?: string })?.id;
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  try {
+    const session = await getServerSession(authOptions);
+    const userId = getAuthUserId(session);
+    if (!userId) return NextResponse.json({ error: "请先登录" }, { status: 401 });
 
-  const { id } = await params;
-  const postId = parseInt(id);
-  if (isNaN(postId)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+    const { id } = await params;
+    const postId = parseInt(id);
+    if (isNaN(postId)) return NextResponse.json({ error: "无效ID" }, { status: 400 });
 
-  const uid = parseInt(userId);
+    const existing = await prisma.postVote.findUnique({
+      where: { postId_userId: { postId, userId } },
+    });
 
-  const existing = await prisma.postVote.findUnique({
-    where: { postId_userId: { postId, userId: uid } },
-  });
+    if (!existing) return NextResponse.json({ error: "未找到投票记录" }, { status: 404 });
 
-  if (!existing) return NextResponse.json({ error: "No vote found" }, { status: 404 });
+    await Promise.all([
+      prisma.postVote.delete({ where: { id: existing.id } }),
+      prisma.post.update({
+        where: { id: postId },
+        data: { score: { decrement: existing.value } },
+      }),
+    ]);
 
-  await prisma.postVote.delete({ where: { id: existing.id } });
-  await prisma.post.update({
-    where: { id: postId },
-    data: { score: { decrement: existing.value } },
-  });
-
-  return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true });
+  } catch (e) {
+    console.error("[Vote] Failed to remove vote:", e);
+    return NextResponse.json({ error: "取消投票失败" }, { status: 500 });
+  }
 }

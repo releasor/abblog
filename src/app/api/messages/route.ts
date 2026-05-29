@@ -1,25 +1,31 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { authOptions, getAuthUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 export async function GET() {
-  const messages = await prisma.message.findMany({
-    orderBy: { createdAt: "desc" },
-    take: 100,
-    include: {
-      user: { select: { name: true } },
-    },
-  });
+  try {
+    const messages = await prisma.message.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 100,
+      include: {
+        user: { select: { name: true } },
+      },
+    });
 
-  return NextResponse.json(
-    messages.map((m) => ({
-      id: m.id,
-      name: m.user?.name || m.name,
-      content: m.content,
-      createdAt: m.createdAt.toISOString(),
-    }))
-  );
+    return NextResponse.json(
+      messages.map((m) => ({
+        id: m.id,
+        name: m.user?.name || m.name,
+        content: m.content,
+        createdAt: m.createdAt.toISOString(),
+      })),
+      { headers: { "Cache-Control": "public, s-maxage=30, stale-while-revalidate=60" } }
+    );
+  } catch (e) {
+    console.error("[Messages] Failed to list messages:", e);
+    return NextResponse.json({ error: "获取留言列表失败" }, { status: 500 });
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -36,14 +42,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "留言不能超过500字" }, { status: 400 });
     }
 
-    const userId = (session?.user as { id?: string })?.id;
+    const userId = getAuthUserId(session);
     const name = session?.user?.name || body.name || "匿名用户";
 
     const message = await prisma.message.create({
       data: {
         content: content.trim(),
         name: name,
-        userId: userId ? parseInt(userId) : null,
+        userId,
       },
     });
 
@@ -57,8 +63,7 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error) {
-    console.error("Message creation error:", error);
-    const message = error instanceof Error ? error.message : "发送失败，请稍后重试";
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("[Messages] Failed to create message:", error);
+    return NextResponse.json({ error: "发送失败，请稍后重试" }, { status: 500 });
   }
 }

@@ -58,12 +58,15 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col">
+        <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:z-[100] focus:px-4 focus:py-2 focus:bg-zinc-900 focus:text-white focus:dark:bg-zinc-100 focus:dark:text-zinc-900">
+          跳到主要内容
+        </a>
         <Providers>
           <ThemeProvider>
             <ToastProvider>
               <ErrorBoundary>
                 <Header />
-                <main className="flex-1">{children}</main>
+                <main id="main-content" className="flex-1">{children}</main>
                 <Footer />
               </ErrorBoundary>
             </ToastProvider>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { NodeViewWrapper, NodeViewProps } from "@tiptap/react";
+import { NodeViewWrapper, NodeViewContent, NodeViewProps } from "@tiptap/react";
 import { ChevronDown, ChevronRight } from "lucide-react";
 
 export function TiptapAccordion({ node }: NodeViewProps) {
@@ -14,6 +14,7 @@ export function TiptapAccordion({ node }: NodeViewProps) {
         <button
           onClick={() => setIsOpen(!isOpen)}
           className="flex items-center gap-2 w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-800/50 text-left"
+          aria-expanded={isOpen}
         >
           {isOpen ? (
             <ChevronDown className="w-4 h-4 text-zinc-500" />
@@ -26,7 +27,7 @@ export function TiptapAccordion({ node }: NodeViewProps) {
         </button>
         {isOpen && (
           <div className="px-4 py-3 border-t border-zinc-200 dark:border-zinc-800">
-            <div className="text-sm text-zinc-600 dark:text-zinc-400 prose dark:prose-invert max-w-none" />
+            <NodeViewContent className="text-sm text-zinc-600 dark:text-zinc-400 prose dark:prose-invert max-w-none" />
           </div>
         )}
       </div>

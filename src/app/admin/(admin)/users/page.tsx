@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
 import { Search, Users, Star } from "lucide-react";
 import { formatDate } from "@/lib/format-date";
-import { SkeletonRow } from "@/components/skeleton";
+import { showToast } from "@/components/toast";
+import { DataTable } from "@/components/data-table";
 import { EmptyState } from "@/components/empty-state";
 import { SimplePagination } from "@/components/pagination";
 
@@ -26,36 +27,59 @@ export default function AdminUsersPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [query, setQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
   const [loading, setLoading] = useState(true);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const fetchUsers = async () => {
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      setDebouncedQuery(query);
+      setPage(1);
+    }, 300);
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [query]);
+
+  const fetchUsers = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await fetch(`/api/admin/users?page=${page}&q=${encodeURIComponent(query)}`);
+      const res = await fetch(`/api/admin/users?page=${page}&q=${encodeURIComponent(debouncedQuery)}`);
+      if (!res.ok) {
+        showToast("加载用户列表失败", "error");
+        return;
+      }
       const data = await res.json();
       setUsers(data.users || []);
       setTotalPages(data.pagination?.totalPages || 1);
     } catch (e) {
       console.error("[AdminUsers] Failed to fetch users:", e);
+      showToast("加载用户列表失败", "error");
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, debouncedQuery]);
 
   useEffect(() => {
     fetchUsers();
-  }, [page, query]);
+  }, [fetchUsers]);
 
   const handleRoleChange = async (userId: number, role: string) => {
     try {
-      await fetch("/api/admin/users", {
+      const res = await fetch("/api/admin/users", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId, action: "setRole", value: role }),
       });
-      fetchUsers();
+      if (res.ok) {
+        fetchUsers();
+      } else {
+        showToast("角色修改失败", "error");
+      }
     } catch (e) {
       console.error("[AdminUsers] Failed to change user role:", e);
+      showToast("角色修改失败", "error");
     }
   };
 
@@ -86,97 +110,97 @@ export default function AdminUsersPage() {
         />
       </div>
 
-      {loading ? (
-        <SkeletonRow count={5} height="h-16" />
-      ) : users.length === 0 ? (
-        <EmptyState icon={<Users className="w-8 h-8" />} message="未找到用户" />
-      ) : (
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-x-auto">
-          <table className="w-full min-w-[600px]">
-            <thead>
-              <tr className="border-b border-zinc-200 dark:border-zinc-800">
-                <th className="px-5 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-                  用户
-                </th>
-                <th className="px-5 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-                  角色
-                </th>
-                <th className="px-5 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-                  等级
-                </th>
-                <th className="px-5 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-                  统计
-                </th>
-                <th className="px-5 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-                  注册时间
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
-              {users.map((u) => (
-                <tr
-                  key={u.id}
-                  className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors"
-                >
-                  <td className="px-5 py-3.5">
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                        {u.avatar ? (
-                          <Image
-                            src={u.avatar}
-                            alt=""
-                            width={36}
-                            height={36}
-                            className="rounded-full object-cover"
-                          />
-                        ) : (
-                          <span className="text-sm font-medium text-zinc-600 dark:text-zinc-300">
-                            {u.name[0]}
-                          </span>
-                        )}
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100 truncate">
-                          {u.name}
-                        </p>
-                        <p className="text-xs text-zinc-400 truncate">{u.email}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-5 py-3.5">
-                    <select
-                      value={u.role}
-                      onChange={(e) => handleRoleChange(u.id, e.target.value)}
-                      className={`px-2.5 py-1 rounded-lg text-xs font-medium border-0 ${roleColors[u.role]} cursor-pointer`}
-                    >
-                      {Object.entries(roleLabels).map(([key, label]) => (
-                        <option key={key} value={key}>
-                          {label}
-                        </option>
-                      ))}
-                    </select>
-                  </td>
-                  <td className="px-5 py-3.5">
-                    <div className="flex items-center gap-1.5">
-                      <Star className="w-3.5 h-3.5 text-amber-500" />
-                      <span className="text-sm text-zinc-700 dark:text-zinc-300">
-                        Lv.{u.level}
-                      </span>
-                      <span className="text-xs text-zinc-400">({u.points})</span>
-                    </div>
-                  </td>
-                  <td className="px-5 py-3.5 text-sm text-zinc-500 dark:text-zinc-400">
-                    {u._count.posts} 文 / {u._count.comments} 评
-                  </td>
-                  <td className="px-5 py-3.5 text-sm text-zinc-500 dark:text-zinc-400">
-                    {formatDate(u.createdAt)}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+      <DataTable
+        columns={[
+          {
+            key: "user",
+            label: "用户",
+            render: (u) => (
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                  {u.avatar ? (
+                    <Image
+                      src={u.avatar}
+                      alt=""
+                      width={36}
+                      height={36}
+                      className="rounded-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-sm font-medium text-zinc-600 dark:text-zinc-300">
+                      {u.name[0]}
+                    </span>
+                  )}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100 truncate">
+                    {u.name}
+                  </p>
+                  <p className="text-xs text-zinc-400 truncate">{u.email}</p>
+                </div>
+              </div>
+            ),
+          },
+          {
+            key: "role",
+            label: "角色",
+            render: (u) => (
+              <select
+                value={u.role}
+                onChange={(e) => {
+                  e.stopPropagation();
+                  handleRoleChange(u.id, e.target.value);
+                }}
+                onClick={(e) => e.stopPropagation()}
+                className={`px-2.5 py-1 rounded-lg text-xs font-medium border-0 ${roleColors[u.role]} cursor-pointer`}
+              >
+                {Object.entries(roleLabels).map(([key, label]) => (
+                  <option key={key} value={key}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            ),
+          },
+          {
+            key: "level",
+            label: "等级",
+            render: (u) => (
+              <div className="flex items-center gap-1.5">
+                <Star className="w-3.5 h-3.5 text-amber-500" />
+                <span className="text-sm text-zinc-700 dark:text-zinc-300">
+                  Lv.{u.level}
+                </span>
+                <span className="text-xs text-zinc-400">({u.points})</span>
+              </div>
+            ),
+          },
+          {
+            key: "stats",
+            label: "统计",
+            render: (u) => (
+              <span className="text-sm text-zinc-500 dark:text-zinc-400">
+                {u._count.posts} 文 / {u._count.comments} 评
+              </span>
+            ),
+          },
+          {
+            key: "createdAt",
+            label: "注册时间",
+            render: (u) => (
+              <span className="text-sm text-zinc-500 dark:text-zinc-400">
+                {formatDate(u.createdAt)}
+              </span>
+            ),
+          },
+        ]}
+        data={users}
+        loading={loading}
+        loadingRows={5}
+        emptyIcon={<Users className="w-8 h-8" />}
+        emptyMessage="未找到用户"
+        keyExtractor={(u) => u.id}
+      />
 
       <SimplePagination
         page={page}

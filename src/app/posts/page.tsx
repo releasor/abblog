@@ -2,6 +2,9 @@ import { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { PostCard } from "@/components/post-card";
 import { Pagination } from "@/components/pagination";
+import { PostsSidebar } from "@/components/posts-sidebar";
+import { PageHeader } from "@/components/page-header";
+import { EmptyState } from "@/components/empty-state";
 import { notFound } from "next/navigation";
 
 export const metadata: Metadata = {
@@ -46,34 +49,36 @@ export default async function PostsPage({ searchParams }: PageProps) {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-12">
-      <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-8">
-        所有文章
-      </h1>
+    <div className="max-w-7xl mx-auto px-4 py-12">
+      <PageHeader title="所有文章" />
 
-      {posts.length === 0 ? (
-        <p className="text-zinc-500 dark:text-zinc-500 text-center py-12">
-          暂无已发布的文章。
-        </p>
-      ) : (
-        <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {posts.map((post) => (
-              <PostCard
-                key={post.id}
-                title={post.title}
-                slug={post.slug}
-                excerpt={post.excerpt}
-                category={post.category}
-                publishedAt={post.publishedAt}
-                readingTime={post.readingTime}
-              />
-            ))}
-          </div>
+      <div className="flex gap-8">
+        <div className="flex-1 min-w-0">
+          {posts.length === 0 ? (
+            <EmptyState compact message="暂无已发布的文章" />
+          ) : (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {posts.map((post) => (
+                  <PostCard
+                    key={post.id}
+                    title={post.title}
+                    slug={post.slug}
+                    excerpt={post.excerpt}
+                    category={post.category}
+                    publishedAt={post.publishedAt}
+                    readingTime={post.readingTime}
+                  />
+                ))}
+              </div>
 
-          <Pagination currentPage={page} totalPages={totalPages} basePath="/posts" />
-        </>
-      )}
+              <Pagination currentPage={page} totalPages={totalPages} basePath="/posts" />
+            </>
+          )}
+        </div>
+
+        <PostsSidebar />
+      </div>
     </div>
   );
 }

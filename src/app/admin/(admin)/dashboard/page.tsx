@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import { FileText, Users, MessageSquare, Eye, TrendingUp, ArrowUpRight } from "lucide-react";
 import { StatCard } from "@/components/admin/stat-card";
+import { SkeletonStat } from "@/components/skeleton";
+import { showToast } from "@/components/toast";
 
 interface DashboardData {
   summary: {
@@ -11,6 +13,14 @@ interface DashboardData {
     totalComments: number;
     totalViews: number;
   };
+  trend: {
+    date: string;
+    pageViews: number;
+    uniqueUsers: number;
+    newPosts: number;
+    newComments: number;
+    newUsers: number;
+  }[];
   popularPosts: {
     id: number;
     title: string;
@@ -20,15 +30,32 @@ interface DashboardData {
   }[];
 }
 
+function calcTrend(trend: DashboardData["trend"], key: keyof DashboardData["trend"][number]): { value: number; isPositive: boolean } {
+  if (trend.length < 2) return { value: 0, isPositive: true };
+  const half = Math.floor(trend.length / 2);
+  const prev = trend.slice(half).reduce((s, d) => s + (d[key] as number), 0);
+  const curr = trend.slice(0, half).reduce((s, d) => s + (d[key] as number), 0);
+  if (prev === 0) return { value: curr > 0 ? 100 : 0, isPositive: true };
+  const pct = Math.round(((curr - prev) / prev) * 100);
+  return { value: Math.abs(pct), isPositive: pct >= 0 };
+}
+
 export default function AdminDashboard() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetch("/api/admin/stats")
-      .then((r) => r.json())
-      .then(setData)
-      .catch(() => {})
+      .then((r) => {
+        if (r.ok) return r.json();
+        showToast("加载统计数据失败", "error");
+        return null;
+      })
+      .then((d) => { if (d) setData(d); })
+      .catch((e) => {
+        console.error("[Dashboard] Failed to fetch stats:", e);
+        showToast("加载统计数据失败", "error");
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -36,31 +63,25 @@ export default function AdminDashboard() {
     return (
       <div className="space-y-6">
         <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-          Dashboard
+          仪表盘
         </h1>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[...Array(4)].map((_, i) => (
-            <div
-              key={i}
-              className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 animate-pulse"
-            >
-              <div className="h-4 w-16 bg-zinc-200 dark:bg-zinc-800 rounded mb-3" />
-              <div className="h-8 w-24 bg-zinc-200 dark:bg-zinc-800 rounded" />
-            </div>
-          ))}
-        </div>
+        <SkeletonStat count={4} />
       </div>
     );
   }
 
   if (!data) return null;
 
-  const { summary, popularPosts } = data;
+  const { summary, trend, popularPosts } = data;
+  const trendPosts = calcTrend(trend, "newPosts");
+  const trendUsers = calcTrend(trend, "newUsers");
+  const trendComments = calcTrend(trend, "newComments");
+  const trendViews = calcTrend(trend, "pageViews");
 
   return (
     <div className="space-y-8">
       <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-        Dashboard
+        仪表盘
       </h1>
 
       {/* Stats Grid */}
@@ -69,25 +90,25 @@ export default function AdminDashboard() {
           label="已发布文章"
           value={summary.totalPosts}
           icon={FileText}
-          trend={{ value: 12, isPositive: true }}
+          trend={trendPosts}
         />
         <StatCard
           label="注册用户"
           value={summary.totalUsers}
           icon={Users}
-          trend={{ value: 8, isPositive: true }}
+          trend={trendUsers}
         />
         <StatCard
           label="评论总数"
           value={summary.totalComments}
           icon={MessageSquare}
-          trend={{ value: 3, isPositive: false }}
+          trend={trendComments}
         />
         <StatCard
           label="阅读次数"
           value={summary.totalViews}
           icon={Eye}
-          trend={{ value: 15, isPositive: true }}
+          trend={trendViews}
         />
       </div>
 

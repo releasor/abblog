@@ -1,6 +1,7 @@
 import { memo } from "react";
 import Link from "next/link";
 import { FileText, MessageCircle, Heart, UserPlus, Bookmark } from "lucide-react";
+import { formatDate } from "@/lib/format-date";
 
 interface ActivityItemProps {
   activity: {
@@ -37,7 +38,12 @@ const typeLabels: Record<string, string> = {
 export const ActivityItem = memo(function ActivityItem({ activity }: ActivityItemProps) {
   const Icon = typeIcons[activity.type] || FileText;
   const label = typeLabels[activity.type] || activity.type;
-  const metadata = activity.metadata ? JSON.parse(activity.metadata) : null;
+  let metadata: { title?: string } | null = null;
+  try {
+    metadata = activity.metadata ? JSON.parse(activity.metadata) : null;
+  } catch {
+    // ignore invalid JSON
+  }
 
   return (
     <div className="flex gap-3 py-3">
@@ -58,12 +64,7 @@ export const ActivityItem = memo(function ActivityItem({ activity }: ActivityIte
           <p className="text-sm text-zinc-600 dark:text-zinc-400 truncate">{metadata.title}</p>
         )}
         <time className="text-xs text-zinc-400 dark:text-zinc-500">
-          {new Date(activity.createdAt).toLocaleDateString("zh-CN", {
-            month: "short",
-            day: "numeric",
-            hour: "2-digit",
-            minute: "2-digit",
-          })}
+          {formatDate(activity.createdAt)}
         </time>
       </div>
     </div>

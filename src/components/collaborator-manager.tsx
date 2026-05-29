@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import { UserPlus, X, Shield, Eye } from "lucide-react";
 import { showToast } from "./toast";
 
@@ -49,6 +50,9 @@ export function CollaboratorManager({ postId, isAuthor }: CollaboratorManagerPro
         setCollaborators([...collaborators, data]);
         setUsername("");
         setShowAdd(false);
+      } else {
+        const data = await res.json().catch(() => null);
+        showToast(data?.error || "添加协作者失败", "error");
       }
     } catch {
       showToast("添加协作者失败", "error");
@@ -61,8 +65,12 @@ export function CollaboratorManager({ postId, isAuthor }: CollaboratorManagerPro
     if (loading) return;
     setLoading(true);
     try {
-      await fetch(`/api/posts/${postId}/collaborators?userId=${userId}`, { method: "DELETE" });
-      setCollaborators(collaborators.filter((c) => c.userId !== userId));
+      const res = await fetch(`/api/posts/${postId}/collaborators?userId=${userId}`, { method: "DELETE" });
+      if (res.ok) {
+        setCollaborators(collaborators.filter((c) => c.userId !== userId));
+      } else {
+        showToast("移除协作者失败", "error");
+      }
     } catch {
       showToast("移除协作者失败", "error");
     } finally {
@@ -121,9 +129,9 @@ export function CollaboratorManager({ postId, isAuthor }: CollaboratorManagerPro
             className="flex items-center justify-between p-2 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg"
           >
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center overflow-hidden">
                 {c.user.avatar ? (
-                  <img src={c.user.avatar} alt="" className="w-8 h-8 rounded-full" loading="lazy" />
+                  <Image src={c.user.avatar} alt="" width={32} height={32} className="rounded-full" />
                 ) : (
                   <span className="text-sm font-medium">{c.user.name[0]}</span>
                 )}
@@ -144,6 +152,7 @@ export function CollaboratorManager({ postId, isAuthor }: CollaboratorManagerPro
               <button
                 onClick={() => handleRemove(c.userId)}
                 className="p-1 text-zinc-400 hover:text-red-500"
+                aria-label={`移除 ${c.user.name}`}
               >
                 <X className="w-4 h-4" />
               </button>

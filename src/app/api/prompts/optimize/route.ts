@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { authOptions, getAuthUserId } from "@/lib/auth";
 import { getAiConfig } from "@/lib/ai-config";
 
 export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions);
-  const userId = (session?.user as { id?: string })?.id;
+  const userId = getAuthUserId(session);
 
   if (!userId) {
     return NextResponse.json({ error: "请先登录" }, { status: 401 });
@@ -86,7 +86,8 @@ export async function POST(request: NextRequest) {
     const data = await res.json();
     const optimized = data.choices?.[0]?.message?.content || "无法生成优化结果";
     return NextResponse.json({ optimized });
-  } catch {
+  } catch (e) {
+    console.error("[Prompt Optimize]", e);
     return NextResponse.json({ optimized: "AI 服务暂时不可用，请稍后再试。" });
   }
 }

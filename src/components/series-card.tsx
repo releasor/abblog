@@ -1,4 +1,6 @@
+import { memo } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { BookOpen } from "lucide-react";
 
 interface SeriesCardProps {
@@ -12,7 +14,7 @@ interface SeriesCardProps {
   };
 }
 
-export function SeriesCard({ series }: SeriesCardProps) {
+export const SeriesCard = memo(function SeriesCard({ series }: SeriesCardProps) {
   return (
     <Link
       href={`/series/${series.slug}`}
@@ -20,10 +22,12 @@ export function SeriesCard({ series }: SeriesCardProps) {
     >
       <div className="aspect-video bg-gradient-to-br from-indigo-500 to-purple-600 relative overflow-hidden">
         {series.coverImage && (
-          <img
+          <Image
             src={series.coverImage}
             alt={series.name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+            fill
+            className="object-cover group-hover:scale-105 transition-transform"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           />
         )}
         <div className="absolute inset-0 bg-black/20" />
@@ -44,4 +48,4 @@ export function SeriesCard({ series }: SeriesCardProps) {
       </div>
     </Link>
   );
-}
+});

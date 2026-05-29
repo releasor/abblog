@@ -46,7 +46,7 @@ export function ConfirmDialog({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="fixed inset-0 bg-black/50" onClick={onCancel} />
-      <div className="relative bg-white dark:bg-zinc-900 rounded-xl shadow-xl max-w-sm w-full mx-4 p-6">
+      <div className="relative bg-white dark:bg-zinc-900 rounded-xl shadow-xl max-w-sm w-full mx-4 p-6" role="dialog" aria-modal="true" aria-labelledby="confirm-dialog-title">
         <div className="flex items-start gap-4 mb-4">
           {variant === "danger" && (
             <div className="flex-shrink-0 w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
@@ -54,7 +54,7 @@ export function ConfirmDialog({
             </div>
           )}
           <div>
-            <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+            <h3 id="confirm-dialog-title" className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
               {title}
             </h3>
             <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">

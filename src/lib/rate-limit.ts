@@ -1,12 +1,14 @@
 const store = new Map<string, { count: number; resetAt: number }>();
+let lastCleanup = Date.now();
 
-// Clean up expired entries every 5 minutes
-setInterval(() => {
+function cleanupExpired() {
   const now = Date.now();
+  if (now - lastCleanup < 5 * 60_1000) return;
+  lastCleanup = now;
   for (const [key, val] of store) {
     if (now > val.resetAt) store.delete(key);
   }
-}, 5 * 60 * 1000);
+}
 
 export interface RateLimitConfig {
   windowMs: number;
@@ -25,6 +27,7 @@ export function checkRateLimit(
   identifier: string,
   config: RateLimitConfig
 ): { allowed: boolean; remaining: number; resetAt: number } {
+  cleanupExpired();
   const now = Date.now();
   const key = `${identifier}`;
   const entry = store.get(key);

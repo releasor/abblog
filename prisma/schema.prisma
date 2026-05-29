@@ -41,7 +41,6 @@ model User {
   comments           Comment[]
   messages           Message[]
   likes              Like[]
-  bookmarks          Bookmark[]
   readHistory        ReadHistory[]
   notifications      Notification[]
   posts              Post[]               @relation("UserPosts")
@@ -89,7 +88,6 @@ model Post {
   tags          PostTag[]
   comments      Comment[]
   likes         Like[]
-  bookmarks     Bookmark[]
   readHistory   ReadHistory[]
   shareStats    ShareStat[]
   versions      PostVersion[]
@@ -101,6 +99,9 @@ model Post {
   topicPosts    TopicPost[]
   donations     Donation[]
 
+  @@index([status, publishedAt])
+  @@index([status, isPinned, publishedAt])
+  @@index([status, score])
   @@map("posts")
 }
 
@@ -154,6 +155,7 @@ model Comment {
   post Post  @relation(fields: [postId], references: [id], onDelete: Cascade)
   user User? @relation(fields: [userId], references: [id])
 
+  @@index([postId, status])
   @@map("comments")
 }
 
@@ -186,19 +188,6 @@ model Like {
 
   @@unique([postId, userId])
   @@map("likes")
-}
-
-model Bookmark {
-  id        Int      @id @default(autoincrement())
-  postId    Int      @map("post_id")
-  userId    Int      @map("user_id")
-  createdAt DateTime @default(now()) @map("created_at")
-
-  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
-  user User @relation(fields: [userId], references: [id])
-
-  @@unique([postId, userId])
-  @@map("bookmarks")
 }
 
 model ReadHistory {

@@ -21,35 +21,35 @@ import {
 } from "lucide-react";
 
 const navLinks = [
-  { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/admin/posts", label: "Posts", icon: FileText },
-  { href: "/admin/categories", label: "Categories", icon: Folder },
-  { href: "/admin/tags", label: "Tags", icon: Tag },
-  { href: "/admin/comments", label: "Comments", icon: MessageSquare },
-  { href: "/admin/media", label: "Media", icon: ImageIcon },
-  { href: "/admin/users", label: "Users", icon: Users },
-  { href: "/admin/donations", label: "Donations", icon: Heart },
-  { href: "/admin/config", label: "Config", icon: Settings },
-  { href: "/admin/export", label: "Export", icon: Download },
+  { href: "/admin/dashboard", label: "仪表盘", icon: LayoutDashboard },
+  { href: "/admin/posts", label: "文章", icon: FileText },
+  { href: "/admin/categories", label: "分类", icon: Folder },
+  { href: "/admin/tags", label: "标签", icon: Tag },
+  { href: "/admin/comments", label: "评论", icon: MessageSquare },
+  { href: "/admin/media", label: "媒体", icon: ImageIcon },
+  { href: "/admin/users", label: "用户", icon: Users },
+  { href: "/admin/donations", label: "捐赠", icon: Heart },
+  { href: "/admin/config", label: "配置", icon: Settings },
+  { href: "/admin/export", label: "导出", icon: Download },
 ];
 
-export default function AdminLayout({
-  children,
+function Sidebar({
+  session,
+  pathname,
+  onClose,
 }: {
-  children: React.ReactNode;
+  session: { user?: { name?: string | null } } | null;
+  pathname: string;
+  onClose: () => void;
 }) {
-  const { data: session } = useSession();
-  const pathname = usePathname();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  const Sidebar = () => (
+  return (
     <aside className="w-60 bg-white dark:bg-zinc-900 border-r border-zinc-200 dark:border-zinc-800 flex flex-col h-full">
       <div className="p-5 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
         <div>
           <Link
             href="/admin/dashboard"
             className="text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-50"
-            onClick={() => setSidebarOpen(false)}
+            onClick={onClose}
           >
             billionaire
           </Link>
@@ -57,7 +57,7 @@ export default function AdminLayout({
         </div>
         <button
           className="lg:hidden p-1.5 rounded-lg text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-          onClick={() => setSidebarOpen(false)}
+          onClick={onClose}
         >
           <X className="w-5 h-5" />
         </button>
@@ -74,7 +74,7 @@ export default function AdminLayout({
             <Link
               key={link.href}
               href={link.href}
-              onClick={() => setSidebarOpen(false)}
+              onClick={onClose}
               className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                 isActive
                   ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
@@ -97,7 +97,7 @@ export default function AdminLayout({
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100 truncate">
-              {session?.user?.name || "Admin"}
+              {session?.user?.name || "管理员"}
             </p>
           </div>
           <button
@@ -111,12 +111,22 @@ export default function AdminLayout({
       </div>
     </aside>
   );
+}
+
+export default function AdminLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const { data: session } = useSession();
+  const pathname = usePathname();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
     <div className="min-h-screen flex bg-zinc-50 dark:bg-zinc-950">
       {/* Desktop sidebar */}
       <div className="hidden lg:block">
-        <Sidebar />
+        <Sidebar session={session} pathname={pathname} onClose={() => setSidebarOpen(false)} />
       </div>
 
       {/* Mobile sidebar overlay */}
@@ -127,7 +137,7 @@ export default function AdminLayout({
             onClick={() => setSidebarOpen(false)}
           />
           <div className="fixed inset-y-0 left-0 z-50">
-            <Sidebar />
+            <Sidebar session={session} pathname={pathname} onClose={() => setSidebarOpen(false)} />
           </div>
         </div>
       )}

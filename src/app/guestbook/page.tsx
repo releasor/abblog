@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { formatRelativeTime } from "@/lib/format-date";
+import { Skeleton } from "@/components/skeleton";
+import { EmptyState } from "@/components/empty-state";
 
 interface Message {
   id: number;
@@ -17,11 +19,18 @@ export default function GuestbookPage() {
   const [content, setContent] = useState("");
   const [name, setName] = useState("");
   const [sending, setSending] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   const fetchMessages = useCallback(async () => {
-    const res = await fetch("/api/messages");
-    if (res.ok) setMessages(await res.json());
+    try {
+      const res = await fetch("/api/messages");
+      if (res.ok) setMessages(await res.json());
+    } catch (e) {
+      console.error("[Guestbook] Failed to fetch messages:", e);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -104,10 +113,21 @@ export default function GuestbookPage() {
 
       {/* Messages list */}
       <div className="space-y-4">
-        {messages.length === 0 ? (
-          <p className="text-center text-zinc-400 py-12">
-            还没有留言，来做第一个留言的人吧！
-          </p>
+        {loading ? (
+          Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="p-5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl">
+              <div className="flex items-center gap-3 mb-3">
+                <Skeleton className="w-8 h-8 rounded-full flex-shrink-0" />
+                <div className="flex-1">
+                  <Skeleton className="h-4 w-24 mb-1" />
+                  <Skeleton className="h-3 w-16" />
+                </div>
+              </div>
+              <Skeleton className="h-4 w-full ml-11" />
+            </div>
+          ))
+        ) : messages.length === 0 ? (
+          <EmptyState compact message="还没有留言，来做第一个留言的人吧！" />
         ) : (
           messages.map((msg) => (
             <div

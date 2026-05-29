@@ -1,6 +1,7 @@
 "use client";
 
-import { memo, useCallback } from "react";
+import { memo, useCallback, useState } from "react";
+import { Check, Link2 } from "lucide-react";
 
 interface ShareButtonsProps {
   title: string;
@@ -28,6 +29,7 @@ const WechatIcon = (
 );
 
 export const ShareButtons = memo(function ShareButtons({ title, url, postId }: ShareButtonsProps) {
+  const [copied, setCopied] = useState(false);
   const encodedTitle = encodeURIComponent(title);
   const encodedUrl = encodeURIComponent(url);
 
@@ -37,7 +39,7 @@ export const ShareButtons = memo(function ShareButtons({ title, url, postId }: S
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ platform }),
-      }).catch(() => {});
+      }).catch((e) => console.error("[ShareButtons] Failed to track share:", e));
     }
   }, [postId]);
 
@@ -50,6 +52,8 @@ export const ShareButtons = memo(function ShareButtons({ title, url, postId }: S
   const copyLink = useCallback(() => {
     navigator.clipboard.writeText(url);
     trackShare("copy");
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   }, [url, trackShare]);
 
   return (
@@ -63,6 +67,7 @@ export const ShareButtons = memo(function ShareButtons({ title, url, postId }: S
           rel="noopener noreferrer"
           onClick={() => trackShare(link.platform)}
           className="p-2 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-colors"
+          aria-label={`分享到${link.name}`}
           title={`分享到${link.name}`}
         >
           {link.icon}
@@ -70,12 +75,15 @@ export const ShareButtons = memo(function ShareButtons({ title, url, postId }: S
       ))}
       <button
         onClick={copyLink}
-        className="p-2 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-colors"
-        title="复制链接"
+        className={`p-2 rounded-lg transition-colors ${copied ? "text-green-500 bg-green-50 dark:bg-green-900/20" : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800"}`}
+        aria-label={copied ? "已复制" : "复制链接"}
+        title={copied ? "已复制!" : "复制链接"}
       >
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-        </svg>
+        {copied ? (
+          <Check className="w-5 h-5" />
+        ) : (
+          <Link2 className="w-5 h-5" />
+        )}
       </button>
     </div>
   );

@@ -28,28 +28,38 @@ export function TemplatePicker({ onSelect }: TemplatePickerProps) {
     fetch("/api/templates")
       .then((r) => r.json())
       .then((data) => setTemplates(Array.isArray(data) ? data : []))
-      .catch(() => {});
+      .catch((e) => console.error("[TemplatePicker] Failed to fetch templates:", e));
   }, []);
 
   const handleCreate = async () => {
     if (!newName.trim() || !newContent.trim()) return;
-    const res = await fetch("/api/templates", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: newName, content: newContent }),
-    });
-    if (res.ok) {
-      const t = await res.json();
-      setTemplates([t, ...templates]);
-      setNewName("");
-      setNewContent("");
-      setShowCreate(false);
+    try {
+      const res = await fetch("/api/templates", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: newName, content: newContent }),
+      });
+      if (res.ok) {
+        const t = await res.json();
+        setTemplates([t, ...templates]);
+        setNewName("");
+        setNewContent("");
+        setShowCreate(false);
+      }
+    } catch (e) {
+      console.error("[TemplatePicker] Failed to create template:", e);
     }
   };
 
   const handleDelete = async (id: number) => {
-    await fetch(`/api/templates/${id}`, { method: "DELETE" });
-    setTemplates(templates.filter((t) => t.id !== id));
+    try {
+      const res = await fetch(`/api/templates/${id}`, { method: "DELETE" });
+      if (res.ok) {
+        setTemplates(templates.filter((t) => t.id !== id));
+      }
+    } catch (e) {
+      console.error("[TemplatePicker] Failed to delete template:", e);
+    }
     setConfirmDeleteId(null);
   };
 

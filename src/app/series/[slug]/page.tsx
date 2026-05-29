@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { formatDate } from "@/lib/format-date";
 import { BookOpen, Calendar } from "lucide-react";
 
 interface Props {
@@ -65,7 +66,7 @@ export default async function SeriesDetailPage({ params }: Props) {
             <p className="text-zinc-600 dark:text-zinc-400">{series.description}</p>
           )}
           <div className="flex items-center gap-4 mt-4 text-sm text-zinc-500">
-            <span>by {series.user.name}</span>
+            <span>作者：{series.user.name}</span>
             <span>{series.posts.length} 篇文章</span>
           </div>
         </div>
@@ -95,7 +96,7 @@ export default async function SeriesDetailPage({ params }: Props) {
                   <div className="flex items-center gap-1 mt-2 text-xs text-zinc-500">
                     <Calendar className="w-3 h-3" />
                     <span>
-                      {new Date(sp.post.publishedAt).toLocaleDateString("zh-CN")}
+                      {formatDate(sp.post.publishedAt)}
                     </span>
                   </div>
                 )}

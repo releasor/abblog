@@ -769,3 +769,13 @@ body {
 .tiptap .video-upload-wrapper {
   margin: 1rem 0;
 }
+
+/* ===== Scrollbar Hide ===== */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}

@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { SeriesCard } from "@/components/series-card";
 import { EmptyState } from "@/components/empty-state";
+import { PageHeader } from "@/components/page-header";
 
 export const metadata: Metadata = {
   title: "系列文章",
@@ -19,12 +20,7 @@ export default async function SeriesPage() {
 
   return (
     <main className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100">系列文章</h1>
-        <p className="mt-2 text-zinc-600 dark:text-zinc-400">
-          浏览所有系列文章，系统地学习某个主题
-        </p>
-      </div>
+      <PageHeader title="系列文章" description="浏览所有系列文章，系统地学习某个主题" />
 
       {series.length === 0 ? (
         <EmptyState compact message="暂无系列文章" />

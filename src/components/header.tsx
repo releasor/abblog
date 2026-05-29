@@ -1,11 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, lazy, Suspense } from "react";
 import { useSession, signOut } from "next-auth/react";
+import { Bell, Menu, X } from "lucide-react";
 import { DarkModeToggle } from "./dark-mode-toggle";
 import { SearchInput } from "./search-input";
 import { UserAvatar } from "./user-avatar";
+
+const CommandPalette = lazy(() => import("./command-palette").then((m) => ({ default: m.CommandPalette })));
 
 function NotificationBell() {
   const [count, setCount] = useState(0);
@@ -15,7 +18,7 @@ function NotificationBell() {
       fetch("/api/notifications")
         .then((res) => res.json())
         .then((data) => setCount(data.unreadCount || 0))
-        .catch(() => {});
+        .catch((e) => console.error("[Header] Failed to fetch notifications:", e));
     };
     fetchCount();
     const interval = setInterval(fetchCount, 60000);
@@ -23,10 +26,8 @@ function NotificationBell() {
   }, []);
 
   return (
-    <Link href="/notifications" className="relative p-1.5 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-      </svg>
+    <Link href="/notifications" className="relative p-1.5 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors" aria-label={count > 0 ? `通知 (${count}条未读)` : "通知"}>
+      <Bell className="w-5 h-5" />
       {count > 0 && (
         <span className="absolute -top-0.5 -right-0.5 w-4 h-4 text-[10px] font-bold leading-4 text-center text-white bg-red-500 rounded-full">
           {count > 9 ? "9+" : count}
@@ -46,7 +47,7 @@ function UserMenu() {
     fetch("/api/user/profile")
       .then((res) => res.json())
       .then((data) => setProfile({ username: data.username, avatar: data.avatar }))
-      .catch(() => {});
+      .catch((e) => console.error("[Header] Failed to fetch user profile:", e));
   }, []);
 
   useEffect(() => {
@@ -66,6 +67,8 @@ function UserMenu() {
       <button
         onClick={() => setOpen(!open)}
         className="flex items-center gap-2 p-1 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+        aria-label="用户菜单"
+        aria-expanded={open}
       >
         <UserAvatar name={session?.user?.name || "?"} avatar={profile.avatar} size="sm" />
       </button>
@@ -106,12 +109,17 @@ function UserMenu() {
 
 export function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [cmdOpen, setCmdOpen] = useState(false);
   const { data: session } = useSession();
 
-  // Close mobile menu on Escape key
+  // Close mobile menu on Escape, open command palette on Ctrl+K
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     if (e.key === "Escape" && menuOpen) {
       setMenuOpen(false);
+    }
+    if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+      e.preventDefault();
+      setCmdOpen((prev) => !prev);
     }
   }, [menuOpen]);
 
@@ -155,7 +163,7 @@ export function Header() {
             <Link href="/tools" className="site-nav-link" onMouseMove={handleLinkMouseMove}>工具箱</Link>
             <Link href="/prompts" className="site-nav-link" onMouseMove={handleLinkMouseMove}>Prompt</Link>
             <Link href="/guestbook" className="site-nav-link" onMouseMove={handleLinkMouseMove}>留言墙</Link>
-            <Link href="/uses" className="site-nav-link" onMouseMove={handleLinkMouseMove}>Uses</Link>
+            <Link href="/uses" className="site-nav-link" onMouseMove={handleLinkMouseMove}>装备</Link>
             <Link href="/links" className="site-nav-link" onMouseMove={handleLinkMouseMove}>友链</Link>
             <Link href="/archive" className="site-nav-link" onMouseMove={handleLinkMouseMove}>归档</Link>
             <Link href="/about" className="site-nav-link" onMouseMove={handleLinkMouseMove}>关于</Link>
@@ -181,24 +189,18 @@ export function Header() {
             onClick={() => setMenuOpen(true)}
             aria-label="打开菜单"
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="5" cy="12" r="1.5" />
-              <circle cx="12" cy="12" r="1.5" />
-              <circle cx="19" cy="12" r="1.5" />
-            </svg>
+            <Menu className="w-5 h-5" />
           </button>
         </div>
       </header>
 
-      <div className={`mobile-overlay ${menuOpen ? "open" : ""}`}>
+      <div className={`mobile-overlay ${menuOpen ? "open" : ""}`} role="dialog" aria-modal="true" aria-label="导航菜单">
         <button
           className="mobile-overlay-close"
           onClick={() => setMenuOpen(false)}
           aria-label="关闭菜单"
         >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M18 6L6 18M6 6l12 12" />
-          </svg>
+          <X className="w-5 h-5" />
         </button>
         <Link href="/" className="mobile-overlay-link" onClick={() => setMenuOpen(false)}>首页</Link>
         <Link href="/posts" className="mobile-overlay-link" onClick={() => setMenuOpen(false)}>文章</Link>
@@ -209,7 +211,7 @@ export function Header() {
         <Link href="/tools" className="mobile-overlay-link" onClick={() => setMenuOpen(false)}>工具箱</Link>
         <Link href="/prompts" className="mobile-overlay-link" onClick={() => setMenuOpen(false)}>Prompt</Link>
         <Link href="/guestbook" className="mobile-overlay-link" onClick={() => setMenuOpen(false)}>留言墙</Link>
-        <Link href="/uses" className="mobile-overlay-link" onClick={() => setMenuOpen(false)}>Uses</Link>
+        <Link href="/uses" className="mobile-overlay-link" onClick={() => setMenuOpen(false)}>装备</Link>
         <Link href="/links" className="mobile-overlay-link" onClick={() => setMenuOpen(false)}>友链</Link>
         <Link href="/archive" className="mobile-overlay-link" onClick={() => setMenuOpen(false)}>归档</Link>
         <Link href="/about" className="mobile-overlay-link" onClick={() => setMenuOpen(false)}>关于</Link>
@@ -228,6 +230,10 @@ export function Header() {
           </>
         )}
       </div>
+
+      <Suspense fallback={null}>
+        <CommandPalette isOpen={cmdOpen} onClose={() => setCmdOpen(false)} />
+      </Suspense>
     </>
   );
 }

@@ -1,7 +1,9 @@
 import { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 import { Flame, Clock } from "lucide-react";
+import { PageHeader } from "@/components/page-header";
 
 export const metadata: Metadata = {
   title: "话题广场",
@@ -22,10 +24,7 @@ export default async function TopicsPage() {
 
   return (
     <main className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100">话题广场</h1>
-        <p className="mt-2 text-zinc-600 dark:text-zinc-400">浏览热门话题，发现精彩内容</p>
-      </div>
+      <PageHeader title="话题广场" description="浏览热门话题，发现精彩内容" />
 
       <section className="mb-12">
         <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100 mb-4 flex items-center gap-2">
@@ -41,7 +40,7 @@ export default async function TopicsPage() {
             >
               <div className="flex items-center gap-3 mb-2">
                 {topic.coverImage ? (
-                  <img src={topic.coverImage} alt="" className="w-10 h-10 rounded-lg object-cover" loading="lazy" />
+                  <Image src={topic.coverImage} alt="" width={40} height={40} className="rounded-lg object-cover" />
                 ) : (
                   <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-400 to-pink-500 flex items-center justify-center text-white font-bold">
                     {topic.name[0]}

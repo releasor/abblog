@@ -32,6 +32,6 @@ export async function GET(
     });
   } catch (e) {
     console.error("[Followers] Failed to fetch followers list:", e);
-    return NextResponse.json({ error: "Failed to fetch followers list" }, { status: 500 });
+    return NextResponse.json({ error: "获取粉丝列表失败" }, { status: 500 });
   }
 }

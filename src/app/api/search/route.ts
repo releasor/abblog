@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
   const suggestions = searchParams.get("suggestions") === "true";
 
   if (!query) {
-    return NextResponse.json({ error: "Please enter a search term" }, { status: 400 });
+    return NextResponse.json({ error: "请输入搜索关键词" }, { status: 400 });
   }
 
   const limit = suggestions ? 5 : 20;
@@ -45,36 +45,43 @@ export async function GET(request: NextRequest) {
     `;
 
     if (suggestions) {
-      return NextResponse.json({
-        suggestions: results.map((r) => ({
+      return NextResponse.json(
+        {
+          suggestions: results.map((r) => ({
+            id: r.id,
+            title: r.title,
+            slug: r.slug,
+          })),
+        },
+        { headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600" } }
+      );
+    }
+
+    return NextResponse.json(
+      {
+        query,
+        results: results.map((r) => ({
           id: r.id,
           title: r.title,
           slug: r.slug,
+          excerpt: r.excerpt ? highlightTerms(r.excerpt, query) : null,
+          highlightedContent: highlightTerms(
+            r.content.replace(/<[^>]*>/g, "").slice(0, 300),
+            query
+          ),
+          publishedAt: r.publishedAt,
+          category: r.categoryName
+            ? { name: r.categoryName, slug: r.categorySlug }
+            : null,
         })),
-      });
-    }
-
-    return NextResponse.json({
-      query,
-      results: results.map((r) => ({
-        id: r.id,
-        title: r.title,
-        slug: r.slug,
-        excerpt: r.excerpt ? highlightTerms(r.excerpt, query) : null,
-        highlightedContent: highlightTerms(
-          r.content.replace(/<[^>]*>/g, "").slice(0, 300),
-          query
-        ),
-        publishedAt: r.publishedAt,
-        category: r.categoryName
-          ? { name: r.categoryName, slug: r.categorySlug }
-          : null,
-      })),
-      total: results.length,
-    });
-  } catch {
+        total: results.length,
+      },
+      { headers: { "Cache-Control": "public, s-maxage=60, stale-while-revalidate=120" } }
+    );
+  } catch (e) {
+    console.error("[Search] Search failed:", e);
     return NextResponse.json(
-      { error: "Search failed. Please try again." },
+      { error: "搜索失败，请稍后重试" },
       { status: 500 }
     );
   }

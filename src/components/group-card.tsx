@@ -1,5 +1,6 @@
 import { memo } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Users } from "lucide-react";
 
 interface GroupCardProps {
@@ -22,10 +23,12 @@ export const GroupCard = memo(function GroupCard({ group }: GroupCardProps) {
     >
       <div className="aspect-video bg-gradient-to-br from-emerald-500 to-teal-600 relative overflow-hidden">
         {group.coverImage && (
-          <img
+          <Image
             src={group.coverImage}
             alt={group.name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+            fill
+            className="object-cover group-hover:scale-105 transition-transform"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           />
         )}
         <div className="absolute inset-0 bg-black/20" />

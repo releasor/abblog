@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { ImageIcon, Copy, Check, Trash2 } from "lucide-react";
 import { EmptyState } from "@/components/empty-state";
+import { showToast } from "@/components/toast";
 
 interface MediaFile {
   filename: string;
@@ -20,15 +21,19 @@ export default function MediaPage() {
 
   useEffect(() => {
     fetch("/api/media")
-      .then((r) => r.json())
+      .then((r) => {
+        if (r.ok) return r.json();
+        showToast("加载媒体库失败", "error");
+        return [];
+      })
       .then((data) => {
-        setImages(data);
-        setLoading(false);
+        if (Array.isArray(data)) setImages(data);
       })
       .catch((e) => {
         console.error("[Media] Failed to fetch media:", e);
-        setLoading(false);
-      });
+        showToast("加载媒体库失败", "error");
+      })
+      .finally(() => setLoading(false));
   }, []);
 
   const copyUrl = async (url: string) => {
@@ -55,9 +60,12 @@ export default function MediaPage() {
       });
       if (res.ok) {
         setImages((prev) => prev.filter((img) => img.filename !== filename));
+      } else {
+        showToast("删除失败", "error");
       }
     } catch (e) {
       console.error("[Media] Failed to delete file:", e);
+      showToast("删除失败，请稍后重试", "error");
     } finally {
       setDeleteFile(null);
     }
@@ -117,6 +125,7 @@ export default function MediaPage() {
                   <button
                     onClick={() => copyUrl(img.url)}
                     className="p-2 bg-white/90 dark:bg-zinc-900/90 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-white dark:hover:bg-zinc-900 transition-colors"
+                    aria-label="复制图片链接"
                     title="复制链接"
                   >
                     {copied === img.url ? (
@@ -129,6 +138,7 @@ export default function MediaPage() {
                     onClick={() => handleDelete(img.filename)}
                     disabled={deleteFile === img.filename}
                     className="p-2 bg-white/90 dark:bg-zinc-900/90 rounded-lg text-zinc-700 dark:text-zinc-300 hover:text-red-600 dark:hover:text-red-400 hover:bg-white dark:hover:bg-zinc-900 disabled:opacity-50 transition-colors"
+                    aria-label="删除图片"
                     title="删除"
                   >
                     <Trash2 className="w-4 h-4" />

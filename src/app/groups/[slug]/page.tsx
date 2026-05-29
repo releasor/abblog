@@ -45,16 +45,21 @@ export default function GroupDetailPage() {
   async function fetchGroup() {
     try {
       const res = await fetch(`/api/groups?slug=${slug}`);
+      if (!res.ok) {
+        showToast("加载小组信息失败", "error");
+        return;
+      }
       const data = await res.json();
       if (data.groups?.length > 0) {
         const g = data.groups[0];
         setGroup(g);
 
         const postsRes = await fetch(`/api/groups/${g.id}/posts`);
-        const postsData = await postsRes.json();
-        setPosts(postsData.posts || []);
+        if (postsRes.ok) {
+          const postsData = await postsRes.json();
+          setPosts(postsData.posts || []);
+        }
 
-        // Check membership (simplified - would need auth check)
         setIsMember(false);
       }
     } catch {
@@ -68,9 +73,13 @@ export default function GroupDetailPage() {
     if (!group) return;
     try {
       const method = isMember ? "DELETE" : "POST";
-      await fetch(`/api/groups/${group.id}/join`, { method });
-      setIsMember(!isMember);
-      fetchGroup();
+      const res = await fetch(`/api/groups/${group.id}/join`, { method });
+      if (res.ok) {
+        setIsMember(!isMember);
+        fetchGroup();
+      } else {
+        showToast(isMember ? "退出失败" : "加入失败", "error");
+      }
     } catch {
       showToast(isMember ? "退出失败" : "加入失败", "error");
     }

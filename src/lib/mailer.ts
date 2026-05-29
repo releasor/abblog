@@ -3,7 +3,7 @@ const FROM_EMAIL = process.env.FROM_EMAIL || "noreply@billionaire.dev";
 
 export async function sendEmail(to: string, subject: string, html: string) {
   if (!RESEND_API_KEY) {
-    console.log("[Mailer] RESEND_API_KEY not set, skipping email to", to);
+    console.warn("[Mailer] RESEND_API_KEY not set, skipping email to", to);
     return null;
   }
 

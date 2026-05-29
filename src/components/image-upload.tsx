@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
+import { Upload } from "lucide-react";
 
 interface ImageUploadProps {
   value: string;
@@ -30,13 +31,13 @@ export default function ImageUpload({ value, onChange }: ImageUploadProps) {
         const data = await res.json();
 
         if (!res.ok) {
-          setError(data.error || "Upload failed");
+          setError(data.error || "上传失败");
           return;
         }
 
         onChange(data.url);
       } catch {
-        setError("Upload failed");
+        setError("上传失败");
       } finally {
         setUploading(false);
       }
@@ -49,12 +50,12 @@ export default function ImageUpload({ value, onChange }: ImageUploadProps) {
 
     const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
     if (!allowedTypes.includes(file.type)) {
-      setError("Invalid file type");
+      setError("不支持的文件类型");
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      setError("File too large (max 5MB)");
+      setError("文件太大（最大 5MB）");
       return;
     }
 
@@ -82,7 +83,7 @@ export default function ImageUpload({ value, onChange }: ImageUploadProps) {
         <div className="relative">
           <img
             src={value}
-            alt="Cover"
+            alt="封面图片"
             className="w-full max-w-md h-48 object-cover rounded-md border border-zinc-200 dark:border-zinc-700"
           />
           <button
@@ -90,14 +91,14 @@ export default function ImageUpload({ value, onChange }: ImageUploadProps) {
             onClick={() => onChange("")}
             className="absolute top-2 right-2 px-2 py-1 text-xs bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
           >
-            Remove
+            移除
           </button>
           <button
             type="button"
             onClick={() => inputRef.current?.click()}
             className="absolute top-2 right-20 px-2 py-1 text-xs bg-zinc-600 text-white rounded-md hover:bg-zinc-700 transition-colors"
           >
-            Replace
+            替换
           </button>
         </div>
       ) : (
@@ -106,6 +107,10 @@ export default function ImageUpload({ value, onChange }: ImageUploadProps) {
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onClick={() => inputRef.current?.click()}
+          role="button"
+          tabIndex={0}
+          aria-label="上传封面图片，支持拖放或点击选择"
+          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") inputRef.current?.click(); }}
           className={`w-full max-w-md h-48 border-2 border-dashed rounded-md flex flex-col items-center justify-center cursor-pointer transition-colors ${
             dragging
               ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
@@ -113,27 +118,15 @@ export default function ImageUpload({ value, onChange }: ImageUploadProps) {
           }`}
         >
           {uploading ? (
-            <div className="text-sm text-zinc-500">Uploading...</div>
+            <div className="text-sm text-zinc-500">上传中...</div>
           ) : (
             <>
-              <svg
-                className="w-8 h-8 text-zinc-400 mb-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-                />
-              </svg>
+              <Upload className="w-8 h-8 text-zinc-400 mb-2" />
               <p className="text-sm text-zinc-500">
-                Drag and drop an image, or click to select
+                拖放图片或点击选择
               </p>
               <p className="text-xs text-zinc-400 mt-1">
-                JPEG, PNG, GIF, WebP — max 5MB
+                JPEG, PNG, GIF, WebP — 最大 5MB
               </p>
             </>
           )}

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { authOptions, getAuthUserId } from "@/lib/auth";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import crypto from "crypto";
@@ -28,9 +28,9 @@ const EXT_MAP: Record<string, string> = {
 
 export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions);
-  const userId = (session?.user as { id?: string })?.id;
+  const userId = getAuthUserId(session);
   if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "请先登录" }, { status: 401 });
   }
 
   // Rate limit
@@ -46,23 +46,23 @@ export async function POST(request: NextRequest) {
   try {
     formData = await request.formData();
   } catch {
-    return NextResponse.json({ error: "Invalid form data" }, { status: 400 });
+    return NextResponse.json({ error: "无效的表单数据" }, { status: 400 });
   }
 
   const file = formData.get("file");
   if (!file || !(file instanceof File)) {
-    return NextResponse.json({ error: "No file provided" }, { status: 400 });
+    return NextResponse.json({ error: "请选择文件" }, { status: 400 });
   }
 
   if (!ALLOWED_TYPES.includes(file.type)) {
-    return NextResponse.json({ error: "Invalid file type" }, { status: 400 });
+    return NextResponse.json({ error: "不支持的文件类型" }, { status: 400 });
   }
 
   const isVideo = file.type.startsWith("video/");
   const maxSize = isVideo ? VIDEO_MAX : IMAGE_MAX;
   if (file.size > maxSize) {
     const limit = isVideo ? "50MB" : "10MB";
-    return NextResponse.json({ error: `File too large (max ${limit})` }, { status: 400 });
+    return NextResponse.json({ error: `文件过大（最大 ${limit}）` }, { status: 400 });
   }
 
   await mkdir(UPLOAD_DIR, { recursive: true });
@@ -78,8 +78,9 @@ export async function POST(request: NextRequest) {
       const compressed = await compressImage(buffer, { format });
       outputBuffer = compressed.buffer;
       ext = compressed.format === "webp" ? "webp" : ext;
-    } catch {
+    } catch (e) {
       // Fall back to original if compression fails
+      console.error("[Upload] Image compression failed, using original:", e);
     }
   }
 
@@ -88,7 +89,7 @@ export async function POST(request: NextRequest) {
   const sanitized = path.basename(filename);
 
   if (sanitized !== filename || filename.includes("..")) {
-    return NextResponse.json({ error: "Invalid filename" }, { status: 400 });
+    return NextResponse.json({ error: "无效文件名" }, { status: 400 });
   }
 
   const filepath = path.join(UPLOAD_DIR, sanitized);
@@ -102,8 +103,8 @@ export async function POST(request: NextRequest) {
       const meta = await sharp(outputBuffer).metadata();
       width = meta.width;
       height = meta.height;
-    } catch {
-      // ignore
+    } catch (e) {
+      console.error("[Upload] Failed to read image dimensions:", e);
     }
   }
 
@@ -111,7 +112,7 @@ export async function POST(request: NextRequest) {
   try {
     await prisma.mediaFile.create({
       data: {
-        userId: parseInt(userId),
+        userId,
         filename: sanitized,
         originalName: file.name,
         mimeType: file.type,
@@ -120,8 +121,8 @@ export async function POST(request: NextRequest) {
         height,
       },
     });
-  } catch {
-    // Non-critical
+  } catch (e) {
+    console.error("[Upload] Failed to record media file:", e);
   }
 
   return NextResponse.json(

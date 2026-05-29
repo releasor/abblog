@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { EmptyState } from "@/components/empty-state";
+import { PageHeader } from "@/components/page-header";
 
 export const metadata: Metadata = {
   title: "分类",
@@ -20,9 +21,7 @@ export default async function CategoriesPage() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-12">
-      <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-8">
-        分类
-      </h1>
+      <PageHeader title="分类" />
 
       {categories.length === 0 ? (
         <EmptyState message="暂无分类。" />

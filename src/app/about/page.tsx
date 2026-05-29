@@ -1,16 +1,15 @@
 import type { Metadata } from "next";
+import { PageHeader } from "@/components/page-header";
 
 export const metadata: Metadata = {
-  title: "关于 - billionaire",
+  title: "关于",
   description: "关于 billionaire 博客 — 专注于 AI 与数字生活的个人博客",
 };
 
 export default function AboutPage() {
   return (
     <div className="max-w-3xl mx-auto px-4 py-12">
-      <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-8">
-        关于
-      </h1>
+      <PageHeader title="关于" />
 
       <div className="prose prose-zinc dark:prose-invert max-w-none">
         <p>

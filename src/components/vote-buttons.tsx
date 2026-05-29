@@ -22,24 +22,26 @@ export function VoteButtons({ postId, initialScore = 0, initialVote = null }: Vo
         if (data.score !== undefined) setScore(data.score);
         if (data.userVote !== undefined) setVote(data.userVote);
       })
-      .catch(() => {}); // silent - non-critical initial load
+      .catch((e) => console.error("[VoteButtons] Failed to fetch vote status:", e));
   }, [postId]);
 
   async function handleVote(value: number) {
     if (loading) return;
     setLoading(true);
 
-    const newValue = vote === value ? 0 : value;
-
     try {
       const res = await fetch(`/api/posts/${postId}/vote`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ value: newValue }),
+        body: JSON.stringify({ value }),
       });
-      const data = await res.json();
-      if (data.score !== undefined) setScore(data.score);
-      if (data.userVote !== undefined) setVote(data.userVote);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.score !== undefined) setScore(data.score);
+        if (data.userVote !== undefined) setVote(data.userVote);
+      } else {
+        showToast("投票失败", "error");
+      }
     } catch {
       showToast("投票失败", "error");
     } finally {
@@ -57,7 +59,7 @@ export function VoteButtons({ postId, initialScore = 0, initialVote = null }: Vo
             ? "text-orange-500 bg-orange-500/10"
             : "text-zinc-400 hover:text-orange-500 hover:bg-orange-500/10"
         }`}
-        aria-label="Upvote"
+        aria-label="赞同"
       >
         <ArrowBigUp className="w-6 h-6" />
       </button>
@@ -70,7 +72,7 @@ export function VoteButtons({ postId, initialScore = 0, initialVote = null }: Vo
             ? "text-blue-500 bg-blue-500/10"
             : "text-zinc-400 hover:text-blue-500 hover:bg-blue-500/10"
         }`}
-        aria-label="Downvote"
+        aria-label="反对"
       >
         <ArrowBigDown className="w-6 h-6" />
       </button>

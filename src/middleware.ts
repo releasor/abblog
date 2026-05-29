@@ -13,7 +13,7 @@ export async function middleware(request: NextRequest) {
   // Check for valid session token
   const token = await getToken({
     req: request,
-    secret: process.env.NEXTAUTH_SECRET || "fallback-secret-for-development",
+    secret: process.env.NEXTAUTH_SECRET,
   });
 
   // Redirect to login if not authenticated

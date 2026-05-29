@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { X, MessageCircle } from "lucide-react";
+import { showToast } from "@/components/toast";
 
 export function AiChat({ postId }: { postId: number }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -27,8 +29,12 @@ export function AiChat({ postId }: { postId: number }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ postId, question: q }),
       });
-      const data = await res.json();
-      setMessages((prev) => [...prev, { role: "ai", content: data.answer || "无法生成回答" }]);
+      if (res.ok) {
+        const data = await res.json();
+        setMessages((prev) => [...prev, { role: "ai", content: data.answer || "无法生成回答" }]);
+      } else {
+        setMessages((prev) => [...prev, { role: "ai", content: "请求失败，请稍后再试" }]);
+      }
     } catch {
       setMessages((prev) => [...prev, { role: "ai", content: "请求失败，请稍后再试" }]);
     }
@@ -40,16 +46,12 @@ export function AiChat({ postId }: { postId: number }) {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="fixed bottom-6 right-6 z-50 w-12 h-12 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-full shadow-lg hover:shadow-xl transition-all flex items-center justify-center"
-        title="AI 问答"
+        aria-label={isOpen ? "关闭 AI 问答" : "打开 AI 问答"}
       >
         {isOpen ? (
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
+          <X className="w-5 h-5" />
         ) : (
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-          </svg>
+          <MessageCircle className="w-5 h-5" />
         )}
       </button>
 

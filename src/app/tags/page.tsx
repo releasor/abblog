@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { EmptyState } from "@/components/empty-state";
 
 export const metadata: Metadata = {
-  title: "标签云 - billionaire",
+  title: "标签云",
   description: "所有标签及文章数量",
 };
 
@@ -47,6 +47,9 @@ export default async function TagsPage() {
         </p>
       </header>
 
+      {tags.length === 0 ? (
+        <EmptyState message="暂无标签" />
+      ) : (
       <div className="flex flex-wrap gap-3 justify-center mb-12">
         {tags.map((tag) => (
           <Link
@@ -59,9 +62,6 @@ export default async function TagsPage() {
           </Link>
         ))}
       </div>
-
-      {tags.length === 0 && (
-        <EmptyState message="暂无标签" />
       )}
     </div>
   );
