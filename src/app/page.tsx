@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   description: "分享前端开发、后端架构、AI 技术和编程实践的技术博客",
 };
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 export default async function Home() {
   const postSelect = {

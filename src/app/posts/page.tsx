@@ -7,14 +7,12 @@ import { PageHeader } from "@/components/page-header";
 import { EmptyState } from "@/components/empty-state";
 import { notFound } from "next/navigation";
 
-export const revalidate = 120;
-
 export const metadata: Metadata = {
   title: "所有文章",
   description: "浏览所有已发布的文章",
 };
 
-export const dynamic = "force-dynamic";
+export const revalidate = 120;
 
 interface PageProps {
   searchParams: Promise<{ page?: string }>;
