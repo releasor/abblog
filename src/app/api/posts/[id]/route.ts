@@ -61,6 +61,13 @@ export async function PUT(
   const body = await request.json();
   const { title, content, excerpt, coverImageUrl, categoryId, tags, status, isPinned, scheduledAt } = body;
 
+  if (title !== undefined && (typeof title !== "string" || title.length > 200)) {
+    return NextResponse.json({ error: "标题不能超过200个字符" }, { status: 400 });
+  }
+  if (content !== undefined && (typeof content !== "string" || content.length > 500000)) {
+    return NextResponse.json({ error: "内容过长" }, { status: 400 });
+  }
+
   try {
     const existing = await prisma.post.findUnique({
       where: { id: postId },
