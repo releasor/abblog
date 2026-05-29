@@ -49,6 +49,7 @@ export function FollowButton({ username, onFollowChange }: FollowButtonProps) {
     <button
       onClick={toggle}
       disabled={loading}
+      aria-label={isFollowing ? `取消关注 ${username}` : `关注 ${username}`}
       className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-colors disabled:opacity-50 ${
         isFollowing
           ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700"
