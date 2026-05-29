@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, memo } from "react";
 import { Search, AlertTriangle, Lightbulb, CheckCircle } from "lucide-react";
 import { showToast } from "./toast";
 
@@ -23,7 +23,7 @@ interface SEOPanelProps {
   postId: number;
 }
 
-export function SEOPanel({ postId }: SEOPanelProps) {
+export const SEOPanel = memo(function SEOPanel({ postId }: SEOPanelProps) {
   const [result, setResult] = useState<SEOResult | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -132,4 +132,4 @@ export function SEOPanel({ postId }: SEOPanelProps) {
       </div>
     </div>
   );
-}
+});
