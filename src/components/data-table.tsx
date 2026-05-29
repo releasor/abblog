@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { ReactNode, memo } from "react";
 import { SkeletonRow } from "./skeleton";
 
 interface Column<T> {
@@ -20,7 +20,7 @@ interface DataTableProps<T> {
   onRowClick?: (item: T) => void;
 }
 
-export function DataTable<T>({
+export const DataTable = memo(function DataTable<T>({
   columns,
   data,
   loading = false,
@@ -82,4 +82,4 @@ export function DataTable<T>({
       </table>
     </div>
   );
-}
+}) as <T>(props: DataTableProps<T>) => ReactNode;
