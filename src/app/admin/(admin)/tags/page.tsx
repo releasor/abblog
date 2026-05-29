@@ -129,6 +129,7 @@ export default function AdminTagsPage() {
             placeholder="输入标签名称..."
             maxLength={50}
             required
+            aria-label="新标签名称"
             className="w-full px-3 py-2.5 text-sm border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-200 dark:focus:ring-zinc-700 transition-shadow"
           />
           {createError && (
@@ -165,6 +166,7 @@ export default function AdminTagsPage() {
                     value={editName}
                     onChange={(e) => setEditName(e.target.value)}
                     maxLength={50}
+                    aria-label={`编辑标签 ${tag.name}`}
                     className="px-2 py-1 text-sm border border-zinc-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 w-24 focus:outline-none focus:ring-2 focus:ring-zinc-200 dark:focus:ring-zinc-700"
                     autoFocus
                     onKeyDown={(e) => {
@@ -178,6 +180,7 @@ export default function AdminTagsPage() {
                   <button
                     onClick={() => handleSave(tag.id)}
                     disabled={saving}
+                    aria-label="保存"
                     className="p-1 rounded text-emerald-500 hover:text-emerald-600"
                   >
                     <Check className="w-3.5 h-3.5" />
@@ -187,6 +190,7 @@ export default function AdminTagsPage() {
                       setEditId(null);
                       setEditName("");
                     }}
+                    aria-label="取消"
                     className="p-1 rounded text-zinc-400 hover:text-zinc-600"
                   >
                     <X className="w-3.5 h-3.5" />

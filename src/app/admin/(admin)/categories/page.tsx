@@ -130,6 +130,7 @@ export default function AdminCategoriesPage() {
               placeholder="输入分类名称..."
               maxLength={50}
               required
+              aria-label="新分类名称"
               className="w-full px-3 py-2.5 text-sm border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-200 dark:focus:ring-zinc-700 transition-shadow"
             />
           </div>
@@ -186,6 +187,7 @@ export default function AdminCategoriesPage() {
                           value={editName}
                           onChange={(e) => setEditName(e.target.value)}
                           maxLength={50}
+                          aria-label={`编辑分类 ${category.name}`}
                           className="px-2.5 py-1.5 text-sm border border-zinc-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-200 dark:focus:ring-zinc-700"
                           autoFocus
                         />
@@ -214,6 +216,7 @@ export default function AdminCategoriesPage() {
                           <button
                             onClick={() => handleSave(category.id)}
                             disabled={saving}
+                            aria-label="保存"
                             className="p-2 rounded-lg text-zinc-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 disabled:opacity-50 transition-colors"
                           >
                             <Check className="w-4 h-4" />
@@ -224,6 +227,7 @@ export default function AdminCategoriesPage() {
                               setEditName("");
                               setEditError("");
                             }}
+                            aria-label="取消"
                             className="p-2 rounded-lg text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
                           >
                             <X className="w-4 h-4" />

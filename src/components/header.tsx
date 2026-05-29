@@ -138,12 +138,12 @@ export function Header() {
     return () => { document.body.style.overflow = ""; };
   }, [menuOpen]);
 
-  const handleLinkMouseMove = (e: React.MouseEvent<HTMLAnchorElement>) => {
+  const handleLinkMouseMove = useCallback((e: React.MouseEvent<HTMLAnchorElement>) => {
     const el = e.currentTarget;
     const rect = el.getBoundingClientRect();
     el.style.setProperty("--spot-x", `${e.clientX - rect.left}px`);
     el.style.setProperty("--spot-y", `${e.clientY - rect.top}px`);
-  };
+  }, []);
 
   return (
     <>

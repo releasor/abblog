@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 
+export const revalidate = 86400;
+
 export const metadata: Metadata = {
   title: "友情链接",
   description: "推荐的博客和网站",

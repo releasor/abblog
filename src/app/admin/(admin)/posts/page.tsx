@@ -125,6 +125,7 @@ export default function AdminPostsPage() {
             setSortOrder(order);
             setPage(1);
           }}
+          aria-label="排序方式"
           className="px-3 py-1.5 text-sm border border-zinc-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400"
         >
           <option value="createdAt-desc">最新创建</option>

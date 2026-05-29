@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { PageHeader } from "@/components/page-header";
 
+export const revalidate = 86400;
+
 export const metadata: Metadata = {
   title: "关于",
   description: "关于 billionaire 博客 — 专注于 AI 与数字生活的个人博客",

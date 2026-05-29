@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 
+export const revalidate = 86400;
+
 export const metadata: Metadata = {
   title: "我的装备",
   description: "我日常使用的设备、软件和工具",
