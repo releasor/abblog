@@ -7,23 +7,29 @@ export async function GET(request: NextRequest) {
   const limit = 20;
   const userId = searchParams.get("userId");
 
-  const where = userId ? { userId: parseInt(userId) } : {};
+  const userIdNum = userId ? parseInt(userId) : NaN;
+  const where = !isNaN(userIdNum) ? { userId: userIdNum } : {};
 
-  const [activities, total] = await Promise.all([
-    prisma.activity.findMany({
-      where,
-      orderBy: { createdAt: "desc" },
-      skip: (page - 1) * limit,
-      take: limit,
-      include: { user: { select: { id: true, name: true, username: true, avatar: true } } },
-    }),
-    prisma.activity.count({ where }),
-  ]);
+  try {
+    const [activities, total] = await Promise.all([
+      prisma.activity.findMany({
+        where,
+        orderBy: { createdAt: "desc" },
+        skip: (page - 1) * limit,
+        take: limit,
+        include: { user: { select: { id: true, name: true, username: true, avatar: true } } },
+      }),
+      prisma.activity.count({ where }),
+    ]);
 
-  return NextResponse.json({
-    activities,
-    pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
-  }, {
-    headers: { "Cache-Control": "public, max-age=60" },
-  });
+    return NextResponse.json({
+      activities,
+      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    }, {
+      headers: { "Cache-Control": "public, max-age=60" },
+    });
+  } catch (e) {
+    console.error("[Activities] Failed to list activities:", e);
+    return NextResponse.json({ error: "获取动态列表失败" }, { status: 500 });
+  }
 }

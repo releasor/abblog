@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { Loader2 } from "lucide-react";
 
 export function AiSummary({ postId }: { postId: number }) {
   const [summary, setSummary] = useState("");
@@ -12,19 +13,19 @@ export function AiSummary({ postId }: { postId: number }) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ postId }),
     })
-      .then((res) => res.json())
-      .then((data) => setSummary(data.summary || ""))
-      .catch(() => setSummary(""))
+      .then((res) => {
+        if (res.ok) return res.json();
+        return null;
+      })
+      .then((data) => { if (data?.summary) setSummary(data.summary); })
+      .catch((e) => console.error("[AiSummary] Failed to generate summary:", e))
       .finally(() => setLoading(false));
   }, [postId]);
 
   if (loading) {
     return (
       <div className="flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400 mb-6">
-        <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-        </svg>
+        <Loader2 className="w-4 h-4 animate-spin" />
         AI 正在生成摘要...
       </div>
     );
