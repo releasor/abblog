@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, memo } from "react";
 
 const PATTERN_COUNT = 144;
 
-export function HeroSection() {
+export const HeroSection = memo(function HeroSection() {
   const [flipped, setFlipped] = useState(false);
   const frontRef = useRef<HTMLDivElement>(null);
 
@@ -68,4 +68,4 @@ export function HeroSection() {
       </div>
     </section>
   );
-}
+});
