@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import { History, RotateCcw, ChevronDown, ChevronUp } from "lucide-react";
 import { showToast } from "./toast";
 import { formatDateTime } from "@/lib/format-date";
@@ -17,7 +17,7 @@ interface VersionHistoryProps {
   onRestore?: () => void;
 }
 
-export function VersionHistory({ postId, onRestore }: VersionHistoryProps) {
+export const VersionHistory = memo(function VersionHistory({ postId, onRestore }: VersionHistoryProps) {
   const [versions, setVersions] = useState<Version[]>([]);
   const [expanded, setExpanded] = useState(false);
   const [restoring, setRestoring] = useState<number | null>(null);
@@ -102,4 +102,4 @@ export function VersionHistory({ postId, onRestore }: VersionHistoryProps) {
       )}
     </div>
   );
-}
+});
