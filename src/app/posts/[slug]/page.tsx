@@ -220,7 +220,7 @@ export default async function PublicPostPage({ params }: PageProps) {
       <RecommendedPosts postId={post.id} />
     </article>
     {showToc && <TableOfContents headings={headings} />}
-    {(session?.user as { role?: string })?.role === "ADMIN" && (
+    {(session?.user as { role?: string })?.role === "admin" && (
       <div className="hidden xl:block w-72 flex-shrink-0">
         <div className="sticky top-24">
           <SEOPanel postId={post.id} />

@@ -88,7 +88,7 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
   },
-  secret: process.env.NEXTAUTH_SECRET || "fallback-secret-for-development",
+  secret: process.env.NEXTAUTH_SECRET,
 };
 
 export function getSessionUser(session: { user?: unknown } | null): SessionUser | null {
@@ -102,4 +102,11 @@ export function getSessionUser(session: { user?: unknown } | null): SessionUser 
     role: user.role as "admin" | "user",
     username: user.username as string | undefined,
   };
+}
+
+export function getAuthUserId(session: { user?: unknown } | null): number | null {
+  const id = (session?.user as { id?: string })?.id;
+  if (!id) return null;
+  const parsed = parseInt(id);
+  return isNaN(parsed) ? null : parsed;
 }
