@@ -48,7 +48,11 @@ export async function DELETE(request: NextRequest) {
     const postId = searchParams.get("postId");
 
     if (postId) {
-      await prisma.readHistory.deleteMany({ where: { userId, postId: parseInt(postId) } });
+      const parsedPostId = parseInt(postId);
+      if (isNaN(parsedPostId)) {
+        return NextResponse.json({ error: "无效的文章ID" }, { status: 400 });
+      }
+      await prisma.readHistory.deleteMany({ where: { userId, postId: parsedPostId } });
     } else {
       await prisma.readHistory.deleteMany({ where: { userId } });
     }
