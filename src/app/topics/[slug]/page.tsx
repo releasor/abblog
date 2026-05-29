@@ -5,6 +5,8 @@ import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 import { formatDate } from "@/lib/format-date";
 
+export const revalidate = 600;
+
 interface Props {
   params: Promise<{ slug: string }>;
 }

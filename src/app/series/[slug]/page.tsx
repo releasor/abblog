@@ -5,6 +5,8 @@ import { prisma } from "@/lib/prisma";
 import { formatDate } from "@/lib/format-date";
 import { BookOpen, Calendar } from "lucide-react";
 
+export const revalidate = 600;
+
 interface Props {
   params: Promise<{ slug: string }>;
 }
