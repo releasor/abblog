@@ -236,29 +236,29 @@ export default function SettingsPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">昵称</label>
-            <input value={name} onChange={(e) => setName(e.target.value)} className="w-full px-3 py-2 text-sm border border-zinc-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500" />
+            <label htmlFor="settings-name" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">昵称</label>
+            <input id="settings-name" value={name} onChange={(e) => setName(e.target.value)} className="w-full px-3 py-2 text-sm border border-zinc-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500" />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">用户名</label>
-            <input value={username} onChange={(e) => setUsername(e.target.value)} className="w-full px-3 py-2 text-sm border border-zinc-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500" placeholder="用于个人主页链接" />
+            <label htmlFor="settings-username" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">用户名</label>
+            <input id="settings-username" value={username} onChange={(e) => setUsername(e.target.value)} className="w-full px-3 py-2 text-sm border border-zinc-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500" placeholder="用于个人主页链接" />
             <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">字母、数字、下划线和连字符，2-20个字符</p>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">个人简介</label>
-            <textarea value={bio} onChange={(e) => setBio(e.target.value)} rows={3} className="w-full px-3 py-2 text-sm border border-zinc-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500 resize-none" placeholder="介绍一下自己..." />
+            <label htmlFor="settings-bio" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">个人简介</label>
+            <textarea id="settings-bio" value={bio} onChange={(e) => setBio(e.target.value)} rows={3} className="w-full px-3 py-2 text-sm border border-zinc-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500 resize-none" placeholder="介绍一下自己..." />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">网站</label>
-              <input value={website} onChange={(e) => setWebsite(e.target.value)} className="w-full px-3 py-2 text-sm border border-zinc-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500" placeholder="https://..." />
+              <label htmlFor="settings-website" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">网站</label>
+              <input id="settings-website" value={website} onChange={(e) => setWebsite(e.target.value)} className="w-full px-3 py-2 text-sm border border-zinc-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500" placeholder="https://..." />
             </div>
             <div>
-              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">所在地</label>
-              <input value={location} onChange={(e) => setLocation(e.target.value)} className="w-full px-3 py-2 text-sm border border-zinc-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500" placeholder="城市" />
+              <label htmlFor="settings-location" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">所在地</label>
+              <input id="settings-location" value={location} onChange={(e) => setLocation(e.target.value)} className="w-full px-3 py-2 text-sm border border-zinc-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500" placeholder="城市" />
             </div>
           </div>
 
@@ -271,16 +271,16 @@ export default function SettingsPage() {
       {tab === "security" && (
         <div className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">当前密码</label>
-            <input type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} autoComplete="current-password" className="w-full px-3 py-2 text-sm border border-zinc-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500" />
+            <label htmlFor="settings-current-password" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">当前密码</label>
+            <input id="settings-current-password" type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} autoComplete="current-password" className="w-full px-3 py-2 text-sm border border-zinc-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">新密码</label>
-            <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} autoComplete="new-password" className="w-full px-3 py-2 text-sm border border-zinc-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500" />
+            <label htmlFor="settings-new-password" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">新密码</label>
+            <input id="settings-new-password" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} autoComplete="new-password" className="w-full px-3 py-2 text-sm border border-zinc-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">确认新密码</label>
-            <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} autoComplete="new-password" className="w-full px-3 py-2 text-sm border border-zinc-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500" />
+            <label htmlFor="settings-confirm-password" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">确认新密码</label>
+            <input id="settings-confirm-password" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} autoComplete="new-password" className="w-full px-3 py-2 text-sm border border-zinc-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500" />
           </div>
           <button onClick={changePassword} className="w-full px-4 py-2 text-sm bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-lg hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors">
             修改密码
@@ -301,9 +301,10 @@ export default function SettingsPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">API Key</label>
+            <label htmlFor="settings-ai-key" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">API Key</label>
             <div className="relative">
               <input
+                id="settings-ai-key"
                 type={showApiKey ? "text" : "password"}
                 value={aiApiKey}
                 onChange={(e) => setAiApiKey(e.target.value)}
@@ -320,8 +321,9 @@ export default function SettingsPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">API URL</label>
+            <label htmlFor="settings-ai-url" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">API URL</label>
             <input
+              id="settings-ai-url"
               value={aiApiUrl}
               onChange={(e) => setAiApiUrl(e.target.value)}
               placeholder="https://api.openai.com/v1/chat/completions（需要完整路径）"
@@ -330,8 +332,9 @@ export default function SettingsPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">模型</label>
+            <label htmlFor="settings-ai-model" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">模型</label>
             <input
+              id="settings-ai-model"
               value={aiModel}
               onChange={(e) => setAiModel(e.target.value)}
               placeholder="gpt-3.5-turbo（留空使用默认）"
