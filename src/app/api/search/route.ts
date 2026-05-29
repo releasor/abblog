@@ -1,8 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { highlightTerms } from "@/lib/highlight";
+import { checkRateLimit, RATE_LIMITS, getRateLimitHeaders } from "@/lib/rate-limit";
 
 export async function GET(request: NextRequest) {
+  const ip = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown";
+  const rl = checkRateLimit(`search:${ip}`, RATE_LIMITS.search);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "搜索太频繁，请稍后再试" },
+      { status: 429, headers: getRateLimitHeaders(rl) }
+    );
+  }
+
   const { searchParams } = new URL(request.url);
   const query = searchParams.get("q")?.trim() || "";
   const suggestions = searchParams.get("suggestions") === "true";

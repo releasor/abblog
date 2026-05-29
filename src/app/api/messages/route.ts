@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions, getAuthUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { checkRateLimit, RATE_LIMITS, getRateLimitHeaders } from "@/lib/rate-limit";
 
 export async function GET() {
   try {
@@ -31,6 +32,16 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
+    const userId = getAuthUserId(session);
+    const ip = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown";
+    const rl = checkRateLimit(`message:${userId || ip}`, RATE_LIMITS.comment);
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { error: "留言太频繁，请稍后再试" },
+        { status: 429, headers: getRateLimitHeaders(rl) }
+      );
+    }
+
     const body = await request.json();
     const { content } = body;
 
@@ -42,7 +53,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "留言不能超过500字" }, { status: 400 });
     }
 
-    const userId = getAuthUserId(session);
     const name = session?.user?.name || body.name || "匿名用户";
 
     const message = await prisma.message.create({

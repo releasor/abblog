@@ -6,6 +6,7 @@ import { slugify } from "@/lib/slugify";
 import { createActivity } from "@/lib/activity";
 import { addPoints, POINTS } from "@/lib/points";
 import { estimateReadingTime } from "@/lib/reading-time";
+import { checkRateLimit, RATE_LIMITS, getRateLimitHeaders } from "@/lib/rate-limit";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -71,6 +72,14 @@ export async function POST(request: NextRequest) {
   const userId = getAuthUserId(session);
   if (!userId) {
     return NextResponse.json({ error: "请先登录" }, { status: 401 });
+  }
+
+  const rl = checkRateLimit(`post:${userId}`, RATE_LIMITS.api);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "操作太频繁，请稍后再试" },
+      { status: 429, headers: getRateLimitHeaders(rl) }
+    );
   }
 
   const body = await request.json();
