@@ -1,3 +1,4 @@
+import { memo } from "react";
 import Image from "next/image";
 
 interface UserAvatarProps {
@@ -21,7 +22,7 @@ const imgSizes = {
   xl: 64,
 };
 
-export function UserAvatar({ name, avatar, size = "md", className = "" }: UserAvatarProps) {
+export const UserAvatar = memo(function UserAvatar({ name, avatar, size = "md", className = "" }: UserAvatarProps) {
   const initial = name?.charAt(0)?.toUpperCase() || "?";
 
   if (avatar) {
@@ -44,4 +45,4 @@ export function UserAvatar({ name, avatar, size = "md", className = "" }: UserAv
       {initial}
     </div>
   );
-}
+});

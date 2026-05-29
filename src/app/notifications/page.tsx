@@ -8,6 +8,8 @@ import { formatDateTime } from "@/lib/format-date";
 import { EmptyState } from "@/components/empty-state";
 import { showToast } from "@/components/toast";
 import { Skeleton } from "@/components/skeleton";
+import { PageHeader } from "@/components/page-header";
+import { Button } from "@/components/button";
 
 interface Notification {
   id: number;
@@ -60,11 +62,11 @@ export default function NotificationsPage() {
       if (res.ok) {
         fetchNotifications();
       } else {
-        showToast("操作失败", "error");
+        showToast("标记已读失败", "error");
       }
     } catch (e) {
       console.error("[Notifications] Failed to mark as read:", e);
-      showToast("操作失败", "error");
+      showToast("标记已读失败，请检查网络连接", "error");
     }
   };
 
@@ -103,26 +105,17 @@ export default function NotificationsPage() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-12">
-      <header className="mb-8 flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100">
-            通知中心
-          </h1>
-          {unreadCount > 0 && (
-            <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
-              {unreadCount} 条未读通知
-            </p>
-          )}
-        </div>
-        {unreadCount > 0 && (
-          <button
-            onClick={() => markAsRead()}
-            className="px-3 py-1.5 text-sm bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
-          >
-            全部已读
-          </button>
-        )}
-      </header>
+      <PageHeader
+        title="通知中心"
+        description={unreadCount > 0 ? `${unreadCount} 条未读通知` : undefined}
+        action={
+          unreadCount > 0 ? (
+            <Button variant="secondary" size="sm" onClick={() => markAsRead()}>
+              全部已读
+            </Button>
+          ) : undefined
+        }
+      />
 
       <div className="space-y-2">
         {notifications.length === 0 ? (
@@ -158,6 +151,7 @@ export default function NotificationsPage() {
                   <button
                     onClick={() => markAsRead(n.id)}
                     className="w-2 h-2 rounded-full bg-blue-500"
+                    aria-label="标记已读"
                     title="标记已读"
                   />
                 )}

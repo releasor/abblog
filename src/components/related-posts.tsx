@@ -1,6 +1,8 @@
+import { memo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { formatDateShort } from "@/lib/format-date";
+import { truncate } from "@/lib/text";
 
 interface RelatedPostData {
   id: number;
@@ -16,12 +18,7 @@ interface RelatedPostsProps {
   posts: RelatedPostData[];
 }
 
-function truncate(text: string, maxLength: number): string {
-  if (text.length <= maxLength) return text;
-  return text.slice(0, maxLength).replace(/\s+\S*$/, "") + "...";
-}
-
-export function RelatedPosts({ posts }: RelatedPostsProps) {
+export const RelatedPosts = memo(function RelatedPosts({ posts }: RelatedPostsProps) {
   if (posts.length === 0) return null;
 
   return (
@@ -82,4 +79,4 @@ export function RelatedPosts({ posts }: RelatedPostsProps) {
       </div>
     </section>
   );
-}
+});

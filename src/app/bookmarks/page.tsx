@@ -2,9 +2,11 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Bookmark, Plus, Folder, Trash2 } from "lucide-react";
 import { showToast } from "@/components/toast";
 import { EmptyState } from "@/components/empty-state";
+import { Skeleton } from "@/components/skeleton";
 
 interface Collection {
   id: number;
@@ -38,6 +40,10 @@ export default function BookmarksPage() {
   async function fetchCollections() {
     try {
       const res = await fetch("/api/bookmarks/collections");
+      if (!res.ok) {
+        showToast("加载收藏夹失败", "error");
+        return;
+      }
       const data = await res.json();
       setCollections(data.collections || []);
       if (data.collections?.length > 0 && activeCollection === null) {
@@ -74,9 +80,13 @@ export default function BookmarksPage() {
   async function handleDelete(id: number) {
     if (!confirm("确定删除此收藏夹？")) return;
     try {
-      await fetch(`/api/bookmarks/collections/${id}`, { method: "DELETE" });
-      if (activeCollection === id) setActiveCollection(null);
-      fetchCollections();
+      const res = await fetch(`/api/bookmarks/collections/${id}`, { method: "DELETE" });
+      if (res.ok) {
+        if (activeCollection === id) setActiveCollection(null);
+        fetchCollections();
+      } else {
+        showToast("删除收藏夹失败", "error");
+      }
     } catch {
       showToast("删除收藏夹失败", "error");
     }
@@ -84,10 +94,14 @@ export default function BookmarksPage() {
 
   async function handleRemoveItem(collectionId: number, postId: number) {
     try {
-      await fetch(`/api/bookmarks/collections/${collectionId}/items?postId=${postId}`, {
+      const res = await fetch(`/api/bookmarks/collections/${collectionId}/items?postId=${postId}`, {
         method: "DELETE",
       });
-      fetchCollections();
+      if (res.ok) {
+        fetchCollections();
+      } else {
+        showToast("移除书签失败", "error");
+      }
     } catch {
       showToast("移除书签失败", "error");
     }
@@ -98,9 +112,26 @@ export default function BookmarksPage() {
   if (loading) {
     return (
       <main className="container mx-auto px-4 py-8">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 w-32 bg-zinc-200 dark:bg-zinc-800 rounded" />
-          <div className="h-64 bg-zinc-200 dark:bg-zinc-800 rounded" />
+        <div className="max-w-6xl mx-auto">
+          <Skeleton className="h-9 w-32 mb-8" />
+          <div className="flex flex-col md:flex-row gap-6">
+            <div className="w-full md:w-64 flex-shrink-0 space-y-2">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <Skeleton key={i} className="h-10 w-full rounded-lg" />
+              ))}
+            </div>
+            <div className="flex-1 space-y-4">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="flex gap-4 p-4 border border-zinc-200 dark:border-zinc-800 rounded-xl">
+                  <Skeleton className="w-20 h-20 rounded-lg flex-shrink-0" />
+                  <div className="flex-1 space-y-2">
+                    <Skeleton className="h-5 w-3/4" />
+                    <Skeleton className="h-4 w-full" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </main>
     );
@@ -169,6 +200,7 @@ export default function BookmarksPage() {
                         handleDelete(col.id);
                       }}
                       className="p-1 text-zinc-400 hover:text-red-500"
+                      aria-label={`删除收藏夹 ${col.name}`}
                     >
                       <Trash2 className="w-3 h-3" />
                     </button>
@@ -198,9 +230,11 @@ export default function BookmarksPage() {
                         className="flex gap-4 p-4 border border-zinc-200 dark:border-zinc-800 rounded-xl"
                       >
                         {item.post.coverImageUrl && (
-                          <img
+                          <Image
                             src={item.post.coverImageUrl}
                             alt=""
+                            width={80}
+                            height={80}
                             className="w-20 h-20 object-cover rounded-lg"
                           />
                         )}
@@ -220,6 +254,7 @@ export default function BookmarksPage() {
                         <button
                           onClick={() => handleRemoveItem(currentCollection.id, item.post.id)}
                           className="p-2 text-zinc-400 hover:text-red-500 self-start"
+                          aria-label={`移除 ${item.post.title}`}
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
