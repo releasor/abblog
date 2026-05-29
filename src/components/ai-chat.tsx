@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, memo } from "react";
 import { X, MessageCircle } from "lucide-react";
-import { showToast } from "@/components/toast";
+
 
 export const AiChat = memo(function AiChat({ postId }: { postId: number }) {
   const [isOpen, setIsOpen] = useState(false);

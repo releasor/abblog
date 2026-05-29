@@ -6,7 +6,7 @@ import { Search, Users, Star } from "lucide-react";
 import { formatDate } from "@/lib/format-date";
 import { showToast } from "@/components/toast";
 import { DataTable } from "@/components/data-table";
-import { EmptyState } from "@/components/empty-state";
+
 import { SimplePagination } from "@/components/pagination";
 
 interface User {

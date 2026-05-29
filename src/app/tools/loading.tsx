@@ -1,4 +1,4 @@
-import { Skeleton, SkeletonRow } from "@/components/skeleton";
+import { Skeleton } from "@/components/skeleton";
 
 export default function ToolsLoading() {
   return (

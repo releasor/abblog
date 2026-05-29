@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { Search, FileText, Folder, Tag, Sun, Moon, Home, PenSquare } from "lucide-react";
+import { Search, FileText, Folder, Tag, Sun, Home, PenSquare } from "lucide-react";
 
 interface Command {
   id: string;

@@ -7,7 +7,7 @@ import { ConfirmDialog } from "@/components/confirm-dialog";
 import { showToast } from "@/components/toast";
 import { formatDateShort } from "@/lib/format-date";
 import { DataTable } from "@/components/data-table";
-import { EmptyState } from "@/components/empty-state";
+
 import { SimplePagination } from "@/components/pagination";
 import { FilterTabs } from "@/components/filter-tabs";
 

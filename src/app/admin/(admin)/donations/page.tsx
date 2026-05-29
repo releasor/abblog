@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Heart } from "lucide-react";
 import { formatDate } from "@/lib/format-date";
 import { DataTable } from "@/components/data-table";
-import { EmptyState } from "@/components/empty-state";
+
 import { SimplePagination } from "@/components/pagination";
 import { FilterTabs } from "@/components/filter-tabs";
 
