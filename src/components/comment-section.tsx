@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, memo } from "react";
 import { CommentList } from "./comment-list";
 import { CommentForm } from "./comment-form";
 
@@ -8,7 +8,7 @@ interface CommentSectionProps {
   postId: number;
 }
 
-export function CommentSection({ postId }: CommentSectionProps) {
+export const CommentSection = memo(function CommentSection({ postId }: CommentSectionProps) {
   const [refreshKey, setRefreshKey] = useState(0);
 
   return (
@@ -22,4 +22,4 @@ export function CommentSection({ postId }: CommentSectionProps) {
       </div>
     </section>
   );
-}
+});

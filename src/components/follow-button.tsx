@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { showToast } from "./toast";
@@ -10,7 +10,7 @@ interface FollowButtonProps {
   onFollowChange?: (isFollowing: boolean, followerCount: number) => void;
 }
 
-export function FollowButton({ username, onFollowChange }: FollowButtonProps) {
+export const FollowButton = memo(function FollowButton({ username, onFollowChange }: FollowButtonProps) {
   const { data: session } = useSession();
   const router = useRouter();
   const [isFollowing, setIsFollowing] = useState(false);
@@ -59,4 +59,4 @@ export function FollowButton({ username, onFollowChange }: FollowButtonProps) {
       {isFollowing ? "已关注" : "关注"}
     </button>
   );
-}
+});

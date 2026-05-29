@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, memo } from "react";
 import { Download, FileText } from "lucide-react";
 import { showToast } from "./toast";
 
@@ -9,7 +9,7 @@ interface ExportButtonProps {
   title: string;
 }
 
-export function ExportButton({ postId, title }: ExportButtonProps) {
+export const ExportButton = memo(function ExportButton({ postId, title }: ExportButtonProps) {
   const [exporting, setExporting] = useState(false);
 
   async function handleExport(format: "markdown" | "pdf") {
@@ -64,4 +64,4 @@ export function ExportButton({ postId, title }: ExportButtonProps) {
       </div>
     </div>
   );
-}
+});

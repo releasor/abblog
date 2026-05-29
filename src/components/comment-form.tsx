@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, FormEvent } from "react";
+import { useState, FormEvent, memo } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { Skeleton } from "@/components/skeleton";
@@ -10,7 +10,7 @@ interface CommentFormProps {
   onCommentAdded?: (comment: { id: number; authorName: string; content: string; createdAt: string }) => void;
 }
 
-export function CommentForm({ postId, onCommentAdded }: CommentFormProps) {
+export const CommentForm = memo(function CommentForm({ postId, onCommentAdded }: CommentFormProps) {
   const { data: session, status } = useSession();
   const [content, setContent] = useState("");
   const [error, setError] = useState("");
@@ -147,4 +147,4 @@ export function CommentForm({ postId, onCommentAdded }: CommentFormProps) {
       </button>
     </form>
   );
-}
+});

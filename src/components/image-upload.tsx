@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, memo } from "react";
 import { Upload } from "lucide-react";
 
 interface ImageUploadProps {
@@ -8,7 +8,7 @@ interface ImageUploadProps {
   onChange: (url: string) => void;
 }
 
-export default function ImageUpload({ value, onChange }: ImageUploadProps) {
+const ImageUpload = memo(function ImageUpload({ value, onChange }: ImageUploadProps) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
   const [dragging, setDragging] = useState(false);
@@ -146,4 +146,6 @@ export default function ImageUpload({ value, onChange }: ImageUploadProps) {
       )}
     </div>
   );
-}
+});
+
+export default ImageUpload;
