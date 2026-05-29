@@ -33,9 +33,11 @@ export default function PromptsPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-12">
       {/* Tabs */}
-      <div className="flex gap-1 p-1 bg-zinc-100 dark:bg-zinc-800 rounded-xl mb-6">
+      <div className="flex gap-1 p-1 bg-zinc-100 dark:bg-zinc-800 rounded-xl mb-6" role="tablist" aria-label="功能切换">
         <button
           onClick={() => setTab("chat")}
+          role="tab"
+          aria-selected={tab === "chat"}
           className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg transition-all ${
             tab === "chat"
               ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-sm"
@@ -47,6 +49,8 @@ export default function PromptsPage() {
         </button>
         <button
           onClick={() => setTab("optimizer")}
+          role="tab"
+          aria-selected={tab === "optimizer"}
           className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg transition-all ${
             tab === "optimizer"
               ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-sm"
@@ -155,7 +159,7 @@ function ChatTab() {
             <button
               onClick={clearChat}
               className="px-3 py-2.5 text-sm text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors"
-              title="清空对话"
+              aria-label="清空对话"
             >
               <Trash2 className="w-4 h-4" />
             </button>
@@ -165,6 +169,7 @@ function ChatTab() {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && sendMessage()}
             placeholder="输入消息..."
+            aria-label="消息内容"
             className="flex-1 px-4 py-2.5 text-sm border border-zinc-300 dark:border-zinc-700 rounded-full bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500"
             disabled={loading}
           />
@@ -227,6 +232,7 @@ function OptimizerTab() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="输入您的原始提示词..."
+          aria-label="原始提示词"
           className="w-full h-48 p-4 text-sm border border-zinc-300 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500 resize-none"
         />
       </div>
