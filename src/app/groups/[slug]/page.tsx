@@ -1,110 +1,65 @@
-"use client";
-
-import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { Metadata } from "next";
+import { notFound } from "next/navigation";
 import Link from "next/link";
-import { EmptyState } from "@/components/empty-state";
 import Image from "next/image";
-import { showToast } from "@/components/toast";
+import { prisma } from "@/lib/prisma";
+import { EmptyState } from "@/components/empty-state";
 import { formatDate } from "@/lib/format-date";
 import { Users, FileText } from "lucide-react";
+import { JoinGroupButton } from "./join-button";
 
-interface Group {
-  id: number;
-  name: string;
-  slug: string;
-  description?: string | null;
-  coverImage?: string | null;
-  isPublic: boolean;
-  owner: { id: number; name: string; username?: string | null };
-  _count: { members: number; posts: number };
+interface Props {
+  params: Promise<{ slug: string }>;
 }
 
-interface Post {
-  id: number;
-  title: string;
-  slug: string;
-  excerpt?: string | null;
-  publishedAt?: string | null;
-  user: { id: number; name: string; username?: string | null };
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
+  const group = await prisma.group.findUnique({
+    where: { slug },
+    select: { name: true, description: true },
+  });
+
+  if (!group) return { title: "圈子不存在" };
+
+  return {
+    title: `${group.name} - 圈子`,
+    description: group.description || `加入${group.name}圈子，与志同道合的人交流`,
+  };
 }
 
-export default function GroupDetailPage() {
-  const params = useParams();
-  const slug = params.slug as string;
+export default async function GroupDetailPage({ params }: Props) {
+  const { slug } = await params;
 
-  const [group, setGroup] = useState<Group | null>(null);
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [isMember, setIsMember] = useState(false);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchGroup();
-  }, [slug]);
-
-  async function fetchGroup() {
-    try {
-      const res = await fetch(`/api/groups?slug=${slug}`);
-      if (!res.ok) {
-        showToast("加载小组信息失败", "error");
-        return;
-      }
-      const data = await res.json();
-      if (data.groups?.length > 0) {
-        const g = data.groups[0];
-        setGroup(g);
-
-        const postsRes = await fetch(`/api/groups/${g.id}/posts`);
-        if (postsRes.ok) {
-          const postsData = await postsRes.json();
-          setPosts(postsData.posts || []);
-        }
-
-        setIsMember(false);
-      }
-    } catch {
-      showToast("加载小组信息失败", "error");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function handleJoin() {
-    if (!group) return;
-    try {
-      const method = isMember ? "DELETE" : "POST";
-      const res = await fetch(`/api/groups/${group.id}/join`, { method });
-      if (res.ok) {
-        setIsMember(!isMember);
-        fetchGroup();
-      } else {
-        showToast(isMember ? "退出失败" : "加入失败", "error");
-      }
-    } catch {
-      showToast(isMember ? "退出失败" : "加入失败", "error");
-    }
-  }
-
-  if (loading) {
-    return (
-      <main className="container mx-auto px-4 py-8">
-        <div className="animate-pulse space-y-4">
-          <div className="h-48 bg-zinc-200 dark:bg-zinc-800 rounded-xl" />
-          <div className="h-8 w-64 bg-zinc-200 dark:bg-zinc-800 rounded" />
-        </div>
-      </main>
-    );
-  }
+  const group = await prisma.group.findUnique({
+    where: { slug },
+    include: {
+      owner: { select: { id: true, name: true, username: true } },
+      _count: { select: { members: true, posts: true } },
+    },
+  });
 
   if (!group) {
-    return (
-      <main className="container mx-auto px-4 py-8">
-        <div className="text-center py-16">
-          <p className="text-zinc-500">圈子不存在</p>
-        </div>
-      </main>
-    );
+    notFound();
   }
+
+  const groupPosts = await prisma.groupPost.findMany({
+    where: { groupId: group.id },
+    include: {
+      post: {
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          excerpt: true,
+          publishedAt: true,
+          user: { select: { id: true, name: true, username: true } },
+        },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  const posts = groupPosts.map((gp) => gp.post);
 
   return (
     <main className="container mx-auto px-4 py-8">
@@ -136,16 +91,7 @@ export default function GroupDetailPage() {
               <span>{group._count.posts} 文章</span>
             </div>
           </div>
-          <button
-            onClick={handleJoin}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              isMember
-                ? "bg-zinc-200 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-300 dark:hover:bg-zinc-600"
-                : "bg-indigo-500 text-white hover:bg-indigo-600"
-            }`}
-          >
-            {isMember ? "退出圈子" : "加入圈子"}
-          </button>
+          <JoinGroupButton groupId={group.id} />
         </div>
 
         {group.description && (
@@ -173,7 +119,7 @@ export default function GroupDetailPage() {
                     </p>
                   )}
                   <div className="flex items-center gap-2 mt-2 text-xs text-zinc-500">
-                    <span>{post.user.name}</span>
+                    {post.user && <span>{post.user.name}</span>}
                     {post.publishedAt && (
                       <>
                         <span>-</span>
