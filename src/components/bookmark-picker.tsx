@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import { Bookmark, Plus, Check } from "lucide-react";
 import { showToast } from "./toast";
 
@@ -16,7 +16,7 @@ interface BookmarkPickerProps {
   initialBookmarked?: boolean;
 }
 
-export function BookmarkPicker({ postId, initialBookmarked = false }: BookmarkPickerProps) {
+export const BookmarkPicker = memo(function BookmarkPicker({ postId, initialBookmarked = false }: BookmarkPickerProps) {
   const [isBookmarked, setIsBookmarked] = useState(initialBookmarked);
   const [collections, setCollections] = useState<Collection[]>([]);
   const [showPicker, setShowPicker] = useState(false);
@@ -121,4 +121,4 @@ export function BookmarkPicker({ postId, initialBookmarked = false }: BookmarkPi
       )}
     </div>
   );
-}
+});
