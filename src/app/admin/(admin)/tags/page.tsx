@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Tag, Plus, Pencil, Trash2, Check, X } from "lucide-react";
 import { SkeletonRow } from "@/components/skeleton";
 import { EmptyState } from "@/components/empty-state";
+import { showToast } from "@/components/toast";
 
 interface TagItem {
   id: number;
@@ -100,9 +101,14 @@ export default function AdminTagsPage() {
     try {
       setDeleteId(id);
       const res = await fetch(`/api/tags/${id}`, { method: "DELETE" });
-      if (res.ok) fetchTags();
+      if (res.ok) {
+        fetchTags();
+      } else {
+        showToast("删除失败", "error");
+      }
     } catch (e) {
       console.error("[AdminTags] Failed to delete tag:", e);
+      showToast("删除失败", "error");
     } finally {
       setDeleteId(null);
     }
@@ -114,8 +120,8 @@ export default function AdminTagsPage() {
         标签管理
       </h1>
 
-      <form onSubmit={handleCreate} className="flex items-start gap-3">
-        <div className="flex-1 max-w-sm">
+      <form onSubmit={handleCreate} className="flex flex-col sm:flex-row items-start gap-3">
+        <div className="flex-1 w-full sm:max-w-sm">
           <input
             type="text"
             value={newName}
@@ -202,6 +208,7 @@ export default function AdminTagsPage() {
                         setEditError("");
                       }}
                       className="p-1 rounded text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+                      aria-label={`编辑 ${tag.name}`}
                     >
                       <Pencil className="w-3 h-3" />
                     </button>
@@ -209,6 +216,7 @@ export default function AdminTagsPage() {
                       onClick={() => handleDelete(tag.id)}
                       disabled={deleteId === tag.id}
                       className="p-1 rounded text-zinc-400 hover:text-red-500"
+                      aria-label={`删除 ${tag.name}`}
                     >
                       <Trash2 className="w-3 h-3" />
                     </button>

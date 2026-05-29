@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Folder, Plus, Pencil, Trash2, Check, X } from "lucide-react";
 import { SkeletonRow } from "@/components/skeleton";
 import { EmptyState } from "@/components/empty-state";
+import { showToast } from "@/components/toast";
 
 interface Category {
   id: number;
@@ -100,9 +101,14 @@ export default function AdminCategoriesPage() {
     try {
       setDeleteId(id);
       const res = await fetch(`/api/categories/${id}`, { method: "DELETE" });
-      if (res.ok) fetchCategories();
+      if (res.ok) {
+        fetchCategories();
+      } else {
+        showToast("删除失败", "error");
+      }
     } catch (e) {
       console.error("[AdminCategories] Failed to delete category:", e);
+      showToast("删除失败", "error");
     } finally {
       setDeleteId(null);
     }
@@ -114,8 +120,8 @@ export default function AdminCategoriesPage() {
         分类管理
       </h1>
 
-      <form onSubmit={handleCreate} className="flex items-start gap-3">
-        <div className="flex-1 max-w-sm">
+      <form onSubmit={handleCreate} className="flex flex-col sm:flex-row items-start gap-3">
+        <div className="flex-1 w-full sm:max-w-sm">
           <div className="relative">
             <input
               type="text"
@@ -232,6 +238,7 @@ export default function AdminCategoriesPage() {
                               setEditError("");
                             }}
                             className="p-2 rounded-lg text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                            aria-label={`编辑 ${category.name}`}
                           >
                             <Pencil className="w-4 h-4" />
                           </button>
@@ -239,6 +246,7 @@ export default function AdminCategoriesPage() {
                             onClick={() => handleDelete(category.id)}
                             disabled={deleteId === category.id}
                             className="p-2 rounded-lg text-zinc-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50 transition-colors"
+                            aria-label={`删除 ${category.name}`}
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>

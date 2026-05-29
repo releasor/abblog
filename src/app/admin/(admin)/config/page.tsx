@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Save, Check } from "lucide-react";
+import { showToast } from "@/components/toast";
 
 interface ConfigItem {
   key: string;
@@ -32,7 +33,11 @@ export default function AdminConfigPage() {
 
   useEffect(() => {
     fetch("/api/admin/config")
-      .then((r) => r.json())
+      .then((r) => {
+        if (r.ok) return r.json();
+        showToast("加载配置失败", "error");
+        return null;
+      })
       .then((data) => {
         if (Array.isArray(data)) {
           setConfigs((prev) =>
@@ -43,7 +48,10 @@ export default function AdminConfigPage() {
           );
         }
       })
-      .catch(() => {});
+      .catch((e) => {
+        console.error("[Config] Failed to fetch config:", e);
+        showToast("加载配置失败", "error");
+      });
   }, []);
 
   const handleChange = (key: string, value: string) => {
@@ -53,17 +61,25 @@ export default function AdminConfigPage() {
   };
 
   const handleSave = async () => {
-    setSaving(true);
-    const res = await fetch("/api/admin/config", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ configs: configs.map((c) => ({ key: c.key, value: c.value })) }),
-    });
-    if (res.ok) {
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
+    try {
+      setSaving(true);
+      const res = await fetch("/api/admin/config", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ configs: configs.map((c) => ({ key: c.key, value: c.value })) }),
+      });
+      if (res.ok) {
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2000);
+      } else {
+        showToast("保存失败", "error");
+      }
+    } catch (e) {
+      console.error("[Config] Failed to save config:", e);
+      showToast("保存失败，请稍后重试", "error");
+    } finally {
+      setSaving(false);
     }
-    setSaving(false);
   };
 
   return (
@@ -95,13 +111,13 @@ export default function AdminConfigPage() {
         {configs.map((config, i) => (
           <div
             key={config.key}
-            className={`flex items-center gap-4 px-5 py-4 ${
+            className={`flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 px-5 py-4 ${
               i < configs.length - 1
                 ? "border-b border-zinc-100 dark:border-zinc-800"
                 : ""
             }`}
           >
-            <label className="w-40 text-sm text-zinc-600 dark:text-zinc-400 flex-shrink-0">
+            <label className="sm:w-40 text-sm text-zinc-600 dark:text-zinc-400 flex-shrink-0">
               {config.label}
             </label>
             {config.type === "boolean" ? (
