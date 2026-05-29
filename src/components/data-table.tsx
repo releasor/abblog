@@ -1,4 +1,4 @@
-import { memo, ReactNode } from "react";
+import { ReactNode } from "react";
 import { SkeletonRow } from "./skeleton";
 
 interface Column<T> {
