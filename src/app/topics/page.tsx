@@ -10,6 +10,8 @@ export const metadata: Metadata = {
   description: "浏览热门话题，发现精彩内容",
 };
 
+export const revalidate = 600;
+
 export default async function TopicsPage() {
   const [hotTopics, newTopics] = await Promise.all([
     prisma.topic.findMany({

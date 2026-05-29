@@ -8,6 +8,8 @@ export const metadata: Metadata = {
   description: "所有标签及文章数量",
 };
 
+export const revalidate = 3600;
+
 export default async function TagsPage() {
   const tags = await prisma.tag.findMany({
     include: {

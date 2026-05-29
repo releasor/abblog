@@ -9,6 +9,8 @@ export const metadata: Metadata = {
   description: "浏览所有圈子小组",
 };
 
+export const revalidate = 600;
+
 export default async function GroupsPage() {
   const groups = await prisma.group.findMany({
     where: { isPublic: true },

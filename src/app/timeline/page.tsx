@@ -9,6 +9,8 @@ export const metadata: Metadata = {
   description: "查看社区最新动态",
 };
 
+export const revalidate = 300;
+
 export default async function TimelinePage() {
   const activities = await prisma.activity.findMany({
     orderBy: { createdAt: "desc" },

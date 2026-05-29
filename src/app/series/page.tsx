@@ -9,6 +9,8 @@ export const metadata: Metadata = {
   description: "浏览所有系列文章",
 };
 
+export const revalidate = 600;
+
 export default async function SeriesPage() {
   const series = await prisma.postSeries.findMany({
     orderBy: { createdAt: "desc" },
