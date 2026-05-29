@@ -32,4 +32,21 @@ describe("slugify", () => {
   it("preserves numbers", () => {
     expect(slugify("post 123")).toBe("post-123");
   });
+
+  it("handles underscores", () => {
+    expect(slugify("hello_world")).toBe("hello-world");
+  });
+
+  it("handles mixed whitespace", () => {
+    expect(slugify("hello\t\nworld")).toBe("hello-world");
+  });
+
+  it("handles only special characters", () => {
+    expect(slugify("!@#$%^&*()")).toBe("");
+  });
+
+  it("handles very long text", () => {
+    const longText = "a".repeat(300);
+    expect(slugify(longText)).toBe(longText);
+  });
 });
