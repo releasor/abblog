@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef, useCallback, memo } from "react";
 import { List, X } from "lucide-react";
 import type { TocHeading } from "@/lib/toc";
 
@@ -8,7 +8,7 @@ interface TableOfContentsProps {
   headings: TocHeading[];
 }
 
-export function TableOfContents({ headings }: TableOfContentsProps) {
+export const TableOfContents = memo(function TableOfContents({ headings }: TableOfContentsProps) {
   const [activeId, setActiveId] = useState<string>("");
   const [isOpen, setIsOpen] = useState(false);
   const observerRef = useRef<IntersectionObserver | null>(null);
@@ -113,7 +113,7 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
       </aside>
     </>
   );
-}
+});
 
 function TocList({
   headings,
