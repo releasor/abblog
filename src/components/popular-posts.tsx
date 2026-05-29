@@ -30,9 +30,11 @@ export const PopularPosts = memo(function PopularPosts() {
     <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5">
       <div className="flex items-center justify-between mb-4">
         <h3 className="font-semibold text-zinc-900 dark:text-zinc-100">热门文章</h3>
-        <div className="flex gap-1 bg-zinc-100 dark:bg-zinc-800 rounded-lg p-0.5">
+        <div className="flex gap-1 bg-zinc-100 dark:bg-zinc-800 rounded-lg p-0.5" role="tablist" aria-label="排行周期">
           <button
             onClick={() => setPeriod("week")}
+            role="tab"
+            aria-selected={period === "week"}
             className={`px-2 py-1 text-xs rounded-md transition-colors ${
               period === "week"
                 ? "bg-white dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100"
@@ -43,6 +45,8 @@ export const PopularPosts = memo(function PopularPosts() {
           </button>
           <button
             onClick={() => setPeriod("month")}
+            role="tab"
+            aria-selected={period === "month"}
             className={`px-2 py-1 text-xs rounded-md transition-colors ${
               period === "month"
                 ? "bg-white dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100"
