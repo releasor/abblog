@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { formatDateShort } from "@/lib/format-date";
@@ -16,7 +16,7 @@ interface RecommendedPost {
   category: { name: string; slug: string } | null;
 }
 
-export function RecommendedPosts({ postId }: { postId: number }) {
+export const RecommendedPosts = memo(function RecommendedPosts({ postId }: { postId: number }) {
   const [posts, setPosts] = useState<RecommendedPost[]>([]);
 
   useEffect(() => {
@@ -83,4 +83,4 @@ export function RecommendedPosts({ postId }: { postId: number }) {
       </div>
     </section>
   );
-}
+});
