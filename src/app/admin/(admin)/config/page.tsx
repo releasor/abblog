@@ -117,17 +117,21 @@ export default function AdminConfigPage() {
                 : ""
             }`}
           >
-            <label className="sm:w-40 text-sm text-zinc-600 dark:text-zinc-400 flex-shrink-0">
+            <label htmlFor={`config-${config.key}`} className="sm:w-40 text-sm text-zinc-600 dark:text-zinc-400 flex-shrink-0">
               {config.label}
             </label>
             {config.type === "boolean" ? (
               <button
+                id={`config-${config.key}`}
                 onClick={() =>
                   handleChange(
                     config.key,
                     config.value === "true" ? "false" : "true"
                   )
                 }
+                role="switch"
+                aria-checked={config.value === "true"}
+                aria-label={config.label}
                 className={`relative w-10 h-5.5 rounded-full transition-colors ${
                   config.value === "true"
                     ? "bg-zinc-900 dark:bg-zinc-100"
@@ -142,6 +146,7 @@ export default function AdminConfigPage() {
               </button>
             ) : config.type === "textarea" ? (
               <textarea
+                id={`config-${config.key}`}
                 value={config.value}
                 onChange={(e) => handleChange(config.key, e.target.value)}
                 rows={2}
@@ -149,6 +154,7 @@ export default function AdminConfigPage() {
               />
             ) : (
               <input
+                id={`config-${config.key}`}
                 type={config.type === "number" ? "number" : "text"}
                 value={config.value}
                 onChange={(e) => handleChange(config.key, e.target.value)}
