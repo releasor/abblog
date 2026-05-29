@@ -6,7 +6,7 @@ import Link from "@tiptap/extension-link";
 import Image from "@tiptap/extension-image";
 import Placeholder from "@tiptap/extension-placeholder";
 import { VideoExtension } from "./tiptap-video";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, memo } from "react";
 import { List, ListOrdered, Quote, Link2, Image as ImageIcon, Video, Film } from "lucide-react";
 
 interface TiptapEditorProps {
@@ -14,7 +14,7 @@ interface TiptapEditorProps {
   onChange: (html: string) => void;
 }
 
-export default function TiptapEditor({ content, onChange }: TiptapEditorProps) {
+const TiptapEditor = memo(function TiptapEditor({ content, onChange }: TiptapEditorProps) {
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -50,7 +50,9 @@ export default function TiptapEditor({ content, onChange }: TiptapEditorProps) {
       <EditorContent editor={editor} />
     </div>
   );
-}
+});
+
+export default TiptapEditor;
 
 function Toolbar({ editor }: { editor: ReturnType<typeof useEditor> }) {
   const imgInputRef = useRef<HTMLInputElement>(null);

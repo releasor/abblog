@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, memo } from "react";
 import { NodeViewWrapper, NodeViewContent, NodeViewProps } from "@tiptap/react";
 import { ChevronDown, ChevronRight } from "lucide-react";
 
-export function TiptapAccordion({ node }: NodeViewProps) {
+export const TiptapAccordion = memo(function TiptapAccordion({ node }: NodeViewProps) {
   const { title } = node.attrs;
   const [isOpen, setIsOpen] = useState(false);
 
@@ -33,4 +33,4 @@ export function TiptapAccordion({ node }: NodeViewProps) {
       </div>
     </NodeViewWrapper>
   );
-}
+});

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, memo } from "react";
 import { AlertTriangle, RefreshCw } from "lucide-react";
 
 interface ErrorFallbackProps {
@@ -10,7 +10,7 @@ interface ErrorFallbackProps {
   message?: string;
 }
 
-export default function ErrorFallback({
+const ErrorFallback = memo(function ErrorFallback({
   error,
   reset,
   title = "出错了",
@@ -40,4 +40,6 @@ export default function ErrorFallback({
       </div>
     </div>
   );
-}
+});
+
+export default ErrorFallback;

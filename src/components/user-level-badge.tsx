@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import { Star, TrendingUp } from "lucide-react";
 
 interface LevelInfo {
@@ -36,7 +36,7 @@ function useLevelInfo() {
   return info;
 }
 
-export function UserLevelBadge() {
+export const UserLevelBadge = memo(function UserLevelBadge() {
   const info = useLevelInfo();
   if (!info) return null;
 
@@ -49,9 +49,9 @@ export function UserLevelBadge() {
       <span className="text-xs text-zinc-500">{info.points} 积分</span>
     </div>
   );
-}
+});
 
-export function UserLevelProgress() {
+export const UserLevelProgress = memo(function UserLevelProgress() {
   const info = useLevelInfo();
 
   if (!info) return null;
@@ -88,4 +88,4 @@ export function UserLevelProgress() {
       </div>
     </div>
   );
-}
+});

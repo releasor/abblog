@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, memo } from "react";
 import { useRouter } from "next/navigation";
 import { Search, FileText, Folder, Tag, Sun, Home, PenSquare } from "lucide-react";
 
@@ -17,7 +17,7 @@ interface CommandPaletteProps {
   onClose: () => void;
 }
 
-export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
+export const CommandPalette = memo(function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -173,4 +173,4 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
       </div>
     </div>
   );
-}
+});

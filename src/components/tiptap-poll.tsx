@@ -1,9 +1,10 @@
 "use client";
 
+import { memo } from "react";
 import { NodeViewWrapper, NodeViewProps } from "@tiptap/react";
 import { BarChart3 } from "lucide-react";
 
-export function TiptapPoll({ node }: NodeViewProps) {
+export const TiptapPoll = memo(function TiptapPoll({ node }: NodeViewProps) {
   const { question, options } = node.attrs;
 
   return (
@@ -27,4 +28,4 @@ export function TiptapPoll({ node }: NodeViewProps) {
       </div>
     </NodeViewWrapper>
   );
-}
+});
