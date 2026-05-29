@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, memo } from "react";
 import { Heart, X } from "lucide-react";
 import { showToast } from "./toast";
 
@@ -10,7 +10,7 @@ interface DonateButtonProps {
   postId?: number;
 }
 
-export function DonateButton({ recipientId, recipientName, postId }: DonateButtonProps) {
+export const DonateButton = memo(function DonateButton({ recipientId, recipientName, postId }: DonateButtonProps) {
   const [show, setShow] = useState(false);
   const [amount, setAmount] = useState(500);
   const [message, setMessage] = useState("");
@@ -118,4 +118,4 @@ export function DonateButton({ recipientId, recipientName, postId }: DonateButto
       )}
     </>
   );
-}
+});
