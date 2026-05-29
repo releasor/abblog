@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   description: "按分类浏览文章",
 };
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 export default async function CategoriesPage() {
   const categories = await prisma.category.findMany({

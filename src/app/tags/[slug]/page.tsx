@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { PostCard } from "@/components/post-card";
 import { EmptyState } from "@/components/empty-state";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 interface PageProps {
   params: Promise<{ slug: string }>;
