@@ -2,11 +2,19 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import TiptapEditor from "./tiptap-editor";
+import dynamic from "next/dynamic";
 import ImageUpload from "./image-upload";
+import { Skeleton } from "./skeleton";
+
+const TiptapEditor = dynamic(() => import("./tiptap-editor"), {
+  ssr: false,
+  loading: () => <Skeleton className="h-64 rounded-xl" />,
+});
 import { slugify } from "@/lib/slugify";
+import { formatDateTime } from "@/lib/format-date";
 import { useAutoSave, getDraft, clearDraft } from "@/hooks/use-auto-save";
 import { TemplatePicker } from "./template-picker";
+import { VersionHistory } from "./version-history";
 
 interface Category {
   id: number;
@@ -73,10 +81,12 @@ export default function PostForm({ mode, apiEndpoint, redirectPath, initialData 
     Promise.all([
       fetch("/api/categories").then((r) => r.json()),
       fetch("/api/tags").then((r) => r.json()),
-    ]).then(([cats, tgs]) => {
-      setCategories(cats);
-      setTags(tgs);
-    });
+    ])
+      .then(([cats, tgs]) => {
+        setCategories(cats);
+        setTags(tgs);
+      })
+      .catch((e) => console.error("[PostForm] Failed to fetch categories/tags:", e));
   }, []);
 
   useEffect(() => {
@@ -93,16 +103,20 @@ export default function PostForm({ mode, apiEndpoint, redirectPath, initialData 
 
   const createTag = async () => {
     if (!newTag.trim()) return;
-    const res = await fetch("/api/tags", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: newTag.trim() }),
-    });
-    if (res.ok) {
-      const tag = await res.json();
-      setTags((prev) => [...prev, tag].sort((a, b) => a.name.localeCompare(b.name)));
-      setSelectedTags((prev) => [...prev, tag.id.toString()]);
-      setNewTag("");
+    try {
+      const res = await fetch("/api/tags", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: newTag.trim() }),
+      });
+      if (res.ok) {
+        const tag = await res.json();
+        setTags((prev) => [...prev, tag].sort((a, b) => a.name.localeCompare(b.name)));
+        setSelectedTags((prev) => [...prev, tag.id.toString()]);
+        setNewTag("");
+      }
+    } catch (e) {
+      console.error("[PostForm] Failed to create tag:", e);
     }
   };
 
@@ -111,38 +125,43 @@ export default function PostForm({ mode, apiEndpoint, redirectPath, initialData 
     setSaving(true);
     setError("");
 
-    const body = {
-      title,
-      slug,
-      content,
-      excerpt,
-      coverImageUrl,
-      categoryId: categoryId || null,
-      tags: selectedTags,
-      status,
-    };
+    try {
+      const body = {
+        title,
+        slug,
+        content,
+        excerpt,
+        coverImageUrl,
+        categoryId: categoryId || null,
+        tags: selectedTags,
+        status,
+      };
 
-    const url = apiEndpoint || (mode === "create" ? "/api/posts" : `/api/posts/${initialData?.id}`);
-    const method = mode === "create" ? "POST" : "PUT";
+      const url = apiEndpoint || (mode === "create" ? "/api/posts" : `/api/posts/${initialData?.id}`);
+      const method = mode === "create" ? "POST" : "PUT";
 
-    const res = await fetch(url, {
-      method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
 
-    setSaving(false);
+      if (!res.ok) {
+        const data = await res.json();
+        setError(data.error || "保存失败");
+        return;
+      }
 
-    if (!res.ok) {
-      const data = await res.json();
-      setError(data.error || "Something went wrong");
-      return;
+      // Clear draft after successful save
+      clearDraft(draftKey);
+      router.push(redirectPath || "/admin/posts");
+      router.refresh();
+    } catch (e) {
+      console.error("[PostForm] Failed to save post:", e);
+      setError("保存失败，请稍后重试");
+    } finally {
+      setSaving(false);
     }
-
-    // Clear draft after successful save
-    clearDraft(draftKey);
-    router.push(redirectPath || "/admin/posts");
-    router.refresh();
   };
 
   const handleDiscardDraft = () => {
@@ -167,7 +186,7 @@ export default function PostForm({ mode, apiEndpoint, redirectPath, initialData 
       {showDraftNotice && draft && (
         <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md text-blue-700 dark:text-blue-300 text-sm flex items-center justify-between">
           <span>
-            检测到未保存的草稿 (保存于 {new Date(draft.savedAt).toLocaleString("zh-CN")})
+            检测到未保存的草稿 (保存于 {formatDateTime(draft.savedAt)})
           </span>
           <button
             type="button"
@@ -198,7 +217,7 @@ export default function PostForm({ mode, apiEndpoint, redirectPath, initialData 
 
       <div>
         <label htmlFor="title" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
-          Title
+          标题
         </label>
         <input
           id="title"
@@ -212,7 +231,7 @@ export default function PostForm({ mode, apiEndpoint, redirectPath, initialData 
 
       <div>
         <label htmlFor="slug" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
-          Slug
+          URL 别名
         </label>
         <input
           id="slug"
@@ -229,7 +248,7 @@ export default function PostForm({ mode, apiEndpoint, redirectPath, initialData 
       <div>
         <div className="flex items-center justify-between mb-1">
           <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
-            Content
+            内容
           </label>
           <TemplatePicker onSelect={(t) => setContent(content + t)} />
         </div>
@@ -238,7 +257,7 @@ export default function PostForm({ mode, apiEndpoint, redirectPath, initialData 
 
       <div>
         <label htmlFor="excerpt" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
-          Excerpt
+          摘要
         </label>
         <textarea
           id="excerpt"
@@ -251,15 +270,15 @@ export default function PostForm({ mode, apiEndpoint, redirectPath, initialData 
 
       <div>
         <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
-          Cover Image
+          封面图片
         </label>
         <ImageUpload value={coverImageUrl} onChange={setCoverImageUrl} />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label htmlFor="category" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
-            Category
+            分类
           </label>
           <select
             id="category"
@@ -267,7 +286,7 @@ export default function PostForm({ mode, apiEndpoint, redirectPath, initialData 
             onChange={(e) => setCategoryId(e.target.value)}
             className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500"
           >
-            <option value="">None</option>
+            <option value="">无</option>
             {categories.map((cat) => (
               <option key={cat.id} value={cat.id}>
                 {cat.name}
@@ -278,7 +297,7 @@ export default function PostForm({ mode, apiEndpoint, redirectPath, initialData 
 
         <div>
           <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
-            Status
+            状态
           </label>
           <div className="flex gap-2">
             <button
@@ -290,7 +309,7 @@ export default function PostForm({ mode, apiEndpoint, redirectPath, initialData 
                   : "bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 border border-zinc-300 dark:border-zinc-700"
               }`}
             >
-              Draft
+              草稿
             </button>
             <button
               type="button"
@@ -301,7 +320,7 @@ export default function PostForm({ mode, apiEndpoint, redirectPath, initialData 
                   : "bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 border border-zinc-300 dark:border-zinc-700"
               }`}
             >
-              Published
+              已发布
             </button>
           </div>
         </div>
@@ -309,7 +328,7 @@ export default function PostForm({ mode, apiEndpoint, redirectPath, initialData 
 
       <div>
         <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
-          Tags
+          标签
         </label>
         <div className="flex flex-wrap gap-2 mb-2">
           {tags.map((tag) => (
@@ -332,7 +351,7 @@ export default function PostForm({ mode, apiEndpoint, redirectPath, initialData 
             type="text"
             value={newTag}
             onChange={(e) => setNewTag(e.target.value)}
-            placeholder="Create new tag..."
+            placeholder="创建新标签..."
             className="flex-1 px-3 py-1.5 text-sm border border-zinc-300 dark:border-zinc-700 rounded-md bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500"
             onKeyDown={(e) => {
               if (e.key === "Enter") {
@@ -346,10 +365,21 @@ export default function PostForm({ mode, apiEndpoint, redirectPath, initialData 
             onClick={createTag}
             className="px-3 py-1.5 text-sm bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-md hover:bg-zinc-200 dark:hover:bg-zinc-700"
           >
-            Add
+            添加
           </button>
         </div>
       </div>
+
+      {/* Version History (edit mode only) */}
+      {mode === "edit" && initialData?.id && (
+        <VersionHistory
+          postId={initialData.id}
+          onRestore={() => {
+            router.refresh();
+            window.location.reload();
+          }}
+        />
+      )}
 
       <div className="flex gap-3 pt-4 border-t border-zinc-200 dark:border-zinc-800">
         <button
@@ -357,14 +387,14 @@ export default function PostForm({ mode, apiEndpoint, redirectPath, initialData 
           disabled={saving}
           className="px-6 py-2 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-md font-medium hover:bg-zinc-800 dark:hover:bg-zinc-200 disabled:opacity-50 transition-colors"
         >
-          {saving ? "Saving..." : mode === "create" ? "Create Post" : "Update Post"}
+          {saving ? "保存中..." : mode === "create" ? "发布文章" : "更新文章"}
         </button>
         <button
           type="button"
           onClick={() => router.push("/admin/posts")}
           className="px-6 py-2 border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 rounded-md hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
         >
-          Cancel
+          取消
         </button>
       </div>
     </form>
