@@ -3,9 +3,11 @@
 import { useState, useEffect, useCallback } from "react";
 import { MessageSquare, Check, X, Trash2 } from "lucide-react";
 import { truncate } from "@/lib/text";
+import { showToast } from "@/components/toast";
 import { SkeletonRow } from "@/components/skeleton";
 import { EmptyState } from "@/components/empty-state";
 import { SimplePagination } from "@/components/pagination";
+import { FilterTabs } from "@/components/filter-tabs";
 
 interface Comment {
   id: number;
@@ -67,9 +69,14 @@ export default function AdminCommentsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status }),
       });
-      if (res.ok) fetchComments();
+      if (res.ok) {
+        fetchComments();
+      } else {
+        showToast("更新评论状态失败", "error");
+      }
     } catch (e) {
       console.error("[AdminComments] Failed to update comment status:", e);
+      showToast("更新评论状态失败，请检查网络连接", "error");
     } finally {
       setActionId(null);
     }
@@ -80,9 +87,14 @@ export default function AdminCommentsPage() {
     try {
       setActionId(id);
       const res = await fetch(`/api/comments/${id}`, { method: "DELETE" });
-      if (res.ok) fetchComments();
+      if (res.ok) {
+        fetchComments();
+      } else {
+        showToast("删除失败", "error");
+      }
     } catch (e) {
       console.error("[AdminComments] Failed to delete comment:", e);
+      showToast("删除失败", "error");
     } finally {
       setActionId(null);
     }
@@ -122,24 +134,14 @@ export default function AdminCommentsPage() {
         评论管理
       </h1>
 
-      <div className="flex gap-1 p-1 bg-zinc-100 dark:bg-zinc-800/50 rounded-lg w-fit">
-        {tabs.map(({ key, label }) => (
-          <button
-            key={key}
-            onClick={() => {
-              setStatusFilter(key);
-              setPage(1);
-            }}
-            className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-              statusFilter === key
-                ? "bg-white dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 shadow-sm"
-                : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300"
-            }`}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
+      <FilterTabs
+        tabs={tabs}
+        active={statusFilter}
+        onChange={(key) => {
+          setStatusFilter(key);
+          setPage(1);
+        }}
+      />
 
       {loading ? (
         <SkeletonRow count={5} height="h-20" />
@@ -184,6 +186,7 @@ export default function AdminCommentsPage() {
                         onClick={() => updateStatus(comment.id, "APPROVED")}
                         disabled={actionId === comment.id}
                         className="p-2 rounded-lg text-zinc-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 disabled:opacity-50 transition-colors"
+                        aria-label="通过评论"
                         title="通过"
                       >
                         <Check className="w-4 h-4" />
@@ -194,6 +197,7 @@ export default function AdminCommentsPage() {
                         onClick={() => updateStatus(comment.id, "REJECTED")}
                         disabled={actionId === comment.id}
                         className="p-2 rounded-lg text-zinc-400 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 disabled:opacity-50 transition-colors"
+                        aria-label="拒绝评论"
                         title="拒绝"
                       >
                         <X className="w-4 h-4" />
@@ -203,6 +207,7 @@ export default function AdminCommentsPage() {
                       onClick={() => deleteComment(comment.id)}
                       disabled={actionId === comment.id}
                       className="p-2 rounded-lg text-zinc-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50 transition-colors"
+                      aria-label="删除评论"
                       title="删除"
                     >
                       <Trash2 className="w-4 h-4" />

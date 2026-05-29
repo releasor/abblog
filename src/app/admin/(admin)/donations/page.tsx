@@ -3,9 +3,10 @@
 import { useState, useEffect } from "react";
 import { Heart } from "lucide-react";
 import { formatDate } from "@/lib/format-date";
-import { SkeletonRow } from "@/components/skeleton";
+import { DataTable } from "@/components/data-table";
 import { EmptyState } from "@/components/empty-state";
 import { SimplePagination } from "@/components/pagination";
+import { FilterTabs } from "@/components/filter-tabs";
 
 interface Donation {
   id: number;
@@ -66,96 +67,89 @@ export default function AdminDonationsPage() {
         赞赏管理
       </h1>
 
-      <div className="flex gap-1 p-1 bg-zinc-100 dark:bg-zinc-800/50 rounded-lg w-fit">
-        {([
+      <FilterTabs
+        tabs={[
           { key: "all", label: "全部" },
           { key: "sent", label: "发出" },
           { key: "received", label: "收到" },
-        ] as const).map(({ key, label }) => (
-          <button
-            key={key}
-            onClick={() => {
-              setTab(key);
-              setPage(1);
-            }}
-            className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-              tab === key
-                ? "bg-white dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 shadow-sm"
-                : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300"
-            }`}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
+        ]}
+        active={tab}
+        onChange={(key) => {
+          setTab(key as "all" | "sent" | "received");
+          setPage(1);
+        }}
+      />
 
-      {loading ? (
-        <SkeletonRow count={5} height="h-16" />
-      ) : donations.length === 0 ? (
-        <EmptyState icon={<Heart className="w-8 h-8" />} message="暂无赞赏记录" />
-      ) : (
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-x-auto">
-          <table className="w-full min-w-[600px]">
-            <thead>
-              <tr className="border-b border-zinc-200 dark:border-zinc-800">
-                <th className="px-5 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-                  发送者
-                </th>
-                <th className="px-5 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-                  接收者
-                </th>
-                <th className="px-5 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-                  金额
-                </th>
-                <th className="px-5 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-                  文章
-                </th>
-                <th className="px-5 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-                  状态
-                </th>
-                <th className="px-5 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-                  时间
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
-              {donations.map((d) => {
-                const config = statusConfig[d.status] || statusConfig.PENDING;
-                return (
-                  <tr
-                    key={d.id}
-                    className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors"
-                  >
-                    <td className="px-5 py-3.5 text-sm text-zinc-900 dark:text-zinc-100">
-                      {d.sender.name}
-                    </td>
-                    <td className="px-5 py-3.5 text-sm text-zinc-900 dark:text-zinc-100">
-                      {d.recipient.name}
-                    </td>
-                    <td className="px-5 py-3.5 text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                      ¥{(d.amount / 100).toFixed(0)}
-                    </td>
-                    <td className="px-5 py-3.5 text-sm text-zinc-500 dark:text-zinc-400 truncate max-w-xs">
-                      {d.post ? d.post.title : "—"}
-                    </td>
-                    <td className="px-5 py-3.5">
-                      <span
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${config.bg} ${config.text}`}
-                      >
-                        <span className={`w-1.5 h-1.5 rounded-full ${config.dot}`} />
-                        {config.label}
-                      </span>
-                    </td>
-                    <td className="px-5 py-3.5 text-sm text-zinc-500 dark:text-zinc-400">
-                      {formatDate(d.createdAt)}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      )}
+      <DataTable
+        columns={[
+          {
+            key: "sender",
+            label: "发送者",
+            render: (d) => (
+              <span className="text-sm text-zinc-900 dark:text-zinc-100">
+                {d.sender.name}
+              </span>
+            ),
+          },
+          {
+            key: "recipient",
+            label: "接收者",
+            render: (d) => (
+              <span className="text-sm text-zinc-900 dark:text-zinc-100">
+                {d.recipient.name}
+              </span>
+            ),
+          },
+          {
+            key: "amount",
+            label: "金额",
+            render: (d) => (
+              <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                ¥{(d.amount / 100).toFixed(0)}
+              </span>
+            ),
+          },
+          {
+            key: "post",
+            label: "文章",
+            render: (d) => (
+              <span className="text-sm text-zinc-500 dark:text-zinc-400 truncate max-w-xs block">
+                {d.post ? d.post.title : "—"}
+              </span>
+            ),
+          },
+          {
+            key: "status",
+            label: "状态",
+            render: (d) => {
+              const config = statusConfig[d.status] || statusConfig.PENDING;
+              return (
+                <span
+                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${config.bg} ${config.text}`}
+                >
+                  <span className={`w-1.5 h-1.5 rounded-full ${config.dot}`} />
+                  {config.label}
+                </span>
+              );
+            },
+          },
+          {
+            key: "createdAt",
+            label: "时间",
+            render: (d) => (
+              <span className="text-sm text-zinc-500 dark:text-zinc-400">
+                {formatDate(d.createdAt)}
+              </span>
+            ),
+          },
+        ]}
+        data={donations}
+        loading={loading}
+        loadingRows={5}
+        emptyIcon={<Heart className="w-8 h-8" />}
+        emptyMessage="暂无赞赏记录"
+        keyExtractor={(d) => d.id}
+      />
 
       <SimplePagination
         page={page}

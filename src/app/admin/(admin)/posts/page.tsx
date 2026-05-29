@@ -4,10 +4,12 @@ import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { Plus, Pencil, Trash2, FileText } from "lucide-react";
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import { showToast } from "@/components/toast";
 import { formatDateShort } from "@/lib/format-date";
-import { SkeletonRow } from "@/components/skeleton";
+import { DataTable } from "@/components/data-table";
 import { EmptyState } from "@/components/empty-state";
 import { SimplePagination } from "@/components/pagination";
+import { FilterTabs } from "@/components/filter-tabs";
 
 interface Post {
   id: number;
@@ -71,9 +73,14 @@ export default function AdminPostsPage() {
     try {
       setDeleteId(id);
       const res = await fetch(`/api/posts/${id}`, { method: "DELETE" });
-      if (res.ok) fetchPosts();
+      if (res.ok) {
+        fetchPosts();
+      } else {
+        showToast("删除失败", "error");
+      }
     } catch (e) {
       console.error("[AdminPosts] Failed to delete post:", e);
+      showToast("删除失败", "error");
     } finally {
       setDeleteId(null);
       setConfirmDelete(null);
@@ -97,28 +104,18 @@ export default function AdminPostsPage() {
 
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-3">
-        <div className="flex gap-1 p-1 bg-zinc-100 dark:bg-zinc-800/50 rounded-lg">
-          {[
+        <FilterTabs
+          tabs={[
             { key: "all", label: "全部" },
             { key: "PUBLISHED", label: "已发布" },
             { key: "DRAFT", label: "草稿" },
-          ].map(({ key, label }) => (
-            <button
-              key={key}
-              onClick={() => {
-                setStatusFilter(key);
-                setPage(1);
-              }}
-              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                statusFilter === key
-                  ? "bg-white dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 shadow-sm"
-                  : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300"
-              }`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
+          ]}
+          active={statusFilter}
+          onChange={(key) => {
+            setStatusFilter(key);
+            setPage(1);
+          }}
+        />
 
         <select
           value={`${sortBy}-${sortOrder}`}
@@ -139,113 +136,112 @@ export default function AdminPostsPage() {
       </div>
 
       {/* Table */}
-      {loading ? (
-        <SkeletonRow count={5} height="h-16" />
-      ) : posts.length === 0 ? (
-        <EmptyState
-          icon={<FileText className="w-8 h-8" />}
-          message="还没有文章"
-          action={
-            <Link
-              href="/admin/posts/new"
-              className="text-sm text-zinc-900 dark:text-zinc-100 underline underline-offset-4 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors"
-            >
-              创建第一篇
-            </Link>
-          }
-        />
-      ) : (
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-x-auto">
-          <table className="w-full min-w-[700px]">
-            <thead>
-              <tr className="border-b border-zinc-200 dark:border-zinc-800">
-                <th className="px-5 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-                  标题
-                </th>
-                <th className="px-5 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-                  状态
-                </th>
-                <th className="px-5 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-                  分类
-                </th>
-                <th className="px-5 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-                  日期
-                </th>
-                <th className="px-5 py-3 text-right text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-                  操作
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
-              {posts.map((post) => (
-                <tr
-                  key={post.id}
-                  className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors"
+      <DataTable
+        columns={[
+          {
+            key: "title",
+            label: "标题",
+            render: (post) => (
+              <div className="flex items-center gap-3">
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100 truncate max-w-md">
+                    {post.title}
+                  </p>
+                  <p className="text-xs text-zinc-400 mt-0.5">
+                    /posts/{post.slug}
+                  </p>
+                </div>
+                {post.pendingComments > 0 && (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400">
+                    {post.pendingComments} 待审
+                  </span>
+                )}
+              </div>
+            ),
+          },
+          {
+            key: "status",
+            label: "状态",
+            render: (post) => (
+              <span
+                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
+                  post.status === "PUBLISHED"
+                    ? "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400"
+                    : "bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400"
+                }`}
+              >
+                <span
+                  className={`w-1.5 h-1.5 rounded-full ${
+                    post.status === "PUBLISHED"
+                      ? "bg-emerald-500"
+                      : "bg-zinc-400"
+                  }`}
+                />
+                {post.status === "PUBLISHED" ? "已发布" : "草稿"}
+              </span>
+            ),
+          },
+          {
+            key: "category",
+            label: "分类",
+            render: (post) => (
+              <span className="text-sm text-zinc-500 dark:text-zinc-400">
+                {post.category?.name || "—"}
+              </span>
+            ),
+          },
+          {
+            key: "date",
+            label: "日期",
+            render: (post) => (
+              <span className="text-sm text-zinc-500 dark:text-zinc-400">
+                {formatDateShort(post.publishedAt || post.createdAt) || "—"}
+              </span>
+            ),
+          },
+          {
+            key: "actions",
+            label: "操作",
+            className: "text-right",
+            render: (post) => (
+              <div className="flex items-center justify-end gap-1">
+                <Link
+                  href={`/admin/posts/${post.id}/edit`}
+                  className="p-2 rounded-lg text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                  aria-label={`编辑 ${post.title}`}
                 >
-                  <td className="px-5 py-3.5">
-                    <div className="flex items-center gap-3">
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100 truncate max-w-md">
-                          {post.title}
-                        </p>
-                        <p className="text-xs text-zinc-400 mt-0.5">
-                          /posts/{post.slug}
-                        </p>
-                      </div>
-                      {post.pendingComments > 0 && (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400">
-                          {post.pendingComments} 待审
-                        </span>
-                      )}
-                    </div>
-                  </td>
-                  <td className="px-5 py-3.5">
-                    <span
-                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
-                        post.status === "PUBLISHED"
-                          ? "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400"
-                          : "bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400"
-                      }`}
-                    >
-                      <span
-                        className={`w-1.5 h-1.5 rounded-full ${
-                          post.status === "PUBLISHED"
-                            ? "bg-emerald-500"
-                            : "bg-zinc-400"
-                        }`}
-                      />
-                      {post.status === "PUBLISHED" ? "已发布" : "草稿"}
-                    </span>
-                  </td>
-                  <td className="px-5 py-3.5 text-sm text-zinc-500 dark:text-zinc-400">
-                    {post.category?.name || "—"}
-                  </td>
-                  <td className="px-5 py-3.5 text-sm text-zinc-500 dark:text-zinc-400">
-                    {formatDateShort(post.publishedAt || post.createdAt) || "—"}
-                  </td>
-                  <td className="px-5 py-3.5">
-                    <div className="flex items-center justify-end gap-1">
-                      <Link
-                        href={`/admin/posts/${post.id}/edit`}
-                        className="p-2 rounded-lg text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-                      >
-                        <Pencil className="w-4 h-4" />
-                      </Link>
-                      <button
-                        onClick={() => setConfirmDelete(post.id)}
-                        disabled={deleteId === post.id}
-                        className="p-2 rounded-lg text-zinc-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50 transition-colors"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+                  <Pencil className="w-4 h-4" />
+                </Link>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setConfirmDelete(post.id);
+                  }}
+                  disabled={deleteId === post.id}
+                  className="p-2 rounded-lg text-zinc-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50 transition-colors"
+                  aria-label={`删除 ${post.title}`}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            ),
+          },
+        ]}
+        data={posts}
+        loading={loading}
+        loadingRows={5}
+        emptyIcon={<FileText className="w-8 h-8" />}
+        emptyMessage="还没有文章"
+        emptyAction={
+          <Link
+            href="/admin/posts/new"
+            className="text-sm text-zinc-900 dark:text-zinc-100 underline underline-offset-4 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors"
+          >
+            创建第一篇
+          </Link>
+        }
+        keyExtractor={(post) => post.id}
+      />
 
       {/* Pagination */}
       {pagination && (
