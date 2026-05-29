@@ -160,6 +160,7 @@ export default function BookmarksPage() {
                     value={newName}
                     onChange={(e) => setNewName(e.target.value)}
                     placeholder="收藏夹名称"
+                    aria-label="收藏夹名称"
                     className="w-full px-2 py-1 text-sm border border-zinc-300 dark:border-zinc-700 rounded bg-white dark:bg-zinc-800"
                   />
                   <input
@@ -167,6 +168,7 @@ export default function BookmarksPage() {
                     value={newDesc}
                     onChange={(e) => setNewDesc(e.target.value)}
                     placeholder="描述（可选）"
+                    aria-label="收藏夹描述"
                     className="w-full px-2 py-1 text-sm border border-zinc-300 dark:border-zinc-700 rounded bg-white dark:bg-zinc-800"
                   />
                   <button

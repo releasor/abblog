@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 
 const PATTERN_COUNT = 144;
 
@@ -8,13 +8,13 @@ export function HeroSection() {
   const [flipped, setFlipped] = useState(false);
   const frontRef = useRef<HTMLDivElement>(null);
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     const el = frontRef.current;
     if (!el) return;
     const rect = el.getBoundingClientRect();
     el.style.setProperty("--hero-x", `${e.clientX - rect.left}px`);
     el.style.setProperty("--hero-y", `${e.clientY - rect.top}px`);
-  };
+  }, []);
 
   return (
     <section

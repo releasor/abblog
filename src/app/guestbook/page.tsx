@@ -83,6 +83,7 @@ export default function GuestbookPage() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="你的名字（选填）"
+            aria-label="你的名字"
             className="w-full mb-3 px-4 py-2 text-sm border border-zinc-300 dark:border-zinc-700 rounded-lg bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500"
           />
         )}
@@ -92,6 +93,7 @@ export default function GuestbookPage() {
           placeholder={session ? `以 ${session.user?.name} 的身份留言...` : "写下你想说的话..."}
           rows={3}
           maxLength={500}
+          aria-label="留言内容"
           className="w-full px-4 py-2 text-sm border border-zinc-300 dark:border-zinc-700 rounded-lg bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500 resize-none"
         />
         <div className="flex items-center justify-between mt-3">
