@@ -5,10 +5,10 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Plus, Edit3, Trash2, BookOpen, GripVertical, X, Save } from "lucide-react";
-import { showToast } from "@/components/toast";
 import { EmptyState } from "@/components/empty-state";
 import { Skeleton } from "@/components/skeleton";
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import { fetchApi } from "@/lib/fetch-api";
 
 interface Series {
   id: number;
@@ -38,45 +38,31 @@ export default function SeriesManagePage() {
     }
     if (status !== "authenticated") return;
 
-    fetch("/api/series?mine=true&limit=50")
-      .then((r) => {
-        if (!r.ok) throw new Error("Failed to fetch");
-        return r.json();
-      })
-      .then((data) => setSeries(data.series || []))
-      .catch((e) => console.error("[SeriesManage] Failed to fetch series:", e))
-      .finally(() => setLoading(false));
+    fetchApi<{ series: Series[] }>("/api/series?mine=true&limit=50", { showErrorToast: false })
+      .then((result) => {
+        setLoading(false);
+        if (result.ok) setSeries(result.data.series || []);
+      });
   }, [status]);
 
   const handleCreate = async () => {
-    if (!form.name.trim()) {
-      showToast("请输入系列名称", "error");
-      return;
-    }
+    if (!form.name.trim()) return;
     if (submitting) return;
     setSubmitting(true);
 
-    try {
-      const res = await fetch("/api/series", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
+    const result = await fetchApi<Series>("/api/series", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(form),
+      successMessage: "系列创建成功",
+      errorMessage: "创建失败",
+    });
+    setSubmitting(false);
 
-      if (res.ok) {
-        const newSeries = await res.json();
-        setSeries((prev) => [{ ...newSeries, _count: { posts: 0 }, posts: [] }, ...prev]);
-        setForm({ name: "", description: "", coverImage: "" });
-        setShowCreate(false);
-        showToast("系列创建成功", "success");
-      } else {
-        const data = await res.json();
-        showToast(data.error || "创建失败", "error");
-      }
-    } catch {
-      showToast("创建失败，请检查网络", "error");
-    } finally {
-      setSubmitting(false);
+    if (result.ok) {
+      setSeries((prev) => [{ ...result.data, _count: { posts: 0 }, posts: [] }, ...prev]);
+      setForm({ name: "", description: "", coverImage: "" });
+      setShowCreate(false);
     }
   };
 
@@ -84,29 +70,19 @@ export default function SeriesManagePage() {
     if (submitting) return;
     setSubmitting(true);
 
-    try {
-      const res = await fetch(`/api/series/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
+    const result = await fetchApi<Partial<Series>>(`/api/series/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(form),
+      successMessage: "系列更新成功",
+      errorMessage: "更新失败",
+    });
+    setSubmitting(false);
 
-      if (res.ok) {
-        const updated = await res.json();
-        setSeries((prev) =>
-          prev.map((s) => (s.id === id ? { ...s, ...updated } : s))
-        );
-        setEditingId(null);
-        setForm({ name: "", description: "", coverImage: "" });
-        showToast("系列更新成功", "success");
-      } else {
-        const data = await res.json();
-        showToast(data.error || "更新失败", "error");
-      }
-    } catch {
-      showToast("更新失败，请检查网络", "error");
-    } finally {
-      setSubmitting(false);
+    if (result.ok) {
+      setSeries((prev) => prev.map((s) => (s.id === id ? { ...s, ...result.data } : s)));
+      setEditingId(null);
+      setForm({ name: "", description: "", coverImage: "" });
     }
   };
 
@@ -114,20 +90,14 @@ export default function SeriesManagePage() {
     if (submitting) return;
     setSubmitting(true);
 
-    try {
-      const res = await fetch(`/api/series/${id}`, { method: "DELETE" });
-      if (res.ok) {
-        setSeries((prev) => prev.filter((s) => s.id !== id));
-        showToast("系列已删除", "success");
-      } else {
-        showToast("删除失败", "error");
-      }
-    } catch {
-      showToast("删除失败，请检查网络", "error");
-    } finally {
-      setSubmitting(false);
-      setConfirmDelete(null);
-    }
+    const result = await fetchApi(`/api/series/${id}`, {
+      method: "DELETE",
+      successMessage: "系列已删除",
+      errorMessage: "删除失败",
+    });
+    setSubmitting(false);
+    setConfirmDelete(null);
+    if (result.ok) setSeries((prev) => prev.filter((s) => s.id !== id));
   };
 
   const startEdit = (s: Series) => {
