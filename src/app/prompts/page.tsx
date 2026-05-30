@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { MessageCircle, Zap, Trash2, Copy, Check } from "lucide-react";
 import { showToast } from "@/components/toast";
 import { Skeleton } from "@/components/skeleton";
+import { useCopyToClipboard } from "@/hooks/use-copy";
 
 type Tab = "chat" | "optimizer";
 
@@ -218,12 +219,8 @@ function OptimizerTab() {
     setLoading(false);
   };
 
-  const [copied, setCopied] = useState(false);
-  const copyResult = () => {
-    navigator.clipboard.writeText(optimized);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
+  const { copied, copy } = useCopyToClipboard();
+  const copyResult = () => copy(optimized);
 
   return (
     <div className="space-y-4">

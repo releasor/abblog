@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useCopyWithId } from "@/hooks/use-copy";
 
 export default function TimestampConverter() {
   const [now, setNow] = useState(() => Math.floor(Date.now() / 1000));
@@ -9,7 +10,7 @@ export default function TimestampConverter() {
   const [tsResult, setTsResult] = useState("");
   const [dateResult, setDateResult] = useState("");
   const [unit, setUnit] = useState<"s" | "ms">("s");
-  const [copied, setCopied] = useState<string | null>(null);
+  const { copiedId, copy } = useCopyWithId<string>();
 
   useEffect(() => {
     const timer = setInterval(() => setNow(Math.floor(Date.now() / 1000)), 1000);
@@ -43,11 +44,7 @@ export default function TimestampConverter() {
     );
   };
 
-  const copy = (text: string, label: string) => {
-    navigator.clipboard.writeText(text);
-    setCopied(label);
-    setTimeout(() => setCopied(null), 2000);
-  };
+  const handleCopy = (text: string, label: string) => copy(text, label);
 
   return (
     <div className="space-y-6">
@@ -57,10 +54,10 @@ export default function TimestampConverter() {
           <div className="font-mono text-2xl font-bold text-zinc-900 dark:text-zinc-100 mt-1">{now}</div>
         </div>
         <button
-          onClick={() => copy(String(now), "timestamp")}
+          onClick={() => handleCopy(String(now), "timestamp")}
           className="px-3 py-1.5 text-sm bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-lg hover:bg-zinc-300 dark:hover:bg-zinc-700 transition-colors"
         >
-          {copied === "timestamp" ? "已复制!" : "复制"}
+          {copiedId === "timestamp" ? "已复制!" : "复制"}
         </button>
       </div>
 

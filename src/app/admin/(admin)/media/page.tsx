@@ -5,6 +5,7 @@ import Image from "next/image";
 import { ImageIcon, Copy, Check, Trash2 } from "lucide-react";
 import { EmptyState } from "@/components/empty-state";
 import { showToast } from "@/components/toast";
+import { useCopyWithId } from "@/hooks/use-copy";
 
 interface MediaFile {
   filename: string;
@@ -16,7 +17,7 @@ interface MediaFile {
 export default function MediaPage() {
   const [images, setImages] = useState<MediaFile[]>([]);
   const [loading, setLoading] = useState(true);
-  const [copied, setCopied] = useState<string | null>(null);
+  const { copiedId, copy } = useCopyWithId<string>();
   const [deleteFile, setDeleteFile] = useState<string | null>(null);
 
   useEffect(() => {
@@ -36,20 +37,7 @@ export default function MediaPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  const copyUrl = async (url: string) => {
-    try {
-      await navigator.clipboard.writeText(url);
-    } catch {
-      const textArea = document.createElement("textarea");
-      textArea.value = url;
-      document.body.appendChild(textArea);
-      textArea.select();
-      document.execCommand("copy");
-      document.body.removeChild(textArea);
-    }
-    setCopied(url);
-    setTimeout(() => setCopied(null), 2000);
-  };
+  const copyUrl = (url: string) => copy(url, url);
 
   const handleDelete = async (filename: string) => {
     if (!confirm("确定要删除此文件吗？")) return;
@@ -128,7 +116,7 @@ export default function MediaPage() {
                     aria-label="复制图片链接"
                     title="复制链接"
                   >
-                    {copied === img.url ? (
+                    {copiedId === img.url ? (
                       <Check className="w-4 h-4 text-emerald-500" />
                     ) : (
                       <Copy className="w-4 h-4" />

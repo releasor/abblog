@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { useCopyWithId } from "@/hooks/use-copy";
 
 export default function ColorConverter() {
   const [hex, setHex] = useState("#3b82f6");
   const [rgb, setRgb] = useState({ r: 59, g: 130, b: 246 });
   const [hsl, setHsl] = useState({ h: 217, s: 91, l: 60 });
-  const [copied, setCopied] = useState<string | null>(null);
+  const { copiedId, copy } = useCopyWithId<string>();
 
   const hexToRgb = (h: string) => {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(h);
@@ -47,11 +48,7 @@ export default function ColorConverter() {
     setHsl(rgbToHsl(clamped.r, clamped.g, clamped.b));
   };
 
-  const copy = (text: string, label: string) => {
-    navigator.clipboard.writeText(text);
-    setCopied(label);
-    setTimeout(() => setCopied(null), 2000);
-  };
+  const handleCopy = (text: string, label: string) => copy(text, label);
 
   return (
     <div className="space-y-6">
@@ -61,14 +58,14 @@ export default function ColorConverter() {
           style={{ backgroundColor: hex }}
         />
         <div className="space-y-3">
-          <button onClick={() => copy(hex, "HEX")} className="block font-mono text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 cursor-pointer">
-            {copied === "HEX" ? "已复制!" : `HEX: ${hex}`}
+          <button onClick={() => handleCopy(hex, "HEX")} className="block font-mono text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 cursor-pointer">
+            {copiedId === "HEX" ? "已复制!" : `HEX: ${hex}`}
           </button>
-          <button onClick={() => copy(`rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`, "RGB")} className="block font-mono text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 cursor-pointer">
-            {copied === "RGB" ? "已复制!" : `RGB: rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`}
+          <button onClick={() => handleCopy(`rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`, "RGB")} className="block font-mono text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 cursor-pointer">
+            {copiedId === "RGB" ? "已复制!" : `RGB: rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`}
           </button>
-          <button onClick={() => copy(`hsl(${hsl.h}, ${hsl.s}%, ${hsl.l}%)`, "HSL")} className="block font-mono text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 cursor-pointer">
-            {copied === "HSL" ? "已复制!" : `HSL: hsl(${hsl.h}, ${hsl.s}%, ${hsl.l}%)`}
+          <button onClick={() => handleCopy(`hsl(${hsl.h}, ${hsl.s}%, ${hsl.l}%)`, "HSL")} className="block font-mono text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 cursor-pointer">
+            {copiedId === "HSL" ? "已复制!" : `HSL: hsl(${hsl.h}, ${hsl.s}%, ${hsl.l}%)`}
           </button>
         </div>
       </div>

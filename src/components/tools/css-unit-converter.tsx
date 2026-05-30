@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { useCopyWithId } from "@/hooks/use-copy";
 
 export default function CssUnitConverter() {
   const [px, setPx] = useState("16");
   const [baseSize, setBaseSize] = useState("16");
   const [viewportWidth, setViewportWidth] = useState("1920");
-  const [copied, setCopied] = useState<string | null>(null);
+  const { copiedId, copy } = useCopyWithId<string>();
 
   const pxVal = parseFloat(px) || 0;
   const base = parseFloat(baseSize) || 16;
@@ -29,11 +30,7 @@ export default function CssUnitConverter() {
     { unit: "pt", value: pt, label: "磅" },
   ];
 
-  const copy = (text: string, label: string) => {
-    navigator.clipboard.writeText(text);
-    setCopied(label);
-    setTimeout(() => setCopied(null), 2000);
-  };
+  const handleCopy = (text: string, label: string) => copy(text, label);
 
   const commonSizes = [12, 14, 16, 18, 20, 24, 32, 48, 64];
 
@@ -73,7 +70,7 @@ export default function CssUnitConverter() {
         {results.map((r) => (
           <button
             key={r.unit}
-            onClick={() => copy(`${parseFloat(r.value.toFixed(4))}${r.unit === "%" ? "%" : r.unit}`, r.unit)}
+            onClick={() => handleCopy(`${parseFloat(r.value.toFixed(4))}${r.unit === "%" ? "%" : r.unit}`, r.unit)}
             className="flex items-center justify-between p-3 rounded-lg bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors text-left"
           >
             <div>
@@ -82,7 +79,7 @@ export default function CssUnitConverter() {
               </span>
               <span className="text-sm text-zinc-500 dark:text-zinc-400 ml-3">{r.label}</span>
             </div>
-            <span className="text-xs text-zinc-400">{copied === r.unit ? "已复制!" : "点击复制"}</span>
+            <span className="text-xs text-zinc-400">{copiedId === r.unit ? "已复制!" : "点击复制"}</span>
           </button>
         ))}
       </div>

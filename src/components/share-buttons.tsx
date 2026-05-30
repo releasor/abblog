@@ -1,7 +1,8 @@
 "use client";
 
-import { memo, useCallback, useState } from "react";
+import { memo, useCallback } from "react";
 import { Check, Link2 } from "lucide-react";
+import { useCopyToClipboard } from "@/hooks/use-copy";
 
 interface ShareButtonsProps {
   title: string;
@@ -29,7 +30,7 @@ const WechatIcon = (
 );
 
 export const ShareButtons = memo(function ShareButtons({ title, url, postId }: ShareButtonsProps) {
-  const [copied, setCopied] = useState(false);
+  const { copied, copy } = useCopyToClipboard();
   const encodedTitle = encodeURIComponent(title);
   const encodedUrl = encodeURIComponent(url);
 
@@ -50,11 +51,9 @@ export const ShareButtons = memo(function ShareButtons({ title, url, postId }: S
   ];
 
   const copyLink = useCallback(() => {
-    navigator.clipboard.writeText(url);
+    copy(url);
     trackShare("copy");
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  }, [url, trackShare]);
+  }, [url, copy, trackShare]);
 
   return (
     <div className="flex items-center gap-3">
