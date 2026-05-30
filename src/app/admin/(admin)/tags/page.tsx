@@ -213,18 +213,18 @@ export default function AdminTagsPage() {
                         setEditName(tag.name);
                         setEditError("");
                       }}
-                      className="p-1 rounded text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+                      className="p-2 rounded text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
                       aria-label={`编辑 ${tag.name}`}
                     >
-                      <Pencil className="w-3 h-3" />
+                      <Pencil className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={() => setDeleteTargetId(tag.id)}
                       disabled={deleteId === tag.id}
-                      className="p-1 rounded text-zinc-400 hover:text-red-500"
+                      className="p-2 rounded text-zinc-400 hover:text-red-500"
                       aria-label={`删除 ${tag.name}`}
                     >
-                      <Trash2 className="w-3 h-3" />
+                      <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   </div>
                 </>

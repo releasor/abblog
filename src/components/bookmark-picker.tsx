@@ -99,10 +99,10 @@ export const BookmarkPicker = memo(function BookmarkPicker({ postId, initialBook
         </button>
         <button
           onClick={() => setShowPicker(!showPicker)}
-          className="p-1 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+          className="p-2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
           aria-label="选择收藏夹"
         >
-          <Plus className="w-3 h-3" />
+          <Plus className="w-3.5 h-3.5" />
         </button>
       </div>
 
