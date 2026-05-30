@@ -7,6 +7,7 @@ import { Bell, Menu, X } from "lucide-react";
 import { DarkModeToggle } from "./dark-mode-toggle";
 import { SearchInput } from "./search-input";
 import { UserAvatar } from "./user-avatar";
+import { fetchApi } from "@/lib/fetch-api";
 
 const CommandPalette = lazy(() => import("./command-palette").then((m) => ({ default: m.CommandPalette })));
 
@@ -15,10 +16,8 @@ function NotificationBell() {
 
   useEffect(() => {
     const fetchCount = () => {
-      fetch("/api/notifications")
-        .then((res) => (res.ok ? res.json() : null))
-        .then((data) => { if (data) setCount(data.unreadCount || 0); })
-        .catch((e) => console.error("[Header] Failed to fetch notifications:", e));
+      fetchApi<{ unreadCount: number }>("/api/notifications", { showErrorToast: false })
+        .then((res) => { if (res.ok) setCount(res.data.unreadCount || 0); });
     };
     fetchCount();
     const interval = setInterval(fetchCount, 60000);
@@ -44,10 +43,8 @@ function UserMenu() {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    fetch("/api/user/profile")
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => { if (data) setProfile({ username: data.username, avatar: data.avatar }); })
-      .catch((e) => console.error("[Header] Failed to fetch user profile:", e));
+    fetchApi<{ username: string | null; avatar: string | null }>("/api/user/profile", { showErrorToast: false })
+      .then((res) => { if (res.ok) setProfile({ username: res.data.username, avatar: res.data.avatar }); });
   }, []);
 
   useEffect(() => {
