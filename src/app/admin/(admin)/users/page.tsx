@@ -4,8 +4,8 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
 import { Search, Users, Star } from "lucide-react";
 import { formatDate } from "@/lib/format-date";
-import { showToast } from "@/components/toast";
 import { DataTable } from "@/components/data-table";
+import { fetchApi } from "@/lib/fetch-api";
 
 import { SimplePagination } from "@/components/pagination";
 
@@ -43,21 +43,15 @@ export default function AdminUsersPage() {
   }, [query]);
 
   const fetchUsers = useCallback(async () => {
-    try {
-      setLoading(true);
-      const res = await fetch(`/api/admin/users?page=${page}&q=${encodeURIComponent(debouncedQuery)}`);
-      if (!res.ok) {
-        showToast("加载用户列表失败", "error");
-        return;
-      }
-      const data = await res.json();
-      setUsers(data.users || []);
-      setTotalPages(data.pagination?.totalPages || 1);
-    } catch (e) {
-      console.error("[AdminUsers] Failed to fetch users:", e);
-      showToast("加载用户列表失败", "error");
-    } finally {
-      setLoading(false);
+    setLoading(true);
+    const result = await fetchApi<{ users: User[]; pagination: { totalPages: number } }>(
+      `/api/admin/users?page=${page}&q=${encodeURIComponent(debouncedQuery)}`,
+      { errorMessage: "加载用户列表失败" }
+    );
+    setLoading(false);
+    if (result.ok) {
+      setUsers(result.data.users || []);
+      setTotalPages(result.data.pagination?.totalPages || 1);
     }
   }, [page, debouncedQuery]);
 
@@ -66,21 +60,13 @@ export default function AdminUsersPage() {
   }, [fetchUsers]);
 
   const handleRoleChange = async (userId: number, role: string) => {
-    try {
-      const res = await fetch("/api/admin/users", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, action: "setRole", value: role }),
-      });
-      if (res.ok) {
-        fetchUsers();
-      } else {
-        showToast("角色修改失败", "error");
-      }
-    } catch (e) {
-      console.error("[AdminUsers] Failed to change user role:", e);
-      showToast("角色修改失败", "error");
-    }
+    const result = await fetchApi("/api/admin/users", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId, action: "setRole", value: role }),
+      errorMessage: "角色修改失败",
+    });
+    if (result.ok) fetchUsers();
   };
 
   const roleLabels: Record<string, string> = { USER: "用户", EDITOR: "编辑", ADMIN: "管理员" };
