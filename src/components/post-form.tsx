@@ -11,7 +11,7 @@ const TiptapEditor = dynamic(() => import("./tiptap-editor"), {
   loading: () => <Skeleton className="h-64 rounded-xl" />,
 });
 import { slugify } from "@/lib/slugify";
-import { formatDateTime } from "@/lib/format-date";
+import { formatDateTime, formatTime } from "@/lib/format-date";
 import { useAutoSave, getDraft, clearDraft } from "@/hooks/use-auto-save";
 import { TemplatePicker } from "./template-picker";
 import { VersionHistory } from "./version-history";
@@ -209,7 +209,7 @@ export default function PostForm({ mode, apiEndpoint, redirectPath, initialData 
           ) : lastSaveTime ? (
             <span className="flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-green-400" />
-              已自动保存 {lastSaveTime.toLocaleTimeString("zh-CN")}
+              已自动保存 {formatTime(lastSaveTime)}
             </span>
           ) : null}
         </div>

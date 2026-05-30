@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useCopyToClipboard } from "@/hooks/use-copy";
+import { getErrorMessage } from "@/lib/api-utils";
 
 export default function YamlConverter() {
   const [input, setInput] = useState("");
@@ -106,7 +107,7 @@ export default function YamlConverter() {
       }
       setError("");
     } catch (e) {
-      setError((e as Error).message);
+      setError(getErrorMessage(e));
       setOutput("");
     }
   };

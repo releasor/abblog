@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { getErrorMessage } from "@/lib/api-utils";
 
 export default function RegexTester() {
   const [pattern, setPattern] = useState("");
@@ -16,7 +17,7 @@ export default function RegexTester() {
       setMatches(found);
       setError("");
     } catch (e) {
-      setError((e as Error).message);
+      setError(getErrorMessage(e));
       setMatches([]);
     }
   };

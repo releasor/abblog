@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useCopyToClipboard } from "@/hooks/use-copy";
+import { getErrorMessage } from "@/lib/api-utils";
 
 export default function JsonFormatter() {
   const [input, setInput] = useState("");
@@ -15,7 +16,7 @@ export default function JsonFormatter() {
       setOutput(JSON.stringify(parsed, null, 2));
       setError("");
     } catch (e) {
-      setError((e as Error).message);
+      setError(getErrorMessage(e));
       setOutput("");
     }
   };
@@ -26,7 +27,7 @@ export default function JsonFormatter() {
       setOutput(JSON.stringify(parsed));
       setError("");
     } catch (e) {
-      setError((e as Error).message);
+      setError(getErrorMessage(e));
       setOutput("");
     }
   };

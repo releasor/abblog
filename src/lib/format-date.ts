@@ -36,6 +36,11 @@ export function formatDateTime(date: Date | string | null): string {
   });
 }
 
+export function formatTime(date: Date | string | null): string {
+  if (!date) return "";
+  return toDate(date).toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" });
+}
+
 export function formatRelativeTime(date: Date | string): string {
   const d = toDate(date);
   const now = new Date();

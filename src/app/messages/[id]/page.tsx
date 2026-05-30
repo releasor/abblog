@@ -6,6 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { UserAvatar } from "@/components/user-avatar";
 import { fetchApi } from "@/lib/fetch-api";
+import { formatTime } from "@/lib/format-date";
 import { Skeleton } from "@/components/skeleton";
 
 interface Message {
@@ -19,9 +20,6 @@ interface Message {
 interface ConversationInfo {
   otherUser: { id: number; name: string; username: string | null; avatar: string | null } | null;
 }
-
-const formatTime = (date: string) =>
-  new Date(date).toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" });
 
 export default function ChatPage() {
   const { data: session, status } = useSession();
