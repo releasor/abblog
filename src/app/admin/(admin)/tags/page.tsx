@@ -29,6 +29,7 @@ export default function AdminTagsPage() {
     try {
       setLoading(true);
       const res = await fetch("/api/tags");
+      if (!res.ok) return;
       const data = await res.json();
       setTags(data);
     } catch (e) {

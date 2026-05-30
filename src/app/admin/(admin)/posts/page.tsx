@@ -55,6 +55,7 @@ export default function AdminPostsPage() {
 
     try {
       const res = await fetch(`/api/posts?${params}`);
+      if (!res.ok) return;
       const data = await res.json();
       setPosts(data.posts);
       setPagination(data.pagination);

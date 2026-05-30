@@ -47,6 +47,7 @@ export default function AdminCommentsPage() {
       }
 
       const res = await fetch(`/api/admin/comments?${params}`);
+      if (!res.ok) return;
       const data = await res.json();
       setComments(data.comments);
       setPagination(data.pagination);
