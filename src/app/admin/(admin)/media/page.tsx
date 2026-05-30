@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { ImageIcon, Copy, Check, Trash2 } from "lucide-react";
 import { EmptyState } from "@/components/empty-state";
+import { Skeleton } from "@/components/skeleton";
 import { useCopyWithId } from "@/hooks/use-copy";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { fetchApi } from "@/lib/fetch-api";
@@ -55,11 +56,8 @@ export default function MediaPage() {
           媒体库
         </h1>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-          {[...Array(8)].map((_, i) => (
-            <div
-              key={i}
-              className="aspect-square bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl animate-pulse"
-            />
+          {Array.from({ length: 8 }).map((_, i) => (
+            <Skeleton key={i} className="aspect-square rounded-xl" />
           ))}
         </div>
       </div>
