@@ -6,10 +6,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { formatDateTime } from "@/lib/format-date";
 import { EmptyState } from "@/components/empty-state";
-import { showToast } from "@/components/toast";
 import { Skeleton } from "@/components/skeleton";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
+import { fetchApi } from "@/lib/fetch-api";
 
 interface Notification {
   id: number;
@@ -44,36 +44,24 @@ export default function NotificationsPage() {
   }, [status]);
 
   const fetchNotifications = async () => {
-    try {
-      const res = await fetch("/api/notifications");
-      if (res.ok) {
-        const data = await res.json();
-        setNotifications(data.notifications);
-        setUnreadCount(data.unreadCount);
-      }
-    } catch (e) {
-      console.error("[Notifications] Failed to fetch notifications:", e);
-    } finally {
-      setLoading(false);
+    const result = await fetchApi<{ notifications: Notification[]; unreadCount: number }>("/api/notifications", {
+      showErrorToast: false,
+    });
+    setLoading(false);
+    if (result.ok) {
+      setNotifications(result.data.notifications);
+      setUnreadCount(result.data.unreadCount);
     }
   };
 
   const markAsRead = async (id?: number) => {
-    try {
-      const res = await fetch("/api/notifications", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(id ? { id } : {}),
-      });
-      if (res.ok) {
-        fetchNotifications();
-      } else {
-        showToast("标记已读失败", "error");
-      }
-    } catch (e) {
-      console.error("[Notifications] Failed to mark as read:", e);
-      showToast("标记已读失败，请检查网络连接", "error");
-    }
+    const result = await fetchApi("/api/notifications", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(id ? { id } : {}),
+      errorMessage: "标记已读失败",
+    });
+    if (result.ok) fetchNotifications();
   };
 
   if (loading) {

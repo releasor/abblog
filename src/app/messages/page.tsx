@@ -7,8 +7,8 @@ import Link from "next/link";
 import { UserAvatar } from "@/components/user-avatar";
 import { formatMonthDay } from "@/lib/format-date";
 import { EmptyState } from "@/components/empty-state";
-import { showToast } from "@/components/toast";
 import { Skeleton } from "@/components/skeleton";
+import { fetchApi } from "@/lib/fetch-api";
 
 interface Conversation {
   id: number;
@@ -36,46 +36,23 @@ function MessagesContent() {
     if (status === "unauthenticated") router.push("/login");
     if (status !== "authenticated") return;
 
-    // If target user specified, create/find conversation and redirect
     if (targetUserId) {
-      fetch("/api/conversations", {
+      fetchApi<{ id: number }>("/api/conversations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ targetUserId }),
-      })
-        .then((res) => {
-          if (res.ok) return res.json();
-          showToast("创建会话失败", "error");
-          return null;
-        })
-        .then((data) => {
-          if (data?.id) {
-            router.push(`/messages/${data.id}`);
-          }
-        })
-        .catch((e) => {
-          console.error("[Messages] Failed to create conversation:", e);
-          showToast("创建会话失败", "error");
-        });
+        errorMessage: "创建会话失败",
+      }).then((result) => {
+        if (result.ok && result.data.id) router.push(`/messages/${result.data.id}`);
+      });
       return;
     }
 
-    fetch("/api/conversations")
-      .then((res) => {
-        if (res.ok) return res.json();
-        showToast("加载会话列表失败", "error");
-        return [];
-      })
-      .then((data) => {
-        if (Array.isArray(data)) {
-          setConversations(data);
-        }
-      })
-      .catch((e) => {
-        console.error("[Messages] Failed to fetch conversations:", e);
-        showToast("加载会话列表失败", "error");
-      })
-      .finally(() => setLoading(false));
+    fetchApi<Conversation[]>("/api/conversations", { errorMessage: "加载会话列表失败" })
+      .then((result) => {
+        setLoading(false);
+        if (result.ok && Array.isArray(result.data)) setConversations(result.data);
+      });
   }, [status, targetUserId]);
 
   if (status !== "authenticated" || loading) {
