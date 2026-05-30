@@ -9,7 +9,7 @@ import { EmptyState } from "@/components/empty-state";
 import { showToast } from "@/components/toast";
 import { Skeleton } from "@/components/skeleton";
 import { PageHeader } from "@/components/page-header";
-import { Button } from "@/components/button";
+import { Button } from "@/components/ui/button";
 
 interface Notification {
   id: number;
@@ -19,6 +19,12 @@ interface Notification {
   isRead: boolean;
   createdAt: string;
 }
+
+const TYPE_ICONS: Record<string, string> = {
+  COMMENT_REPLY: "💬",
+  LIKE: "❤️",
+};
+const getTypeIcon = (type: string) => TYPE_ICONS[type] || "📢";
 
 export default function NotificationsPage() {
   const { status } = useSession();
@@ -67,14 +73,6 @@ export default function NotificationsPage() {
     } catch (e) {
       console.error("[Notifications] Failed to mark as read:", e);
       showToast("标记已读失败，请检查网络连接", "error");
-    }
-  };
-
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case "COMMENT_REPLY": return "💬";
-      case "LIKE": return "❤️";
-      default: return "📢";
     }
   };
 
