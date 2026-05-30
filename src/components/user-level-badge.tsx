@@ -2,6 +2,7 @@
 
 import { useState, useEffect, memo } from "react";
 import { Star, TrendingUp } from "lucide-react";
+import { fetchApi } from "@/lib/fetch-api";
 
 interface LevelInfo {
   points: number;
@@ -28,10 +29,9 @@ const LEVEL_COLORS: Record<number, string> = {
 function useLevelInfo() {
   const [info, setInfo] = useState<LevelInfo | null>(null);
   useEffect(() => {
-    fetch("/api/user/points")
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data) => { if (data) setInfo(data); })
-      .catch((e) => console.error("[UserLevel] Failed to fetch level info:", e));
+    fetchApi<LevelInfo>("/api/user/points").then((res) => {
+      if (res.ok) setInfo(res.data);
+    });
   }, []);
   return info;
 }
