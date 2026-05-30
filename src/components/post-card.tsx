@@ -1,6 +1,7 @@
 import { memo } from "react";
 import Link from "next/link";
 import { formatDate } from "@/lib/format-date";
+import { Badge } from "@/components/badge";
 
 interface PostCardProps {
   title: string;
@@ -19,11 +20,7 @@ export const PostCard = memo(function PostCard({ title, slug, excerpt, category,
       className="group block rounded-lg border border-zinc-200 dark:border-zinc-800 p-6 hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-sm transition-all"
     >
       <div className="flex items-center gap-2 mb-3">
-        {category && (
-          <span className="px-2.5 py-0.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-full text-xs font-medium">
-            {category.name}
-          </span>
-        )}
+        {category && <Badge>{category.name}</Badge>}
       </div>
 
       <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 group-hover:text-zinc-700 dark:group-hover:text-zinc-300 transition-colors mb-2">

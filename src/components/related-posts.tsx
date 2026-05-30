@@ -3,6 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { formatDateShort } from "@/lib/format-date";
 import { truncate } from "@/lib/text";
+import { Badge } from "@/components/badge";
 
 interface RelatedPostData {
   id: number;
@@ -49,11 +50,7 @@ export const RelatedPosts = memo(function RelatedPosts({ posts }: RelatedPostsPr
 
             <div className="p-4">
               <div className="flex items-center gap-2 mb-2">
-                {post.category && (
-                  <span className="px-2 py-0.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-full text-xs font-medium">
-                    {post.category.name}
-                  </span>
-                )}
+                {post.category && <Badge>{post.category.name}</Badge>}
               </div>
 
               <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-100 group-hover:text-zinc-700 dark:group-hover:text-zinc-300 transition-colors mb-1.5 line-clamp-2">
