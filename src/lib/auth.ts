@@ -3,14 +3,6 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcrypt";
 import { prisma } from "./prisma";
 
-export interface SessionUser {
-  id: string;
-  name: string;
-  email: string;
-  role: "admin" | "user";
-  username?: string;
-}
-
 export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
@@ -90,18 +82,5 @@ export const authOptions: NextAuthOptions = {
   },
   secret: process.env.NEXTAUTH_SECRET,
 };
-
-export function getSessionUser(session: { user?: unknown } | null): SessionUser | null {
-  if (!session?.user) return null;
-  const user = session.user as { id?: string; name?: string | null; email?: string | null; role?: string; username?: string };
-  if (!user.id || !user.role) return null;
-  return {
-    id: String(user.id),
-    name: String(user.name || ""),
-    email: String(user.email || ""),
-    role: user.role as "admin" | "user",
-    username: user.username,
-  };
-}
 
 export { getAuthUserId, getAuthUserRole, getAuthUsername, isAdmin } from "./auth-helpers";

@@ -56,13 +56,13 @@ export default function ColorConverter() {
           style={{ backgroundColor: hex }}
         />
         <div className="space-y-3">
-          <button onClick={() => copy(hex, "HEX")} className="block font-mono text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 cursor-pointer">
+          <button onClick={() => copy(hex, "HEX")} className="block font-mono text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100">
             {copiedId === "HEX" ? "已复制!" : `HEX: ${hex}`}
           </button>
-          <button onClick={() => copy(`rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`, "RGB")} className="block font-mono text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 cursor-pointer">
+          <button onClick={() => copy(`rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`, "RGB")} className="block font-mono text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100">
             {copiedId === "RGB" ? "已复制!" : `RGB: rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`}
           </button>
-          <button onClick={() => copy(`hsl(${hsl.h}, ${hsl.s}%, ${hsl.l}%)`, "HSL")} className="block font-mono text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 cursor-pointer">
+          <button onClick={() => copy(`hsl(${hsl.h}, ${hsl.s}%, ${hsl.l}%)`, "HSL")} className="block font-mono text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100">
             {copiedId === "HSL" ? "已复制!" : `HSL: hsl(${hsl.h}, ${hsl.s}%, ${hsl.l}%)`}
           </button>
         </div>

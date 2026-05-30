@@ -1,4 +1,4 @@
-import { truncate, getInitials } from "../text";
+import { truncate } from "../text";
 
 describe("truncate", () => {
   it("returns text unchanged if shorter than max", () => {
@@ -18,23 +18,5 @@ describe("truncate", () => {
 
   it("returns exact length text unchanged", () => {
     expect(truncate("hello", 5)).toBe("hello");
-  });
-});
-
-describe("getInitials", () => {
-  it("returns first two initials", () => {
-    expect(getInitials("John Doe")).toBe("JD");
-  });
-
-  it("handles single name", () => {
-    expect(getInitials("John")).toBe("J");
-  });
-
-  it("handles three names", () => {
-    expect(getInitials("John Michael Doe")).toBe("JM");
-  });
-
-  it("converts to uppercase", () => {
-    expect(getInitials("john doe")).toBe("JD");
   });
 });

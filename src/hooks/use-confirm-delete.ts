@@ -1,7 +1,12 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 
 export function useConfirmDelete(onDelete: (id: number) => void | Promise<void>) {
   const [targetId, setTargetId] = useState<number | null>(null);
+  const onDeleteRef = useRef(onDelete);
+
+  useEffect(() => {
+    onDeleteRef.current = onDelete;
+  }, [onDelete]);
 
   const requestDelete = useCallback((id: number) => {
     setTargetId(id);
@@ -9,10 +14,10 @@ export function useConfirmDelete(onDelete: (id: number) => void | Promise<void>)
 
   const confirm = useCallback(async () => {
     if (targetId) {
-      await onDelete(targetId);
+      await onDeleteRef.current(targetId);
       setTargetId(null);
     }
-  }, [targetId, onDelete]);
+  }, [targetId]);
 
   const cancel = useCallback(() => {
     setTargetId(null);
