@@ -18,6 +18,11 @@ interface Conversation {
   lastReadAt: string | null;
 }
 
+const isUnread = (conv: Conversation) => {
+  if (!conv.lastMessage || !conv.lastReadAt) return !!conv.lastMessage;
+  return new Date(conv.lastMessage.createdAt) > new Date(conv.lastReadAt);
+};
+
 function MessagesContent() {
   const { status } = useSession();
   const router = useRouter();
@@ -72,11 +77,6 @@ function MessagesContent() {
       })
       .finally(() => setLoading(false));
   }, [status, targetUserId]);
-
-  const isUnread = (conv: Conversation) => {
-    if (!conv.lastMessage || !conv.lastReadAt) return !!conv.lastMessage;
-    return new Date(conv.lastMessage.createdAt) > new Date(conv.lastReadAt);
-  };
 
   if (status !== "authenticated" || loading) {
     return (

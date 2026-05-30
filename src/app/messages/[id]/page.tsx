@@ -20,6 +20,9 @@ interface ConversationInfo {
   otherUser: { id: number; name: string; username: string | null; avatar: string | null } | null;
 }
 
+const formatTime = (date: string) =>
+  new Date(date).toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" });
+
 export default function ChatPage() {
   const { data: session, status } = useSession();
   const params = useParams();
@@ -88,10 +91,6 @@ export default function ChatPage() {
     } finally {
       setSending(false);
     }
-  };
-
-  const formatTime = (date: string) => {
-    return new Date(date).toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" });
   };
 
   if (status !== "authenticated" || loading) {
