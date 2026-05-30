@@ -7,6 +7,7 @@ import { Bookmark, Plus, Folder, Trash2 } from "lucide-react";
 import { EmptyState } from "@/components/empty-state";
 import { Skeleton } from "@/components/skeleton";
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import { useConfirmDelete } from "@/hooks/use-confirm-delete";
 import { fetchApi } from "@/lib/fetch-api";
 
 interface Collection {
@@ -33,7 +34,6 @@ export default function BookmarksPage() {
   const [showNew, setShowNew] = useState(false);
   const [newName, setNewName] = useState("");
   const [newDesc, setNewDesc] = useState("");
-  const [deleteTargetId, setDeleteTargetId] = useState<number | null>(null);
 
   const fetchCollections = useCallback(async () => {
     const result = await fetchApi<{ collections: Collection[] }>("/api/bookmarks/collections", {
@@ -80,6 +80,8 @@ export default function BookmarksPage() {
       fetchCollections();
     }
   }
+
+  const { targetId: deleteTargetId, requestDelete, confirm: confirmDelete, cancel: cancelDelete } = useConfirmDelete(handleDelete);
 
   async function handleRemoveItem(collectionId: number, postId: number) {
     const result = await fetchApi(`/api/bookmarks/collections/${collectionId}/items?postId=${postId}`, {
@@ -183,7 +185,7 @@ export default function BookmarksPage() {
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        setDeleteTargetId(col.id);
+                        requestDelete(col.id);
                       }}
                       className="p-1 text-zinc-400 hover:text-red-500"
                       aria-label={`删除收藏夹 ${col.name}`}
@@ -251,9 +253,7 @@ export default function BookmarksPage() {
                 )}
               </div>
             ) : (
-              <div className="text-center py-16 text-zinc-500">
-                <p>选择一个收藏夹</p>
-              </div>
+              <EmptyState message="选择一个收藏夹" />
             )}
           </div>
         </div>
@@ -265,11 +265,8 @@ export default function BookmarksPage() {
         message="确定要删除此收藏夹吗？此操作无法撤销。"
         confirmLabel="删除"
         variant="danger"
-        onConfirm={() => {
-          if (deleteTargetId) handleDelete(deleteTargetId);
-          setDeleteTargetId(null);
-        }}
-        onCancel={() => setDeleteTargetId(null)}
+        onConfirm={confirmDelete}
+        onCancel={cancelDelete}
       />
     </main>
   );

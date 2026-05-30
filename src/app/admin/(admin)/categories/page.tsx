@@ -5,6 +5,8 @@ import { Folder, Plus, Pencil, Trash2, Check, X } from "lucide-react";
 import { SkeletonRow } from "@/components/skeleton";
 import { EmptyState } from "@/components/empty-state";
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import { ActionButton } from "@/components/action-button";
+import { useConfirmDelete } from "@/hooks/use-confirm-delete";
 import { fetchApi } from "@/lib/fetch-api";
 
 interface Category {
@@ -25,7 +27,6 @@ export default function AdminCategoriesPage() {
   const [editError, setEditError] = useState("");
   const [saving, setSaving] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
-  const [deleteTargetId, setDeleteTargetId] = useState<number | null>(null);
 
   const fetchCategories = useCallback(async () => {
     setLoading(true);
@@ -87,6 +88,8 @@ export default function AdminCategoriesPage() {
     setDeleteId(null);
     if (result.ok) fetchCategories();
   };
+
+  const { targetId: deleteTargetId, requestDelete, confirm: confirmDelete, cancel: cancelDelete } = useConfirmDelete(handleDelete);
 
   return (
     <div className="space-y-6">
@@ -187,47 +190,41 @@ export default function AdminCategoriesPage() {
                     <div className="flex items-center justify-end gap-1">
                       {editId === category.id ? (
                         <>
-                          <button
+                          <ActionButton
+                            variant="success"
+                            icon={<Check className="w-4 h-4" />}
+                            label="保存"
                             onClick={() => handleSave(category.id)}
                             disabled={saving}
-                            aria-label="保存"
-                            className="p-2 rounded-lg text-zinc-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 disabled:opacity-50 transition-colors"
-                          >
-                            <Check className="w-4 h-4" />
-                          </button>
-                          <button
+                          />
+                          <ActionButton
+                            icon={<X className="w-4 h-4" />}
+                            label="取消"
                             onClick={() => {
                               setEditId(null);
                               setEditName("");
                               setEditError("");
                             }}
-                            aria-label="取消"
-                            className="p-2 rounded-lg text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
+                          />
                         </>
                       ) : (
                         <>
-                          <button
+                          <ActionButton
+                            icon={<Pencil className="w-4 h-4" />}
+                            label={`编辑 ${category.name}`}
                             onClick={() => {
                               setEditId(category.id);
                               setEditName(category.name);
                               setEditError("");
                             }}
-                            className="p-2 rounded-lg text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-                            aria-label={`编辑 ${category.name}`}
-                          >
-                            <Pencil className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => setDeleteTargetId(category.id)}
+                          />
+                          <ActionButton
+                            variant="danger"
+                            icon={<Trash2 className="w-4 h-4" />}
+                            label={`删除 ${category.name}`}
+                            onClick={() => requestDelete(category.id)}
                             disabled={deleteId === category.id}
-                            className="p-2 rounded-lg text-zinc-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50 transition-colors"
-                            aria-label={`删除 ${category.name}`}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                          />
                         </>
                       )}
                     </div>
@@ -245,11 +242,8 @@ export default function AdminCategoriesPage() {
         message="确定要删除此分类吗？该分类下的文章将变为未分类。此操作无法撤销。"
         confirmLabel="删除"
         variant="danger"
-        onConfirm={() => {
-          if (deleteTargetId) handleDelete(deleteTargetId);
-          setDeleteTargetId(null);
-        }}
-        onCancel={() => setDeleteTargetId(null)}
+        onConfirm={confirmDelete}
+        onCancel={cancelDelete}
       />
     </div>
   );

@@ -8,6 +8,8 @@ import { EmptyState } from "@/components/empty-state";
 import { SimplePagination } from "@/components/pagination";
 import { FilterTabs } from "@/components/filter-tabs";
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import { ActionButton } from "@/components/action-button";
+import { useConfirmDelete } from "@/hooks/use-confirm-delete";
 import { fetchApi } from "@/lib/fetch-api";
 
 interface Comment {
@@ -35,7 +37,6 @@ export default function AdminCommentsPage() {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [actionId, setActionId] = useState<number | null>(null);
-  const [deleteTargetId, setDeleteTargetId] = useState<number | null>(null);
 
   const fetchComments = useCallback(async () => {
     setLoading(true);
@@ -79,6 +80,8 @@ export default function AdminCommentsPage() {
     setActionId(null);
     if (result.ok) fetchComments();
   };
+
+  const { targetId: deleteTargetId, requestDelete, confirm: confirmDelete, cancel: cancelDelete } = useConfirmDelete(deleteComment);
 
   const statusConfig: Record<string, { label: string; dot: string; bg: string; text: string }> = {
     PENDING: {
@@ -162,36 +165,29 @@ export default function AdminCommentsPage() {
 
                   <div className="flex items-center gap-1 flex-shrink-0">
                     {comment.status !== "APPROVED" && (
-                      <button
+                      <ActionButton
+                        variant="success"
+                        icon={<Check className="w-4 h-4" />}
+                        label="通过评论"
                         onClick={() => updateStatus(comment.id, "APPROVED")}
                         disabled={actionId === comment.id}
-                        className="p-2 rounded-lg text-zinc-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 disabled:opacity-50 transition-colors"
-                        aria-label="通过评论"
-                        title="通过"
-                      >
-                        <Check className="w-4 h-4" />
-                      </button>
+                      />
                     )}
                     {comment.status !== "REJECTED" && (
-                      <button
+                      <ActionButton
+                        icon={<X className="w-4 h-4" />}
+                        label="拒绝评论"
                         onClick={() => updateStatus(comment.id, "REJECTED")}
                         disabled={actionId === comment.id}
-                        className="p-2 rounded-lg text-zinc-400 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 disabled:opacity-50 transition-colors"
-                        aria-label="拒绝评论"
-                        title="拒绝"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
+                      />
                     )}
-                    <button
-                      onClick={() => setDeleteTargetId(comment.id)}
+                    <ActionButton
+                      variant="danger"
+                      icon={<Trash2 className="w-4 h-4" />}
+                      label="删除评论"
+                      onClick={() => requestDelete(comment.id)}
                       disabled={actionId === comment.id}
-                      className="p-2 rounded-lg text-zinc-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50 transition-colors"
-                      aria-label="删除评论"
-                      title="删除"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    />
                   </div>
                 </div>
               </div>
@@ -215,11 +211,8 @@ export default function AdminCommentsPage() {
         message="确定要删除这条评论吗？此操作无法撤销。"
         confirmLabel="删除"
         variant="danger"
-        onConfirm={() => {
-          if (deleteTargetId) deleteComment(deleteTargetId);
-          setDeleteTargetId(null);
-        }}
-        onCancel={() => setDeleteTargetId(null)}
+        onConfirm={confirmDelete}
+        onCancel={cancelDelete}
       />
     </div>
   );

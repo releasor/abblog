@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 import { formatDate } from "@/lib/format-date";
+import { EmptyState } from "@/components/empty-state";
 
 export const revalidate = 600;
 
@@ -75,7 +76,7 @@ export default async function TopicDetailPage({ params }: Props) {
         </div>
 
         {posts.length === 0 ? (
-          <div className="text-center py-16 text-zinc-500">暂无相关文章</div>
+          <EmptyState compact message="暂无相关文章" />
         ) : (
           <div className="space-y-4">
             {posts.map((post) => (

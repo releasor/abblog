@@ -5,6 +5,7 @@ import { Tag, Plus, Pencil, Trash2, Check, X } from "lucide-react";
 import { SkeletonRow } from "@/components/skeleton";
 import { EmptyState } from "@/components/empty-state";
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import { useConfirmDelete } from "@/hooks/use-confirm-delete";
 import { fetchApi } from "@/lib/fetch-api";
 
 interface TagItem {
@@ -24,7 +25,6 @@ export default function AdminTagsPage() {
   const [editName, setEditName] = useState("");
   const [saving, setSaving] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
-  const [deleteTargetId, setDeleteTargetId] = useState<number | null>(null);
 
   const fetchTags = useCallback(async () => {
     setLoading(true);
@@ -83,6 +83,8 @@ export default function AdminTagsPage() {
     setDeleteId(null);
     if (result.ok) fetchTags();
   };
+
+  const { targetId: deleteTargetId, requestDelete, confirm: confirmDelete, cancel: cancelDelete } = useConfirmDelete(handleDelete);
 
   return (
     <div className="space-y-6">
@@ -186,7 +188,7 @@ export default function AdminTagsPage() {
                       <Pencil className="w-3.5 h-3.5" />
                     </button>
                     <button
-                      onClick={() => setDeleteTargetId(tag.id)}
+                      onClick={() => requestDelete(tag.id)}
                       disabled={deleteId === tag.id}
                       className="p-2 rounded text-zinc-400 hover:text-red-500"
                       aria-label={`删除 ${tag.name}`}
@@ -207,11 +209,8 @@ export default function AdminTagsPage() {
         message="确定要删除此标签吗？该标签会从所有文章中移除。此操作无法撤销。"
         confirmLabel="删除"
         variant="danger"
-        onConfirm={() => {
-          if (deleteTargetId) handleDelete(deleteTargetId);
-          setDeleteTargetId(null);
-        }}
-        onCancel={() => setDeleteTargetId(null)}
+        onConfirm={confirmDelete}
+        onCancel={cancelDelete}
       />
     </div>
   );
