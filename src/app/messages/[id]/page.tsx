@@ -43,7 +43,7 @@ export default function ChatPage() {
 
     // Fetch conversation info
     fetch("/api/conversations")
-      .then((res) => res.json())
+      .then((res) => (res.ok ? res.json() : []))
       .then((convs) => {
         const conv = convs.find((c: { id: number }) => c.id === parseInt(conversationId));
         if (conv) setInfo({ otherUser: conv.otherUser });
@@ -52,7 +52,7 @@ export default function ChatPage() {
 
     // Fetch messages
     fetch(`/api/conversations/${conversationId}/messages`)
-      .then((res) => res.json())
+      .then((res) => (res.ok ? res.json() : []))
       .then((data) => {
         setMessages(data);
         setLoading(false);

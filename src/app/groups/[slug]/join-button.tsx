@@ -16,8 +16,8 @@ export function JoinGroupButton({ groupId }: JoinGroupButtonProps) {
   useEffect(() => {
     if (session) {
       fetch(`/api/groups/${groupId}/membership`)
-        .then((res) => res.json())
-        .then((data) => setIsMember(data.isMember))
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => { if (data) setIsMember(data.isMember); })
         .catch(() => {});
     }
   }, [session, groupId]);
