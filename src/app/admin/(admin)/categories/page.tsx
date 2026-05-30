@@ -4,8 +4,8 @@ import { useState, useEffect, useCallback } from "react";
 import { Folder, Plus, Pencil, Trash2, Check, X } from "lucide-react";
 import { SkeletonRow } from "@/components/skeleton";
 import { EmptyState } from "@/components/empty-state";
-import { showToast } from "@/components/toast";
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import { fetchApi } from "@/lib/fetch-api";
 
 interface Category {
   id: number;
@@ -28,17 +28,10 @@ export default function AdminCategoriesPage() {
   const [deleteTargetId, setDeleteTargetId] = useState<number | null>(null);
 
   const fetchCategories = useCallback(async () => {
-    try {
-      setLoading(true);
-      const res = await fetch("/api/categories");
-      if (!res.ok) return;
-      const data = await res.json();
-      setCategories(data);
-    } catch (e) {
-      console.error("[AdminCategories] Failed to fetch categories:", e);
-    } finally {
-      setLoading(false);
-    }
+    setLoading(true);
+    const result = await fetchApi<Category[]>("/api/categories", { showErrorToast: false });
+    setLoading(false);
+    if (result.ok) setCategories(result.data);
   }, []);
 
   useEffect(() => {
@@ -50,25 +43,19 @@ export default function AdminCategoriesPage() {
     setCreateError("");
     setCreating(true);
 
-    try {
-      const res = await fetch("/api/categories", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: newName }),
-      });
+    const result = await fetchApi<{ error?: string }>("/api/categories", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: newName }),
+      showErrorToast: false,
+    });
+    setCreating(false);
 
-      const data = await res.json();
-      if (!res.ok) {
-        setCreateError(data.error);
-      } else {
-        setNewName("");
-        fetchCategories();
-      }
-    } catch (e) {
-      console.error("[AdminCategories] Failed to create category:", e);
-      setCreateError("创建分类失败");
-    } finally {
-      setCreating(false);
+    if (result.ok) {
+      setNewName("");
+      fetchCategories();
+    } else {
+      setCreateError(result.error);
     }
   };
 
@@ -76,44 +63,31 @@ export default function AdminCategoriesPage() {
     setEditError("");
     setSaving(true);
 
-    try {
-      const res = await fetch(`/api/categories/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: editName }),
-      });
+    const result = await fetchApi(`/api/categories/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: editName }),
+      showErrorToast: false,
+    });
+    setSaving(false);
 
-      const data = await res.json();
-      if (!res.ok) {
-        setEditError(data.error);
-      } else {
-        setEditId(null);
-        setEditName("");
-        fetchCategories();
-      }
-    } catch (e) {
-      console.error("[AdminCategories] Failed to save category:", e);
-      setEditError("保存分类失败");
-    } finally {
-      setSaving(false);
+    if (result.ok) {
+      setEditId(null);
+      setEditName("");
+      fetchCategories();
+    } else {
+      setEditError(result.error);
     }
   };
 
   const handleDelete = async (id: number) => {
-    try {
-      setDeleteId(id);
-      const res = await fetch(`/api/categories/${id}`, { method: "DELETE" });
-      if (res.ok) {
-        fetchCategories();
-      } else {
-        showToast("删除失败", "error");
-      }
-    } catch (e) {
-      console.error("[AdminCategories] Failed to delete category:", e);
-      showToast("删除失败", "error");
-    } finally {
-      setDeleteId(null);
-    }
+    setDeleteId(id);
+    const result = await fetchApi(`/api/categories/${id}`, {
+      method: "DELETE",
+      errorMessage: "删除失败",
+    });
+    setDeleteId(null);
+    if (result.ok) fetchCategories();
   };
 
   return (

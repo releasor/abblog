@@ -4,8 +4,8 @@ import { useState, useEffect, useCallback } from "react";
 import { Tag, Plus, Pencil, Trash2, Check, X } from "lucide-react";
 import { SkeletonRow } from "@/components/skeleton";
 import { EmptyState } from "@/components/empty-state";
-import { showToast } from "@/components/toast";
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import { fetchApi } from "@/lib/fetch-api";
 
 interface TagItem {
   id: number;
@@ -22,23 +22,15 @@ export default function AdminTagsPage() {
   const [creating, setCreating] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
   const [editName, setEditName] = useState("");
-  const [, setEditError] = useState("");
   const [saving, setSaving] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [deleteTargetId, setDeleteTargetId] = useState<number | null>(null);
 
   const fetchTags = useCallback(async () => {
-    try {
-      setLoading(true);
-      const res = await fetch("/api/tags");
-      if (!res.ok) return;
-      const data = await res.json();
-      setTags(data);
-    } catch (e) {
-      console.error("[AdminTags] Failed to fetch tags:", e);
-    } finally {
-      setLoading(false);
-    }
+    setLoading(true);
+    const result = await fetchApi<TagItem[]>("/api/tags", { showErrorToast: false });
+    setLoading(false);
+    if (result.ok) setTags(result.data);
   }, []);
 
   useEffect(() => {
@@ -50,70 +42,48 @@ export default function AdminTagsPage() {
     setCreateError("");
     setCreating(true);
 
-    try {
-      const res = await fetch("/api/tags", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: newName }),
-      });
+    const result = await fetchApi<{ error?: string }>("/api/tags", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: newName }),
+      showErrorToast: false,
+    });
+    setCreating(false);
 
-      const data = await res.json();
-      if (!res.ok) {
-        setCreateError(data.error);
-      } else {
-        setNewName("");
-        fetchTags();
-      }
-    } catch (e) {
-      console.error("[AdminTags] Failed to create tag:", e);
-      setCreateError("创建标签失败");
-    } finally {
-      setCreating(false);
+    if (result.ok) {
+      setNewName("");
+      fetchTags();
+    } else {
+      setCreateError(result.error);
     }
   };
 
   const handleSave = async (id: number) => {
-    setEditError("");
     setSaving(true);
 
-    try {
-      const res = await fetch(`/api/tags/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: editName }),
-      });
+    const result = await fetchApi(`/api/tags/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: editName }),
+      errorMessage: "保存标签失败",
+    });
+    setSaving(false);
 
-      const data = await res.json();
-      if (!res.ok) {
-        setEditError(data.error);
-      } else {
-        setEditId(null);
-        setEditName("");
-        fetchTags();
-      }
-    } catch (e) {
-      console.error("[AdminTags] Failed to save tag:", e);
-      setEditError("保存标签失败");
-    } finally {
-      setSaving(false);
+    if (result.ok) {
+      setEditId(null);
+      setEditName("");
+      fetchTags();
     }
   };
 
   const handleDelete = async (id: number) => {
-    try {
-      setDeleteId(id);
-      const res = await fetch(`/api/tags/${id}`, { method: "DELETE" });
-      if (res.ok) {
-        fetchTags();
-      } else {
-        showToast("删除失败", "error");
-      }
-    } catch (e) {
-      console.error("[AdminTags] Failed to delete tag:", e);
-      showToast("删除失败", "error");
-    } finally {
-      setDeleteId(null);
-    }
+    setDeleteId(id);
+    const result = await fetchApi(`/api/tags/${id}`, {
+      method: "DELETE",
+      errorMessage: "删除失败",
+    });
+    setDeleteId(null);
+    if (result.ok) fetchTags();
   };
 
   return (
@@ -211,7 +181,6 @@ export default function AdminTagsPage() {
                       onClick={() => {
                         setEditId(tag.id);
                         setEditName(tag.name);
-                        setEditError("");
                       }}
                       className="p-2 rounded text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
                       aria-label={`编辑 ${tag.name}`}
