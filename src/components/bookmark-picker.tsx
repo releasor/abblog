@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, memo } from "react";
 import { Bookmark, Plus, Check } from "lucide-react";
-import { showToast } from "./toast";
+import { fetchApi } from "@/lib/fetch-api";
 
 interface Collection {
   id: number;
@@ -35,50 +35,35 @@ export const BookmarkPicker = memo(function BookmarkPicker({ postId, initialBook
 
   useEffect(() => {
     if (showPicker) {
-      fetch("/api/bookmarks/collections")
-        .then((r) => (r.ok ? r.json() : null))
-        .then((data) => { if (data) setCollections(data.collections || []); })
-        .catch(() => showToast("加载收藏夹失败", "error"));
+      fetchApi<{ collections: Collection[] }>("/api/bookmarks/collections", { errorMessage: "加载收藏夹失败" })
+        .then((result) => { if (result.ok) setCollections(result.data.collections || []); });
     }
   }, [showPicker]);
 
   async function handleQuickBookmark() {
     if (loading) return;
     setLoading(true);
-    try {
-      const res = await fetch(`/api/posts/${postId}/bookmark`, { method: "POST" });
-      if (res.ok) {
-        const data = await res.json();
-        setIsBookmarked(data.isBookmarked);
-      } else {
-        showToast("收藏失败", "error");
-      }
-    } catch {
-      showToast("收藏失败", "error");
-    } finally {
-      setLoading(false);
-    }
+    const result = await fetchApi<{ isBookmarked: boolean }>(`/api/posts/${postId}/bookmark`, {
+      method: "POST",
+      errorMessage: "收藏失败",
+    });
+    setLoading(false);
+    if (result.ok) setIsBookmarked(result.data.isBookmarked);
   }
 
   async function handleAddToCollection(collectionId: number) {
     if (loading) return;
     setLoading(true);
-    try {
-      const res = await fetch(`/api/bookmarks/collections/${collectionId}/items`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ postId }),
-      });
-      if (res.ok) {
-        setIsBookmarked(true);
-        setShowPicker(false);
-      } else {
-        showToast("添加到收藏夹失败", "error");
-      }
-    } catch {
-      showToast("添加到收藏夹失败", "error");
-    } finally {
-      setLoading(false);
+    const result = await fetchApi(`/api/bookmarks/collections/${collectionId}/items`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ postId }),
+      errorMessage: "添加到收藏夹失败",
+    });
+    setLoading(false);
+    if (result.ok) {
+      setIsBookmarked(true);
+      setShowPicker(false);
     }
   }
 

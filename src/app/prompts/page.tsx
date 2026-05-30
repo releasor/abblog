@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { MessageCircle, Zap, Trash2, Copy, Check } from "lucide-react";
-import { showToast } from "@/components/toast";
+import { fetchApi } from "@/lib/fetch-api";
 import { Skeleton } from "@/components/skeleton";
 import { useCopyToClipboard } from "@/hooks/use-copy";
 
@@ -199,24 +199,14 @@ function OptimizerTab() {
     setLoading(true);
     setOptimized("");
 
-    try {
-      const res = await fetch("/api/prompts/optimize", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: input }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setOptimized(data.optimized || "优化失败");
-      } else {
-        const data = await res.json().catch(() => null);
-        showToast(data?.error || "优化失败", "error");
-        setOptimized("");
-      }
-    } catch {
-      showToast("请求失败，请重试", "error");
-    }
+    const result = await fetchApi<{ optimized: string }>("/api/prompts/optimize", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ content: input }),
+      errorMessage: "优化失败",
+    });
     setLoading(false);
+    if (result.ok) setOptimized(result.data.optimized || "优化失败");
   };
 
   const { copied, copy } = useCopyToClipboard();

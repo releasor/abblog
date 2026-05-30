@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, memo } from "react";
 import { Search, AlertTriangle, Lightbulb, CheckCircle } from "lucide-react";
-import { showToast } from "./toast";
+import { fetchApi } from "@/lib/fetch-api";
 
 interface SEOResult {
   score: number;
@@ -29,16 +29,9 @@ export const SEOPanel = memo(function SEOPanel({ postId }: SEOPanelProps) {
 
   const analyze = useCallback(async () => {
     setLoading(true);
-    try {
-      const res = await fetch(`/api/posts/${postId}/seo`);
-      if (!res.ok) throw new Error("SEO analysis failed");
-      const data = await res.json();
-      setResult(data);
-    } catch {
-      showToast("SEO 分析失败", "error");
-    } finally {
-      setLoading(false);
-    }
+    const result = await fetchApi<SEOResult>(`/api/posts/${postId}/seo`, { errorMessage: "SEO 分析失败" });
+    setLoading(false);
+    if (result.ok) setResult(result.data);
   }, [postId]);
 
   useEffect(() => {

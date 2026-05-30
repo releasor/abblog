@@ -3,7 +3,7 @@
 import { useState, useEffect, memo } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { showToast } from "./toast";
+import { fetchApi } from "@/lib/fetch-api";
 
 interface FollowButtonProps {
   username: string;
@@ -17,10 +17,8 @@ export const FollowButton = memo(function FollowButton({ username, onFollowChang
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    fetch(`/api/users/${username}/follow`)
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => { if (data) setIsFollowing(data.isFollowing); })
-      .catch((e) => console.error("[FollowButton] Failed to fetch follow status:", e));
+    fetchApi<{ isFollowing: boolean }>(`/api/users/${username}/follow`, { showErrorToast: false })
+      .then((result) => { if (result.ok) setIsFollowing(result.data.isFollowing); });
   }, [username]);
 
   const toggle = async () => {
@@ -29,19 +27,14 @@ export const FollowButton = memo(function FollowButton({ username, onFollowChang
       return;
     }
     setLoading(true);
-    try {
-      const res = await fetch(`/api/users/${username}/follow`, { method: "POST" });
-      if (res.ok) {
-        const data = await res.json();
-        setIsFollowing(data.isFollowing);
-        onFollowChange?.(data.isFollowing, data.followerCount);
-      } else {
-        showToast("关注操作失败，请稍后重试", "error");
-      }
-    } catch {
-      showToast("关注操作失败，请稍后重试", "error");
-    } finally {
-      setLoading(false);
+    const result = await fetchApi<{ isFollowing: boolean; followerCount: number }>(`/api/users/${username}/follow`, {
+      method: "POST",
+      errorMessage: "关注操作失败，请稍后重试",
+    });
+    setLoading(false);
+    if (result.ok) {
+      setIsFollowing(result.data.isFollowing);
+      onFollowChange?.(result.data.isFollowing, result.data.followerCount);
     }
   };
 

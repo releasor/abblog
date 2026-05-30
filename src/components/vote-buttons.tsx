@@ -2,7 +2,7 @@
 
 import { useState, useEffect, memo } from "react";
 import { ArrowBigUp, ArrowBigDown } from "lucide-react";
-import { showToast } from "./toast";
+import { fetchApi } from "@/lib/fetch-api";
 
 interface VoteButtonsProps {
   postId: number;
@@ -16,37 +16,28 @@ export const VoteButtons = memo(function VoteButtons({ postId, initialScore = 0,
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    fetch(`/api/posts/${postId}/vote`)
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data) => {
-        if (!data) return;
-        if (data.score !== undefined) setScore(data.score);
-        if (data.userVote !== undefined) setVote(data.userVote);
-      })
-      .catch((e) => console.error("[VoteButtons] Failed to fetch vote status:", e));
+    fetchApi<{ score: number; userVote: number | null }>(`/api/posts/${postId}/vote`, { showErrorToast: false })
+      .then((result) => {
+        if (result.ok) {
+          if (result.data.score !== undefined) setScore(result.data.score);
+          if (result.data.userVote !== undefined) setVote(result.data.userVote);
+        }
+      });
   }, [postId]);
 
   async function handleVote(value: number) {
     if (loading) return;
     setLoading(true);
-
-    try {
-      const res = await fetch(`/api/posts/${postId}/vote`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ value }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        if (data.score !== undefined) setScore(data.score);
-        if (data.userVote !== undefined) setVote(data.userVote);
-      } else {
-        showToast("投票失败", "error");
-      }
-    } catch {
-      showToast("投票失败", "error");
-    } finally {
-      setLoading(false);
+    const result = await fetchApi<{ score: number; userVote: number | null }>(`/api/posts/${postId}/vote`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ value }),
+      errorMessage: "投票失败",
+    });
+    setLoading(false);
+    if (result.ok) {
+      if (result.data.score !== undefined) setScore(result.data.score);
+      if (result.data.userVote !== undefined) setVote(result.data.userVote);
     }
   }
 

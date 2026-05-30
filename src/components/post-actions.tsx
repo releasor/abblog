@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, memo } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { Heart, Bookmark } from "lucide-react";
-import { showToast } from "@/components/toast";
+import { fetchApi } from "@/lib/fetch-api";
 import { BookmarkPicker } from "@/components/bookmark-picker";
 
 interface PostActionsProps {
@@ -19,24 +19,16 @@ export const PostActions = memo(function PostActions({ postId }: PostActionsProp
   const [liking, setLiking] = useState(false);
 
   const fetchStatus = useCallback(async () => {
-    try {
-      const [likeRes, bookmarkRes] = await Promise.all([
-        fetch(`/api/posts/${postId}/like`),
-        fetch(`/api/posts/${postId}/bookmark`),
-      ]);
-
-      if (likeRes.ok) {
-        const data = await likeRes.json();
-        setLikeCount(data.count);
-        setIsLiked(data.isLiked);
-      }
-
-      if (bookmarkRes.ok) {
-        const data = await bookmarkRes.json();
-        setIsBookmarked(data.isBookmarked);
-      }
-    } catch {
-      showToast("加载互动状态失败", "error");
+    const [likeResult, bookmarkResult] = await Promise.all([
+      fetchApi<{ count: number; isLiked: boolean }>(`/api/posts/${postId}/like`, { showErrorToast: false }),
+      fetchApi<{ isBookmarked: boolean }>(`/api/posts/${postId}/bookmark`, { showErrorToast: false }),
+    ]);
+    if (likeResult.ok) {
+      setLikeCount(likeResult.data.count);
+      setIsLiked(likeResult.data.isLiked);
+    }
+    if (bookmarkResult.ok) {
+      setIsBookmarked(bookmarkResult.data.isBookmarked);
     }
   }, [postId]);
 
@@ -47,13 +39,15 @@ export const PostActions = memo(function PostActions({ postId }: PostActionsProp
   const toggleLike = useCallback(async () => {
     if (!session) return;
     setLiking(true);
-    const res = await fetch(`/api/posts/${postId}/like`, { method: "POST" });
-    if (res.ok) {
-      const data = await res.json();
-      setIsLiked(data.isLiked);
-      setLikeCount(data.count);
-    }
+    const result = await fetchApi<{ isLiked: boolean; count: number }>(`/api/posts/${postId}/like`, {
+      method: "POST",
+      errorMessage: "点赞失败",
+    });
     setLiking(false);
+    if (result.ok) {
+      setIsLiked(result.data.isLiked);
+      setLikeCount(result.data.count);
+    }
   }, [session, postId]);
 
   return (

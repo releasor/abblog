@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { FileText, Users, MessageSquare, Eye, TrendingUp, ArrowUpRight } from "lucide-react";
 import { StatCard } from "@/components/admin/stat-card";
 import { SkeletonStat } from "@/components/skeleton";
-import { showToast } from "@/components/toast";
+import { fetchApi } from "@/lib/fetch-api";
 
 interface DashboardData {
   summary: {
@@ -45,18 +45,11 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/admin/stats")
-      .then((r) => {
-        if (r.ok) return r.json();
-        showToast("加载统计数据失败", "error");
-        return null;
-      })
-      .then((d) => { if (d) setData(d); })
-      .catch((e) => {
-        console.error("[Dashboard] Failed to fetch stats:", e);
-        showToast("加载统计数据失败", "error");
-      })
-      .finally(() => setLoading(false));
+    fetchApi<DashboardData>("/api/admin/stats", { errorMessage: "加载统计数据失败" })
+      .then((result) => {
+        setLoading(false);
+        if (result.ok) setData(result.data);
+      });
   }, []);
 
   if (loading) {

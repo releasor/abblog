@@ -2,7 +2,7 @@
 
 import { useState, useEffect, memo } from "react";
 import { History, RotateCcw, ChevronDown, ChevronUp } from "lucide-react";
-import { showToast } from "./toast";
+import { fetchApi } from "@/lib/fetch-api";
 import { formatDateTime } from "@/lib/format-date";
 
 interface Version {
@@ -23,33 +23,22 @@ export const VersionHistory = memo(function VersionHistory({ postId, onRestore }
   const [restoring, setRestoring] = useState<number | null>(null);
 
   useEffect(() => {
-    fetch(`/api/posts/${postId}/versions`)
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data) => { if (data) setVersions(data.versions || []); })
-      .catch(() => showToast("加载版本历史失败", "error"));
+    fetchApi<{ versions: Version[] }>(`/api/posts/${postId}/versions`, { errorMessage: "加载版本历史失败" })
+      .then((result) => { if (result.ok) setVersions(result.data.versions || []); });
   }, [postId]);
 
   async function handleRestore(versionId: number) {
     if (restoring) return;
     setRestoring(versionId);
-    try {
-      const res = await fetch(`/api/posts/${postId}/versions`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ versionId }),
-      });
-      if (res.ok) {
-        showToast("版本已恢复", "success");
-        onRestore?.();
-      } else {
-        const data = await res.json().catch(() => null);
-        showToast(data?.error || "恢复版本失败", "error");
-      }
-    } catch {
-      showToast("恢复版本失败", "error");
-    } finally {
-      setRestoring(null);
-    }
+    const result = await fetchApi(`/api/posts/${postId}/versions`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ versionId }),
+      successMessage: "版本已恢复",
+      errorMessage: "恢复版本失败",
+    });
+    setRestoring(null);
+    if (result.ok) onRestore?.();
   }
 
   if (versions.length === 0) return null;

@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { Plus, Pencil, Trash2, FileText } from "lucide-react";
 import { ConfirmDialog } from "@/components/confirm-dialog";
-import { showToast } from "@/components/toast";
+import { fetchApi } from "@/lib/fetch-api";
 import { formatDateShort } from "@/lib/format-date";
 import { DataTable } from "@/components/data-table";
 
@@ -53,16 +53,11 @@ export default function AdminPostsPage() {
       params.set("status", statusFilter);
     }
 
-    try {
-      const res = await fetch(`/api/posts?${params}`);
-      if (!res.ok) return;
-      const data = await res.json();
-      setPosts(data.posts);
-      setPagination(data.pagination);
-    } catch (e) {
-      console.error("[AdminPosts] Failed to fetch posts:", e);
-    } finally {
-      setLoading(false);
+    const result = await fetchApi<{ posts: Post[]; pagination: Pagination }>(`/api/posts?${params}`, { showErrorToast: false });
+    setLoading(false);
+    if (result.ok) {
+      setPosts(result.data.posts);
+      setPagination(result.data.pagination);
     }
   }, [page, statusFilter, sortBy, sortOrder]);
 
@@ -71,21 +66,14 @@ export default function AdminPostsPage() {
   }, [fetchPosts]);
 
   const handleDelete = async (id: number) => {
-    try {
-      setDeleteId(id);
-      const res = await fetch(`/api/posts/${id}`, { method: "DELETE" });
-      if (res.ok) {
-        fetchPosts();
-      } else {
-        showToast("删除失败", "error");
-      }
-    } catch (e) {
-      console.error("[AdminPosts] Failed to delete post:", e);
-      showToast("删除失败", "error");
-    } finally {
-      setDeleteId(null);
-      setConfirmDelete(null);
-    }
+    setDeleteId(id);
+    const result = await fetchApi(`/api/posts/${id}`, {
+      method: "DELETE",
+      errorMessage: "删除失败",
+    });
+    setDeleteId(null);
+    setConfirmDelete(null);
+    if (result.ok) fetchPosts();
   };
 
   return (

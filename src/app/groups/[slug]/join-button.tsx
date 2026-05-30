@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { showToast } from "@/components/toast";
+import { fetchApi } from "@/lib/fetch-api";
 
 interface JoinGroupButtonProps {
   groupId: number;
@@ -15,29 +15,20 @@ export function JoinGroupButton({ groupId }: JoinGroupButtonProps) {
 
   useEffect(() => {
     if (session) {
-      fetch(`/api/groups/${groupId}/membership`)
-        .then((res) => (res.ok ? res.json() : null))
-        .then((data) => { if (data) setIsMember(data.isMember); })
-        .catch((e) => console.error("[JoinButton] Failed to check membership:", e));
+      fetchApi<{ isMember: boolean }>(`/api/groups/${groupId}/membership`, { showErrorToast: false })
+        .then((result) => { if (result.ok) setIsMember(result.data.isMember); });
     }
   }, [session, groupId]);
 
   async function handleJoin() {
     if (!session) return;
     setLoading(true);
-    try {
-      const method = isMember ? "DELETE" : "POST";
-      const res = await fetch(`/api/groups/${groupId}/join`, { method });
-      if (res.ok) {
-        setIsMember(!isMember);
-      } else {
-        showToast(isMember ? "退出失败" : "加入失败", "error");
-      }
-    } catch {
-      showToast(isMember ? "退出失败" : "加入失败", "error");
-    } finally {
-      setLoading(false);
-    }
+    const result = await fetchApi(`/api/groups/${groupId}/join`, {
+      method: isMember ? "DELETE" : "POST",
+      errorMessage: isMember ? "退出失败" : "加入失败",
+    });
+    setLoading(false);
+    if (result.ok) setIsMember(!isMember);
   }
 
   if (!session) return null;

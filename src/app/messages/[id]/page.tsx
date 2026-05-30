@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { UserAvatar } from "@/components/user-avatar";
-import { showToast } from "@/components/toast";
+import { fetchApi } from "@/lib/fetch-api";
 import { Skeleton } from "@/components/skeleton";
 
 interface Message {
@@ -42,24 +42,19 @@ export default function ChatPage() {
     if (status !== "authenticated") return;
 
     // Fetch conversation info
-    fetch("/api/conversations")
-      .then((res) => (res.ok ? res.json() : []))
-      .then((convs) => {
-        const conv = convs.find((c: { id: number }) => c.id === parseInt(conversationId));
-        if (conv) setInfo({ otherUser: conv.otherUser });
-      })
-      .catch((e) => console.error("[Conversation] Failed to fetch conversation info:", e));
+    fetchApi<{ id: number; otherUser: ConversationInfo["otherUser"] }[]>("/api/conversations", { showErrorToast: false })
+      .then((result) => {
+        if (result.ok) {
+          const conv = result.data.find((c) => c.id === parseInt(conversationId));
+          if (conv) setInfo({ otherUser: conv.otherUser });
+        }
+      });
 
     // Fetch messages
-    fetch(`/api/conversations/${conversationId}/messages`)
-      .then((res) => (res.ok ? res.json() : []))
-      .then((data) => {
-        setMessages(data);
+    fetchApi<Message[]>(`/api/conversations/${conversationId}/messages`, { showErrorToast: false })
+      .then((result) => {
         setLoading(false);
-      })
-      .catch((e) => {
-        console.error("[Conversation] Failed to fetch messages:", e);
-        setLoading(false);
+        if (result.ok) setMessages(result.data);
       });
   }, [status, conversationId]);
 
@@ -73,24 +68,14 @@ export default function ChatPage() {
     const content = input.trim();
     setInput("");
 
-    try {
-      const res = await fetch(`/api/conversations/${conversationId}/messages`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content }),
-      });
-
-      if (res.ok) {
-        const msg = await res.json();
-        setMessages((prev) => [...prev, msg]);
-      } else {
-        showToast("发送失败", "error");
-      }
-    } catch (e) {
-      console.error("[Conversation] Failed to send message:", e);
-    } finally {
-      setSending(false);
-    }
+    const result = await fetchApi<Message>(`/api/conversations/${conversationId}/messages`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ content }),
+      errorMessage: "发送失败",
+    });
+    setSending(false);
+    if (result.ok) setMessages((prev) => [...prev, result.data]);
   };
 
   if (status !== "authenticated" || loading) {

@@ -3,7 +3,7 @@
 import { useState, useEffect, memo } from "react";
 import Image from "next/image";
 import { UserPlus, X, Shield, Eye } from "lucide-react";
-import { showToast } from "./toast";
+import { fetchApi } from "@/lib/fetch-api";
 
 interface Collaborator {
   id: number;
@@ -30,52 +30,36 @@ export const CollaboratorManager = memo(function CollaboratorManager({ postId, i
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    fetch(`/api/posts/${postId}/collaborators`)
-      .then((r) => (r.ok ? r.json() : []))
-      .then((data) => setCollaborators(data))
-      .catch(() => showToast("加载协作者失败", "error"));
+    fetchApi<Collaborator[]>(`/api/posts/${postId}/collaborators`, { errorMessage: "加载协作者失败" })
+      .then((result) => { if (result.ok) setCollaborators(result.data); });
   }, [postId]);
 
   async function handleAdd() {
     if (!username.trim() || loading) return;
     setLoading(true);
-    try {
-      const res = await fetch(`/api/posts/${postId}/collaborators`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: username, role }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setCollaborators([...collaborators, data]);
-        setUsername("");
-        setShowAdd(false);
-      } else {
-        const data = await res.json().catch(() => null);
-        showToast(data?.error || "添加协作者失败", "error");
-      }
-    } catch {
-      showToast("添加协作者失败", "error");
-    } finally {
-      setLoading(false);
+    const result = await fetchApi<Collaborator>(`/api/posts/${postId}/collaborators`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: username, role }),
+      errorMessage: "添加协作者失败",
+    });
+    setLoading(false);
+    if (result.ok) {
+      setCollaborators([...collaborators, result.data]);
+      setUsername("");
+      setShowAdd(false);
     }
   }
 
   async function handleRemove(userId: number) {
     if (loading) return;
     setLoading(true);
-    try {
-      const res = await fetch(`/api/posts/${postId}/collaborators?userId=${userId}`, { method: "DELETE" });
-      if (res.ok) {
-        setCollaborators(collaborators.filter((c) => c.userId !== userId));
-      } else {
-        showToast("移除协作者失败", "error");
-      }
-    } catch {
-      showToast("移除协作者失败", "error");
-    } finally {
-      setLoading(false);
-    }
+    const result = await fetchApi(`/api/posts/${postId}/collaborators?userId=${userId}`, {
+      method: "DELETE",
+      errorMessage: "移除协作者失败",
+    });
+    setLoading(false);
+    if (result.ok) setCollaborators(collaborators.filter((c) => c.userId !== userId));
   }
 
   if (!isAuthor && collaborators.length === 0) return null;

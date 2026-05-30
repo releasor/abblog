@@ -5,9 +5,9 @@ import { useSession } from "next-auth/react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Trash2, Plus, ChevronUp, ChevronDown, Save } from "lucide-react";
-import { showToast } from "@/components/toast";
 import { EmptyState } from "@/components/empty-state";
 import { Skeleton } from "@/components/skeleton";
+import { fetchApi } from "@/lib/fetch-api";
 
 interface SeriesPost {
   id: number;
@@ -42,58 +42,39 @@ export default function ManageSeriesPostsPage() {
     }
     if (status !== "authenticated") return;
 
-    fetch(`/api/series/${slug}`)
-      .then((r) => {
-        if (!r.ok) return null;
-        return r.json();
-      })
-      .then((data) => {
-        if (data) {
-          setSeries({ id: data.id, name: data.name, slug: data.slug });
-          setPosts(data.posts || []);
+    fetchApi<{ id: number; name: string; slug: string; posts: SeriesPost[] }>(`/api/series/${slug}`, { showErrorToast: false })
+      .then((result) => {
+        setLoading(false);
+        if (result.ok) {
+          setSeries({ id: result.data.id, name: result.data.name, slug: result.data.slug });
+          setPosts(result.data.posts || []);
         }
-      })
-      .catch((e) => console.error("[ManagePosts] Failed to fetch series:", e))
-      .finally(() => setLoading(false));
+      });
   }, [status, slug, router]);
 
   const fetchUserPosts = async () => {
-    try {
-      const res = await fetch("/api/user/posts?limit=100");
-      if (!res.ok) return;
-      const data = await res.json();
-      setUserPosts(data.posts || []);
-    } catch (e) {
-      console.error("[ManagePosts] Failed to fetch user posts:", e);
-    }
+    const result = await fetchApi<{ posts: UserPost[] }>("/api/user/posts?limit=100", { showErrorToast: false });
+    if (result.ok) setUserPosts(result.data.posts || []);
   };
 
   const handleAddPost = async (postId: number) => {
     if (!series || submitting) return;
     setSubmitting(true);
 
-    try {
-      const res = await fetch(`/api/series/${series.id}/posts`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ postId }),
-      });
+    const result = await fetchApi<{ id: number; order: number }>(`/api/series/${series.id}/posts`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ postId }),
+      successMessage: "文章已添加到系列",
+      errorMessage: "添加失败",
+    });
+    setSubmitting(false);
 
-      if (res.ok) {
-        const sp = await res.json();
-        const post = userPosts.find((p) => p.id === postId);
-        if (post) {
-          setPosts((prev) => [...prev, { ...sp, post: { id: post.id, title: post.title, slug: post.slug, publishedAt: null } }]);
-        }
-        showToast("文章已添加到系列", "success");
-      } else {
-        const data = await res.json();
-        showToast(data.error || "添加失败", "error");
+    if (result.ok) {
+      const post = userPosts.find((p) => p.id === postId);
+      if (post) {
+        setPosts((prev) => [...prev, { ...result.data, post: { id: post.id, title: post.title, slug: post.slug, publishedAt: null } }]);
       }
-    } catch {
-      showToast("添加失败", "error");
-    } finally {
-      setSubmitting(false);
     }
   };
 
@@ -101,19 +82,13 @@ export default function ManageSeriesPostsPage() {
     if (!series || submitting) return;
     setSubmitting(true);
 
-    try {
-      const res = await fetch(`/api/series/${series.id}/posts/${postId}`, { method: "DELETE" });
-      if (res.ok) {
-        setPosts((prev) => prev.filter((p) => p.post.id !== postId));
-        showToast("文章已从系列中移除", "success");
-      } else {
-        showToast("移除失败", "error");
-      }
-    } catch {
-      showToast("移除失败", "error");
-    } finally {
-      setSubmitting(false);
-    }
+    const result = await fetchApi(`/api/series/${series.id}/posts/${postId}`, {
+      method: "DELETE",
+      successMessage: "文章已从系列中移除",
+      errorMessage: "移除失败",
+    });
+    setSubmitting(false);
+    if (result.ok) setPosts((prev) => prev.filter((p) => p.post.id !== postId));
   };
 
   const movePost = (index: number, direction: "up" | "down") => {
@@ -127,24 +102,15 @@ export default function ManageSeriesPostsPage() {
   const handleSaveOrder = async () => {
     if (!series) return;
     setSaving(true);
-    try {
-      const order = posts.map((p) => p.post.id);
-      const res = await fetch(`/api/series/${series.id}/posts`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ order }),
-      });
-
-      if (res.ok) {
-        showToast("排序已保存", "success");
-      } else {
-        showToast("保存失败", "error");
-      }
-    } catch {
-      showToast("保存失败", "error");
-    } finally {
-      setSaving(false);
-    }
+    const order = posts.map((p) => p.post.id);
+    await fetchApi(`/api/series/${series.id}/posts`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ order }),
+      successMessage: "排序已保存",
+      errorMessage: "保存失败",
+    });
+    setSaving(false);
   };
 
   if (loading) {

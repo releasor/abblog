@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, memo } from "react";
 import { Heart, X } from "lucide-react";
-import { showToast } from "./toast";
+import { fetchApi } from "@/lib/fetch-api";
 
 const AMOUNTS = [100, 500, 1000, 2000, 5000];
 
@@ -36,23 +36,16 @@ export const DonateButton = memo(function DonateButton({ recipientId, recipientN
 
   const handleDonate = async () => {
     setLoading(true);
-    try {
-      const res = await fetch("/api/donations", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ recipientId, postId, amount, message }),
-      });
-      if (res.ok) {
-        setDone(true);
-        setTimeout(closeModal, 2000);
-      } else {
-        const data = await res.json().catch(() => null);
-        showToast(data?.error || "赞赏失败，请稍后重试", "error");
-      }
-    } catch {
-      showToast("赞赏失败，请稍后重试", "error");
-    } finally {
-      setLoading(false);
+    const result = await fetchApi("/api/donations", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ recipientId, postId, amount, message }),
+      errorMessage: "赞赏失败，请稍后重试",
+    });
+    setLoading(false);
+    if (result.ok) {
+      setDone(true);
+      setTimeout(closeModal, 2000);
     }
   };
 
