@@ -31,6 +31,7 @@ export const SEOPanel = memo(function SEOPanel({ postId }: SEOPanelProps) {
     setLoading(true);
     try {
       const res = await fetch(`/api/posts/${postId}/seo`);
+      if (!res.ok) throw new Error("SEO analysis failed");
       const data = await res.json();
       setResult(data);
     } catch {
