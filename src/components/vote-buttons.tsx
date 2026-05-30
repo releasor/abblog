@@ -17,8 +17,9 @@ export const VoteButtons = memo(function VoteButtons({ postId, initialScore = 0,
 
   useEffect(() => {
     fetch(`/api/posts/${postId}/vote`)
-      .then((r) => r.json())
+      .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
+        if (!data) return;
         if (data.score !== undefined) setScore(data.score);
         if (data.userVote !== undefined) setVote(data.userVote);
       })

@@ -25,8 +25,8 @@ export const BookmarkPicker = memo(function BookmarkPicker({ postId, initialBook
   useEffect(() => {
     if (showPicker) {
       fetch("/api/bookmarks/collections")
-        .then((r) => r.json())
-        .then((data) => setCollections(data.collections || []))
+        .then((r) => (r.ok ? r.json() : null))
+        .then((data) => { if (data) setCollections(data.collections || []); })
         .catch(() => showToast("加载收藏夹失败", "error"));
     }
   }, [showPicker]);
