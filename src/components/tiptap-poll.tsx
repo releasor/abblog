@@ -5,7 +5,9 @@ import { NodeViewWrapper, NodeViewProps } from "@tiptap/react";
 import { BarChart3 } from "lucide-react";
 
 export const TiptapPoll = memo(function TiptapPoll({ node }: NodeViewProps) {
-  const { question, options } = node.attrs;
+  const attrs = (node as { attrs: Record<string, unknown> }).attrs;
+  const question = attrs.question as string | undefined;
+  const options = (attrs.options as string[] | undefined) || [];
 
   return (
     <NodeViewWrapper className="my-4">
@@ -15,7 +17,7 @@ export const TiptapPoll = memo(function TiptapPoll({ node }: NodeViewProps) {
           <span className="font-medium text-zinc-900 dark:text-zinc-100">{question || "投票"}</span>
         </div>
         <div className="space-y-2">
-          {(options || []).map((opt: string, i: number) => (
+          {options.map((opt: string, i: number) => (
             <div
               key={i}
               className="flex items-center gap-3 p-2 bg-white dark:bg-zinc-900 rounded border border-zinc-200 dark:border-zinc-700"

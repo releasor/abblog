@@ -1,6 +1,5 @@
 import { Node, mergeAttributes } from "@tiptap/core";
-import { ReactNodeViewRenderer } from "@tiptap/react";
-import { NodeViewWrapper } from "@tiptap/react";
+import { ReactNodeViewRenderer, NodeViewWrapper, NodeViewProps } from "@tiptap/react";
 
 declare module "@tiptap/core" {
   interface Commands<ReturnType> {
@@ -24,9 +23,10 @@ function getEmbedUrl(url: string): string | null {
   return null;
 }
 
-function VideoComponent({ node }: { node: { attrs: Record<string, unknown> } }) {
-  const src = node.attrs.src as string;
-  const type = node.attrs.type as string;
+function VideoComponent({ node }: NodeViewProps) {
+  const attrs = (node as { attrs: Record<string, unknown> }).attrs;
+  const src = attrs.src as string;
+  const type = attrs.type as string;
 
   if (type === "embed") {
     const embedUrl = getEmbedUrl(src) || src;

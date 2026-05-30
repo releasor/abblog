@@ -5,7 +5,8 @@ import { NodeViewWrapper, NodeViewContent, NodeViewProps } from "@tiptap/react";
 import { ChevronDown, ChevronRight } from "lucide-react";
 
 export const TiptapAccordion = memo(function TiptapAccordion({ node }: NodeViewProps) {
-  const { title } = node.attrs;
+  const attrs = (node as { attrs: Record<string, unknown> }).attrs;
+  const title = attrs.title as string | undefined;
   const [isOpen, setIsOpen] = useState(false);
 
   return (
