@@ -4,10 +4,10 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Bookmark, Plus, Folder, Trash2 } from "lucide-react";
-import { showToast } from "@/components/toast";
 import { EmptyState } from "@/components/empty-state";
 import { Skeleton } from "@/components/skeleton";
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import { fetchApi } from "@/lib/fetch-api";
 
 interface Collection {
   id: number;
@@ -40,71 +40,52 @@ export default function BookmarksPage() {
   }, []);
 
   async function fetchCollections() {
-    try {
-      const res = await fetch("/api/bookmarks/collections");
-      if (!res.ok) {
-        showToast("加载收藏夹失败", "error");
-        return;
+    const result = await fetchApi<{ collections: Collection[] }>("/api/bookmarks/collections", {
+      errorMessage: "加载收藏夹失败",
+    });
+    setLoading(false);
+    if (result.ok) {
+      setCollections(result.data.collections || []);
+      if (result.data.collections?.length > 0 && activeCollection === null) {
+        setActiveCollection(result.data.collections[0].id);
       }
-      const data = await res.json();
-      setCollections(data.collections || []);
-      if (data.collections?.length > 0 && activeCollection === null) {
-        setActiveCollection(data.collections[0].id);
-      }
-    } catch {
-      showToast("加载收藏夹失败", "error");
-    } finally {
-      setLoading(false);
     }
   }
 
   async function handleCreate() {
     if (!newName.trim()) return;
-    try {
-      const res = await fetch("/api/bookmarks/collections", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: newName, description: newDesc }),
-      });
-      if (res.ok) {
-        setNewName("");
-        setNewDesc("");
-        setShowNew(false);
-        fetchCollections();
-      } else {
-        showToast("创建收藏夹失败", "error");
-      }
-    } catch {
-      showToast("创建收藏夹失败", "error");
+    const result = await fetchApi("/api/bookmarks/collections", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: newName, description: newDesc }),
+      errorMessage: "创建收藏夹失败",
+    });
+    if (result.ok) {
+      setNewName("");
+      setNewDesc("");
+      setShowNew(false);
+      fetchCollections();
     }
   }
 
   async function handleDelete(id: number) {
-    try {
-      const res = await fetch(`/api/bookmarks/collections/${id}`, { method: "DELETE" });
-      if (res.ok) {
-        if (activeCollection === id) setActiveCollection(null);
-        fetchCollections();
-      } else {
-        showToast("删除收藏夹失败", "error");
-      }
-    } catch {
-      showToast("删除收藏夹失败", "error");
+    const result = await fetchApi(`/api/bookmarks/collections/${id}`, {
+      method: "DELETE",
+      errorMessage: "删除收藏夹失败",
+    });
+    if (result.ok) {
+      if (activeCollection === id) setActiveCollection(null);
+      fetchCollections();
     }
   }
 
   async function handleRemoveItem(collectionId: number, postId: number) {
-    try {
-      const res = await fetch(`/api/bookmarks/collections/${collectionId}/items?postId=${postId}`, {
-        method: "DELETE",
-      });
-      if (res.ok) {
-        fetchCollections();
-      } else {
-        showToast("移除书签失败", "error");
-      }
-    } catch {
-      showToast("移除书签失败", "error");
+    const result = await fetchApi(`/api/bookmarks/collections/${collectionId}/items?postId=${postId}`, {
+      method: "DELETE",
+      errorMessage: "移除书签失败",
+    });
+    if (result.ok) {
+      fetchCollections();
     }
   }
 
