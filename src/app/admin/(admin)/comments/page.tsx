@@ -3,12 +3,12 @@
 import { useState, useEffect, useCallback } from "react";
 import { MessageSquare, Check, X, Trash2 } from "lucide-react";
 import { truncate } from "@/lib/text";
-import { showToast } from "@/components/toast";
 import { SkeletonRow } from "@/components/skeleton";
 import { EmptyState } from "@/components/empty-state";
 import { SimplePagination } from "@/components/pagination";
 import { FilterTabs } from "@/components/filter-tabs";
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import { fetchApi } from "@/lib/fetch-api";
 
 interface Comment {
   id: number;
@@ -65,41 +65,25 @@ export default function AdminCommentsPage() {
   }, [fetchComments]);
 
   const updateStatus = async (id: number, status: "APPROVED" | "REJECTED") => {
-    try {
-      setActionId(id);
-      const res = await fetch(`/api/comments/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status }),
-      });
-      if (res.ok) {
-        fetchComments();
-      } else {
-        showToast("更新评论状态失败", "error");
-      }
-    } catch (e) {
-      console.error("[AdminComments] Failed to update comment status:", e);
-      showToast("更新评论状态失败，请检查网络连接", "error");
-    } finally {
-      setActionId(null);
-    }
+    setActionId(id);
+    const result = await fetchApi(`/api/comments/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status }),
+      errorMessage: "更新评论状态失败",
+    });
+    setActionId(null);
+    if (result.ok) fetchComments();
   };
 
   const deleteComment = async (id: number) => {
-    try {
-      setActionId(id);
-      const res = await fetch(`/api/comments/${id}`, { method: "DELETE" });
-      if (res.ok) {
-        fetchComments();
-      } else {
-        showToast("删除失败", "error");
-      }
-    } catch (e) {
-      console.error("[AdminComments] Failed to delete comment:", e);
-      showToast("删除失败", "error");
-    } finally {
-      setActionId(null);
-    }
+    setActionId(id);
+    const result = await fetchApi(`/api/comments/${id}`, {
+      method: "DELETE",
+      errorMessage: "删除失败",
+    });
+    setActionId(null);
+    if (result.ok) fetchComments();
   };
 
   const statusConfig: Record<string, { label: string; dot: string; bg: string; text: string }> = {

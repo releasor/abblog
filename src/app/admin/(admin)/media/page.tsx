@@ -4,9 +4,9 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { ImageIcon, Copy, Check, Trash2 } from "lucide-react";
 import { EmptyState } from "@/components/empty-state";
-import { showToast } from "@/components/toast";
 import { useCopyWithId } from "@/hooks/use-copy";
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import { fetchApi } from "@/lib/fetch-api";
 
 interface MediaFile {
   filename: string;
@@ -29,41 +29,23 @@ export default function MediaPage() {
   const [deleteTargetFile, setDeleteTargetFile] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/api/media")
-      .then((r) => {
-        if (r.ok) return r.json();
-        showToast("加载媒体库失败", "error");
-        return [];
-      })
-      .then((data) => {
-        if (Array.isArray(data)) setImages(data);
-      })
-      .catch((e) => {
-        console.error("[Media] Failed to fetch media:", e);
-        showToast("加载媒体库失败", "error");
-      })
-      .finally(() => setLoading(false));
+    fetchApi<MediaFile[]>("/api/media", { errorMessage: "加载媒体库失败" })
+      .then((result) => {
+        setLoading(false);
+        if (result.ok && Array.isArray(result.data)) setImages(result.data);
+      });
   }, []);
 
   const copyUrl = (url: string) => copy(url, url);
 
   const handleDelete = async (filename: string) => {
     setDeleteFile(filename);
-    try {
-      const res = await fetch(`/api/media/manage?filename=${encodeURIComponent(filename)}`, {
-        method: "DELETE",
-      });
-      if (res.ok) {
-        setImages((prev) => prev.filter((img) => img.filename !== filename));
-      } else {
-        showToast("删除失败", "error");
-      }
-    } catch (e) {
-      console.error("[Media] Failed to delete file:", e);
-      showToast("删除失败，请稍后重试", "error");
-    } finally {
-      setDeleteFile(null);
-    }
+    const result = await fetchApi(`/api/media/manage?filename=${encodeURIComponent(filename)}`, {
+      method: "DELETE",
+      errorMessage: "删除失败",
+    });
+    setDeleteFile(null);
+    if (result.ok) setImages((prev) => prev.filter((img) => img.filename !== filename));
   };
 
   if (loading) {
