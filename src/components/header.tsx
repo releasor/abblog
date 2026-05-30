@@ -16,8 +16,8 @@ function NotificationBell() {
   useEffect(() => {
     const fetchCount = () => {
       fetch("/api/notifications")
-        .then((res) => res.json())
-        .then((data) => setCount(data.unreadCount || 0))
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => { if (data) setCount(data.unreadCount || 0); })
         .catch((e) => console.error("[Header] Failed to fetch notifications:", e));
     };
     fetchCount();
@@ -45,8 +45,8 @@ function UserMenu() {
 
   useEffect(() => {
     fetch("/api/user/profile")
-      .then((res) => res.json())
-      .then((data) => setProfile({ username: data.username, avatar: data.avatar }))
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => { if (data) setProfile({ username: data.username, avatar: data.avatar }); })
       .catch((e) => console.error("[Header] Failed to fetch user profile:", e));
   }, []);
 

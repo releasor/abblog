@@ -29,8 +29,8 @@ function useLevelInfo() {
   const [info, setInfo] = useState<LevelInfo | null>(null);
   useEffect(() => {
     fetch("/api/user/points")
-      .then((r) => r.json())
-      .then(setInfo)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => { if (data) setInfo(data); })
       .catch((e) => console.error("[UserLevel] Failed to fetch level info:", e));
   }, []);
   return info;

@@ -4,6 +4,8 @@ import { useState, memo } from "react";
 import { Heart, X } from "lucide-react";
 import { showToast } from "./toast";
 
+const AMOUNTS = [100, 500, 1000, 2000, 5000];
+
 interface DonateButtonProps {
   recipientId: number;
   recipientName: string;
@@ -16,8 +18,6 @@ export const DonateButton = memo(function DonateButton({ recipientId, recipientN
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
-
-  const amounts = [100, 500, 1000, 2000, 5000];
 
   const handleDonate = async () => {
     setLoading(true);
@@ -81,7 +81,7 @@ export const DonateButton = memo(function DonateButton({ recipientId, recipientN
                 <p className="text-sm text-zinc-500 mb-4">用实际行动支持创作者</p>
 
                 <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 mb-4">
-                  {amounts.map((a) => (
+                  {AMOUNTS.map((a) => (
                     <button
                       key={a}
                       onClick={() => setAmount(a)}

@@ -5,13 +5,23 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { UserAvatar } from "@/components/user-avatar";
 import { UserLevelProgress } from "@/components/user-level-badge";
+import { Input } from "@/components/ui/input";
+
+type SettingsTab = "profile" | "security" | "ai" | "notifications";
+
+const TAB_LABELS: Record<SettingsTab, string> = {
+  profile: "个人资料",
+  security: "安全设置",
+  ai: "AI 设置",
+  notifications: "通知设置",
+};
 
 export default function SettingsPage() {
   const { status, update } = useSession();
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [tab, setTab] = useState<"profile" | "security" | "ai" | "notifications">("profile");
+  const [tab, setTab] = useState<SettingsTab>("profile");
   const [name, setName] = useState("");
   const [username, setUsername] = useState("");
   const [bio, setBio] = useState("");
@@ -37,21 +47,27 @@ export default function SettingsPage() {
     if (status !== "authenticated") return;
 
     Promise.all([
-      fetch("/api/user/profile").then((res) => res.json()),
-      fetch("/api/user/ai-settings").then((res) => res.json()),
-      fetch("/api/user/notification-settings").then((res) => res.json()),
+      fetch("/api/user/profile").then((res) => (res.ok ? res.json() : null)),
+      fetch("/api/user/ai-settings").then((res) => (res.ok ? res.json() : null)),
+      fetch("/api/user/notification-settings").then((res) => (res.ok ? res.json() : null)),
     ])
       .then(([profileData, aiData, notifData]) => {
-        setName(profileData.name || "");
-        setUsername(profileData.username || "");
-        setBio(profileData.bio || "");
-        setWebsite(profileData.website || "");
-        setLocation(profileData.location || "");
-        setAvatar(profileData.avatar || null);
-        setAiApiKey(aiData.aiApiKey || "");
-        setAiApiUrl(aiData.aiApiUrl || "");
-        setAiModel(aiData.aiModel || "");
-        setEmailNotifications(notifData.emailNotifications ?? true);
+        if (profileData) {
+          setName(profileData.name || "");
+          setUsername(profileData.username || "");
+          setBio(profileData.bio || "");
+          setWebsite(profileData.website || "");
+          setLocation(profileData.location || "");
+          setAvatar(profileData.avatar || null);
+        }
+        if (aiData) {
+          setAiApiKey(aiData.aiApiKey || "");
+          setAiApiUrl(aiData.aiApiUrl || "");
+          setAiModel(aiData.aiModel || "");
+        }
+        if (notifData) {
+          setEmailNotifications(notifData.emailNotifications ?? true);
+        }
       })
       .catch((e) => console.error("[Settings] Failed to fetch settings:", e));
   }, [status]);
@@ -185,38 +201,17 @@ export default function SettingsPage() {
       <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-8">账号设置</h1>
 
       <div className="flex gap-4 mb-8 border-b border-zinc-200 dark:border-zinc-800 overflow-x-auto scrollbar-hide" role="tablist" aria-label="设置分类">
-        <button
-          onClick={() => { setTab("profile"); setMessage(""); }}
-          role="tab"
-          aria-selected={tab === "profile"}
-          className={`pb-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${tab === "profile" ? "border-zinc-900 dark:border-zinc-100 text-zinc-900 dark:text-zinc-100" : "border-transparent text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"}`}
-        >
-          个人资料
-        </button>
-        <button
-          onClick={() => { setTab("security"); setMessage(""); }}
-          role="tab"
-          aria-selected={tab === "security"}
-          className={`pb-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${tab === "security" ? "border-zinc-900 dark:border-zinc-100 text-zinc-900 dark:text-zinc-100" : "border-transparent text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"}`}
-        >
-          安全设置
-        </button>
-        <button
-          onClick={() => { setTab("ai"); setMessage(""); }}
-          role="tab"
-          aria-selected={tab === "ai"}
-          className={`pb-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${tab === "ai" ? "border-zinc-900 dark:border-zinc-100 text-zinc-900 dark:text-zinc-100" : "border-transparent text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"}`}
-        >
-          AI 设置
-        </button>
-        <button
-          onClick={() => { setTab("notifications"); setMessage(""); }}
-          role="tab"
-          aria-selected={tab === "notifications"}
-          className={`pb-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${tab === "notifications" ? "border-zinc-900 dark:border-zinc-100 text-zinc-900 dark:text-zinc-100" : "border-transparent text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"}`}
-        >
-          通知设置
-        </button>
+        {(Object.keys(TAB_LABELS) as SettingsTab[]).map((t) => (
+          <button
+            key={t}
+            onClick={() => { setTab(t); setMessage(""); }}
+            role="tab"
+            aria-selected={tab === t}
+            className={`pb-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${tab === t ? "border-zinc-900 dark:border-zinc-100 text-zinc-900 dark:text-zinc-100" : "border-transparent text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"}`}
+          >
+            {TAB_LABELS[t]}
+          </button>
+        ))}
       </div>
 
       {message && (
@@ -243,14 +238,21 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          <div>
-            <label htmlFor="settings-name" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">昵称</label>
-            <input id="settings-name" value={name} onChange={(e) => setName(e.target.value)} className="w-full px-3 py-2 text-sm border border-zinc-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500" />
-          </div>
+          <Input
+            id="settings-name"
+            label="昵称"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
 
           <div>
-            <label htmlFor="settings-username" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">用户名</label>
-            <input id="settings-username" value={username} onChange={(e) => setUsername(e.target.value)} className="w-full px-3 py-2 text-sm border border-zinc-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500" placeholder="用于个人主页链接" />
+            <Input
+              id="settings-username"
+              label="用户名"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="用于个人主页链接"
+            />
             <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">字母、数字、下划线和连字符，2-20个字符</p>
           </div>
 
@@ -260,14 +262,20 @@ export default function SettingsPage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="settings-website" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">网站</label>
-              <input id="settings-website" value={website} onChange={(e) => setWebsite(e.target.value)} className="w-full px-3 py-2 text-sm border border-zinc-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500" placeholder="https://..." />
-            </div>
-            <div>
-              <label htmlFor="settings-location" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">所在地</label>
-              <input id="settings-location" value={location} onChange={(e) => setLocation(e.target.value)} className="w-full px-3 py-2 text-sm border border-zinc-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500" placeholder="城市" />
-            </div>
+            <Input
+              id="settings-website"
+              label="网站"
+              value={website}
+              onChange={(e) => setWebsite(e.target.value)}
+              placeholder="https://..."
+            />
+            <Input
+              id="settings-location"
+              label="所在地"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              placeholder="城市"
+            />
           </div>
 
           <button onClick={saveProfile} disabled={saving} className="w-full px-4 py-2 text-sm bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-lg hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors disabled:opacity-50">
@@ -278,18 +286,30 @@ export default function SettingsPage() {
 
       {tab === "security" && (
         <div className="space-y-6">
-          <div>
-            <label htmlFor="settings-current-password" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">当前密码</label>
-            <input id="settings-current-password" type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} autoComplete="current-password" className="w-full px-3 py-2 text-sm border border-zinc-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500" />
-          </div>
-          <div>
-            <label htmlFor="settings-new-password" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">新密码</label>
-            <input id="settings-new-password" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} autoComplete="new-password" className="w-full px-3 py-2 text-sm border border-zinc-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500" />
-          </div>
-          <div>
-            <label htmlFor="settings-confirm-password" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">确认新密码</label>
-            <input id="settings-confirm-password" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} autoComplete="new-password" className="w-full px-3 py-2 text-sm border border-zinc-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500" />
-          </div>
+          <Input
+            id="settings-current-password"
+            label="当前密码"
+            type="password"
+            value={currentPassword}
+            onChange={(e) => setCurrentPassword(e.target.value)}
+            autoComplete="current-password"
+          />
+          <Input
+            id="settings-new-password"
+            label="新密码"
+            type="password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            autoComplete="new-password"
+          />
+          <Input
+            id="settings-confirm-password"
+            label="确认新密码"
+            type="password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            autoComplete="new-password"
+          />
           <button onClick={changePassword} className="w-full px-4 py-2 text-sm bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-lg hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors">
             修改密码
           </button>
@@ -328,27 +348,21 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          <div>
-            <label htmlFor="settings-ai-url" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">API URL</label>
-            <input
-              id="settings-ai-url"
-              value={aiApiUrl}
-              onChange={(e) => setAiApiUrl(e.target.value)}
-              placeholder="https://api.openai.com/v1/chat/completions（需要完整路径）"
-              className="w-full px-3 py-2 text-sm border border-zinc-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500"
-            />
-          </div>
+          <Input
+            id="settings-ai-url"
+            label="API URL"
+            value={aiApiUrl}
+            onChange={(e) => setAiApiUrl(e.target.value)}
+            placeholder="https://api.openai.com/v1/chat/completions（需要完整路径）"
+          />
 
-          <div>
-            <label htmlFor="settings-ai-model" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">模型</label>
-            <input
-              id="settings-ai-model"
-              value={aiModel}
-              onChange={(e) => setAiModel(e.target.value)}
-              placeholder="gpt-3.5-turbo（留空使用默认）"
-              className="w-full px-3 py-2 text-sm border border-zinc-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500"
-            />
-          </div>
+          <Input
+            id="settings-ai-model"
+            label="模型"
+            value={aiModel}
+            onChange={(e) => setAiModel(e.target.value)}
+            placeholder="gpt-3.5-turbo（留空使用默认）"
+          />
 
           <button onClick={saveAiSettings} disabled={saving} className="w-full px-4 py-2 text-sm bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-lg hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors disabled:opacity-50">
             {saving ? "保存中..." : "保存 AI 设置"}

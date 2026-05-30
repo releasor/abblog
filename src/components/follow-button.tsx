@@ -18,8 +18,8 @@ export const FollowButton = memo(function FollowButton({ username, onFollowChang
 
   useEffect(() => {
     fetch(`/api/users/${username}/follow`)
-      .then((res) => res.json())
-      .then((data) => setIsFollowing(data.isFollowing))
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => { if (data) setIsFollowing(data.isFollowing); })
       .catch((e) => console.error("[FollowButton] Failed to fetch follow status:", e));
   }, [username]);
 
