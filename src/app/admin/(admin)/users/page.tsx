@@ -126,6 +126,7 @@ export default function AdminUsersPage() {
                       width={36}
                       height={36}
                       className="rounded-full object-cover"
+                      loading="lazy"
                     />
                   ) : (
                     <span className="text-sm font-medium text-zinc-600 dark:text-zinc-300">

@@ -88,6 +88,7 @@ export default function LinksPage() {
                 fill
                 className="object-cover"
                 sizes="48px"
+                loading="lazy"
                 unoptimized
               />
             </div>

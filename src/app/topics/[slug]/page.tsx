@@ -58,7 +58,7 @@ export default async function TopicDetailPage({ params }: Props) {
         <div className="mb-8">
           <div className="flex items-center gap-4 mb-4">
             {topic.coverImage ? (
-              <Image src={topic.coverImage} alt={topic.name} width={64} height={64} className="rounded-xl object-cover" />
+              <Image src={topic.coverImage} alt={topic.name} width={64} height={64} className="rounded-xl object-cover" priority />
             ) : (
               <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-orange-400 to-pink-500 flex items-center justify-center text-white text-2xl font-bold">
                 {topic.name[0]}

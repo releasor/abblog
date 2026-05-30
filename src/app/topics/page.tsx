@@ -42,7 +42,7 @@ export default async function TopicsPage() {
             >
               <div className="flex items-center gap-3 mb-2">
                 {topic.coverImage ? (
-                  <Image src={topic.coverImage} alt={topic.name} width={40} height={40} className="rounded-lg object-cover" />
+                  <Image src={topic.coverImage} alt={topic.name} width={40} height={40} className="rounded-lg object-cover" loading="lazy" />
                 ) : (
                   <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-400 to-pink-500 flex items-center justify-center text-white font-bold">
                     {topic.name[0]}

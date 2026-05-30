@@ -6,6 +6,7 @@ interface UserAvatarProps {
   avatar?: string | null;
   size?: "sm" | "md" | "lg" | "xl";
   className?: string;
+  loading?: "lazy" | "eager";
 }
 
 const sizes = {
@@ -22,7 +23,7 @@ const imgSizes = {
   xl: 64,
 };
 
-export const UserAvatar = memo(function UserAvatar({ name, avatar, size = "md", className = "" }: UserAvatarProps) {
+export const UserAvatar = memo(function UserAvatar({ name, avatar, size = "md", className = "", loading }: UserAvatarProps) {
   const initial = name?.charAt(0)?.toUpperCase() || "?";
 
   if (avatar) {
@@ -34,6 +35,7 @@ export const UserAvatar = memo(function UserAvatar({ name, avatar, size = "md", 
           fill
           className="object-cover"
           sizes={`${imgSizes[size]}px`}
+          loading={loading}
           unoptimized
         />
       </div>

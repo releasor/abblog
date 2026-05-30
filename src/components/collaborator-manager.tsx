@@ -132,7 +132,7 @@ export const CollaboratorManager = memo(function CollaboratorManager({ postId, i
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center overflow-hidden">
                 {c.user.avatar ? (
-                  <Image src={c.user.avatar} alt={c.user.name} width={32} height={32} className="rounded-full" />
+                  <Image src={c.user.avatar} alt={c.user.name} width={32} height={32} className="rounded-full" loading="lazy" />
                 ) : (
                   <span className="text-sm font-medium">{c.user.name[0]}</span>
                 )}

@@ -239,6 +239,7 @@ export default function BookmarksPage() {
                             width={80}
                             height={80}
                             className="w-20 h-20 object-cover rounded-lg"
+                            loading="lazy"
                           />
                         )}
                         <div className="flex-1 min-w-0">
