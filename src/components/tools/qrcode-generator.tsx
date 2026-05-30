@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 
 export default function QRCodeGenerator() {
   const [text, setText] = useState("https://example.com");
   const [canvasReady, setCanvasReady] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  const generate = () => {
+  const generate = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas || !text) return;
 
@@ -56,7 +56,7 @@ export default function QRCodeGenerator() {
     }
 
     setCanvasReady(true);
-  };
+  }, [text]);
 
   const download = () => {
     const canvas = canvasRef.current;
@@ -69,7 +69,7 @@ export default function QRCodeGenerator() {
 
   useEffect(() => {
     generate();
-  }, [text]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [generate]);
 
   return (
     <div className="space-y-4">
