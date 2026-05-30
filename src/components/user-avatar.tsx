@@ -23,7 +23,7 @@ const imgSizes = {
   xl: 64,
 };
 
-export const UserAvatar = memo(function UserAvatar({ name, avatar, size = "md", className = "", loading }: UserAvatarProps) {
+export const UserAvatar = memo(function UserAvatar({ name, avatar, size = "md", className = "", loading = "lazy" }: UserAvatarProps) {
   const initial = name?.charAt(0)?.toUpperCase() || "?";
 
   if (avatar) {

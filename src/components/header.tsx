@@ -70,7 +70,7 @@ function UserMenu() {
         aria-label="用户菜单"
         aria-expanded={open}
       >
-        <UserAvatar name={session?.user?.name || "?"} avatar={profile.avatar} size="sm" />
+        <UserAvatar name={session?.user?.name || "?"} avatar={profile.avatar} size="sm" loading="eager" />
       </button>
 
       {open && (
