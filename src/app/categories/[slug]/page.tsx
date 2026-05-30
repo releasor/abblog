@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
+import { absoluteUrl } from "@/lib/site-url";
 import { PostCard } from "@/components/post-card";
 import { EmptyState } from "@/components/empty-state";
 
@@ -46,8 +47,22 @@ export default async function CategoryPage({ params }: PageProps) {
     notFound();
   }
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "首页", item: absoluteUrl("/") },
+      { "@type": "ListItem", position: 2, name: "分类", item: absoluteUrl("/categories") },
+      { "@type": "ListItem", position: 3, name: category.name, item: absoluteUrl(`/categories/${slug}`) },
+    ],
+  };
+
   return (
     <div className="max-w-6xl mx-auto px-4 py-12">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <div className="mb-8">
         <p className="text-sm text-zinc-500 dark:text-zinc-500 mb-1">
           分类
