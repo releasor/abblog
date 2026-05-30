@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { formatDate } from "@/lib/format-date";
+import { absoluteUrl } from "@/lib/site-url";
 import { BookOpen, Calendar } from "lucide-react";
 
 export const revalidate = 600;
@@ -61,8 +62,22 @@ export default async function SeriesDetailPage({ params }: Props) {
 
   if (!series) notFound();
 
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "首页", item: absoluteUrl("") },
+      { "@type": "ListItem", position: 2, name: "系列", item: absoluteUrl("/series") },
+      { "@type": "ListItem", position: 3, name: series.name, item: absoluteUrl(`/series/${series.slug}`) },
+    ],
+  };
+
   return (
     <main className="container mx-auto px-4 py-8">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
       <div className="max-w-4xl mx-auto">
         <div className="mb-8">
           <div className="flex items-center gap-2 text-sm text-zinc-500 mb-4">

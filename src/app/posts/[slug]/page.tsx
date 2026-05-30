@@ -132,6 +132,16 @@ export default async function PublicPostPage({ params }: PageProps) {
     },
   };
 
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "首页", item: absoluteUrl("") },
+      ...(post.category ? [{ "@type": "ListItem", position: 2, name: post.category.name, item: absoluteUrl(`/categories/${post.category.slug}`) }] : []),
+      { "@type": "ListItem", position: post.category ? 3 : 2, name: post.title, item: absoluteUrl(`/posts/${post.slug}`) },
+    ],
+  };
+
   return (
     <div className="max-w-5xl mx-auto px-4 py-12">
       <ReadingProgress />
@@ -141,6 +151,10 @@ export default async function PublicPostPage({ params }: PageProps) {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
       {post.coverImageUrl && (
         <div className="relative w-full aspect-[16/9] mb-8 rounded-lg overflow-hidden">
