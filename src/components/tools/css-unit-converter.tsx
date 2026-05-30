@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useCopyWithId } from "@/hooks/use-copy";
 
+const COMMON_SIZES = [12, 14, 16, 18, 20, 24, 32, 48, 64];
+
 export default function CssUnitConverter() {
   const [px, setPx] = useState("16");
   const [baseSize, setBaseSize] = useState("16");
@@ -29,10 +31,6 @@ export default function CssUnitConverter() {
     { unit: "vh", value: vhVal, label: "视口高度" },
     { unit: "pt", value: pt, label: "磅" },
   ];
-
-  const handleCopy = (text: string, label: string) => copy(text, label);
-
-  const commonSizes = [12, 14, 16, 18, 20, 24, 32, 48, 64];
 
   return (
     <div className="space-y-6">
@@ -70,7 +68,7 @@ export default function CssUnitConverter() {
         {results.map((r) => (
           <button
             key={r.unit}
-            onClick={() => handleCopy(`${parseFloat(r.value.toFixed(4))}${r.unit === "%" ? "%" : r.unit}`, r.unit)}
+            onClick={() => copy(`${parseFloat(r.value.toFixed(4))}${r.unit === "%" ? "%" : r.unit}`, r.unit)}
             className="flex items-center justify-between p-3 rounded-lg bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors text-left"
           >
             <div>
@@ -87,7 +85,7 @@ export default function CssUnitConverter() {
       <div>
         <h3 className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">常用尺寸</h3>
         <div className="flex flex-wrap gap-2">
-          {commonSizes.map((s) => (
+          {COMMON_SIZES.map((s) => (
             <button
               key={s}
               onClick={() => setPx(String(s))}
