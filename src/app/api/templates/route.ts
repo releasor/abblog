@@ -27,7 +27,16 @@ export async function POST(request: NextRequest) {
     const userId = getAuthUserId(session);
     if (!userId) return NextResponse.json({ error: "请先登录" }, { status: 401 });
 
-    const { name, description, content, category } = await request.json();
+    let name: string, description: string | undefined, content: string, category: string | undefined;
+    try {
+      const body = await request.json();
+      name = body.name;
+      description = body.description;
+      content = body.content;
+      category = body.category;
+    } catch {
+      return NextResponse.json({ error: "请求格式无效" }, { status: 400 });
+    }
     if (!name || !content) return NextResponse.json({ error: "请输入模板名称和内容" }, { status: 400 });
 
     const template = await prisma.postTemplate.create({

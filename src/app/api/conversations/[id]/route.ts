@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions, getAuthUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { requireId, invalidIdResponse } from "@/lib/api-utils";
 
 export async function GET(
   _request: NextRequest,
@@ -9,10 +10,8 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const conversationId = parseInt(id);
-    if (isNaN(conversationId)) {
-      return NextResponse.json({ error: "无效ID" }, { status: 400 });
-    }
+    let conversationId: number;
+    try { conversationId = requireId(id); } catch { return invalidIdResponse(); }
 
     const session = await getServerSession(authOptions);
     const userId = getAuthUserId(session);

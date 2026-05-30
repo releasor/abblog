@@ -4,6 +4,7 @@ import { authOptions, getAuthUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { createActivity } from "@/lib/activity";
 import { checkRateLimit, RATE_LIMITS, getRateLimitHeaders } from "@/lib/rate-limit";
+import { requireId, invalidIdResponse } from "@/lib/api-utils";
 
 export async function GET(
   _request: NextRequest,
@@ -11,10 +12,8 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const postId = parseInt(id);
-    if (isNaN(postId)) {
-      return NextResponse.json({ error: "无效的文章ID" }, { status: 400 });
-    }
+    let postId: number;
+    try { postId = requireId(id); } catch { return invalidIdResponse(); }
 
     const comments = await prisma.comment.findMany({
       where: { postId, status: "APPROVED" },
@@ -42,10 +41,8 @@ export async function POST(
 ) {
   try {
     const { id } = await params;
-    const postId = parseInt(id);
-    if (isNaN(postId)) {
-      return NextResponse.json({ error: "无效的文章ID" }, { status: 400 });
-    }
+    let postId: number;
+    try { postId = requireId(id); } catch { return invalidIdResponse(); }
 
     const session = await getServerSession(authOptions);
     const userIdNum = getAuthUserId(session);
@@ -61,7 +58,12 @@ export async function POST(
       );
     }
 
-    const body = await request.json();
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: "请求格式无效" }, { status: 400 });
+    }
     const { content } = body;
 
     if (!content || typeof content !== "string" || content.trim().length === 0) {

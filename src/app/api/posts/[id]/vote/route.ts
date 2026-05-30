@@ -3,6 +3,8 @@ import { getServerSession } from "next-auth";
 import { authOptions, getAuthUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { createActivity } from "@/lib/activity";
+import { checkRateLimit, RATE_LIMITS, getRateLimitHeaders } from "@/lib/rate-limit";
+import { requireId, invalidIdResponse } from "@/lib/api-utils";
 
 export async function GET(
   _request: NextRequest,
@@ -10,8 +12,8 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const postId = parseInt(id);
-    if (isNaN(postId)) return NextResponse.json({ error: "无效ID" }, { status: 400 });
+    let postId: number;
+    try { postId = requireId(id); } catch { return invalidIdResponse(); }
 
     const session = await getServerSession(authOptions);
     const userId = getAuthUserId(session);
@@ -50,11 +52,22 @@ export async function POST(
     const userId = getAuthUserId(session);
     if (!userId) return NextResponse.json({ error: "请先登录" }, { status: 401 });
 
-    const { id } = await params;
-    const postId = parseInt(id);
-    if (isNaN(postId)) return NextResponse.json({ error: "无效ID" }, { status: 400 });
+    const rl = checkRateLimit(`vote:${userId}`, RATE_LIMITS.api);
+    if (!rl.allowed) {
+      return NextResponse.json({ error: "操作太频繁，请稍后再试" }, { status: 429, headers: getRateLimitHeaders(rl) });
+    }
 
-    const { value } = await request.json();
+    const { id } = await params;
+    let postId: number;
+    try { postId = requireId(id); } catch { return invalidIdResponse(); }
+
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: "请求格式无效" }, { status: 400 });
+    }
+    const { value } = body;
 
     if (value !== 1 && value !== -1) {
       return NextResponse.json({ error: "投票值必须为 1 或 -1" }, { status: 400 });
@@ -80,9 +93,26 @@ export async function POST(
         scoreDelta = value * 2;
       }
     } else {
-      vote = await prisma.postVote.create({
-        data: { postId, userId, value },
-      });
+      try {
+        vote = await prisma.postVote.create({
+          data: { postId, userId, value },
+        });
+      } catch (e: unknown) {
+        if ((e as { code?: string }).code === "P2002") {
+          // Race condition: another request created the vote concurrently
+          const retryVote = await prisma.postVote.findUnique({
+            where: { postId_userId: { postId, userId } },
+          });
+          if (retryVote) {
+            const currentPost = await prisma.post.findUnique({
+              where: { id: postId },
+              select: { score: true },
+            });
+            return NextResponse.json({ userVote: retryVote.value, score: currentPost?.score ?? 0 });
+          }
+        }
+        throw e;
+      }
       scoreDelta = value;
       if (value === 1) {
         await createActivity(userId, "LIKE_ADDED", postId);
@@ -112,8 +142,8 @@ export async function DELETE(
     if (!userId) return NextResponse.json({ error: "请先登录" }, { status: 401 });
 
     const { id } = await params;
-    const postId = parseInt(id);
-    if (isNaN(postId)) return NextResponse.json({ error: "无效ID" }, { status: 400 });
+    let postId: number;
+    try { postId = requireId(id); } catch { return invalidIdResponse(); }
 
     const existing = await prisma.postVote.findUnique({
       where: { postId_userId: { postId, userId } },

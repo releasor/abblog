@@ -37,6 +37,6 @@ export async function GET() {
     return NextResponse.json(images, { headers: { "Cache-Control": "private, max-age=10, stale-while-revalidate=20" } });
   } catch (e) {
     console.error("[Media] Failed to list files:", e);
-    return NextResponse.json([]);
+    return NextResponse.json({ error: "获取媒体文件失败" }, { status: 500 });
   }
 }

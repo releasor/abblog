@@ -61,6 +61,7 @@ export const VoteButtons = memo(function VoteButtons({ postId, initialScore = 0,
             : "text-zinc-400 hover:text-orange-500 hover:bg-orange-500/10"
         }`}
         aria-label="赞同"
+        aria-pressed={vote === 1}
       >
         <ArrowBigUp className="w-6 h-6" />
       </button>
@@ -74,6 +75,7 @@ export const VoteButtons = memo(function VoteButtons({ postId, initialScore = 0,
             : "text-zinc-400 hover:text-blue-500 hover:bg-blue-500/10"
         }`}
         aria-label="反对"
+        aria-pressed={vote === -1}
       >
         <ArrowBigDown className="w-6 h-6" />
       </button>

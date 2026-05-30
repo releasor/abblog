@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 const renderMarkdown = (md: string) => {
   const html = md
@@ -21,6 +22,7 @@ const renderMarkdown = (md: string) => {
 
 export default function MarkdownPreview() {
   const [input, setInput] = useState("# Hello World\n\n这是一段 **Markdown** 文本。\n\n- 列表项 1\n- 列表项 2\n\n```js\nconsole.log('hello');\n```");
+  const sanitizedHtml = useMemo(() => sanitizeHtml(renderMarkdown(input)), [input]);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -36,7 +38,7 @@ export default function MarkdownPreview() {
         <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">预览</label>
         <div
           className="w-full h-80 p-3 overflow-auto border border-zinc-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-950 prose prose-sm dark:prose-invert max-w-none"
-          dangerouslySetInnerHTML={{ __html: renderMarkdown(input) }}
+          dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
         />
       </div>
     </div>

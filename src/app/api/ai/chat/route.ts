@@ -4,6 +4,7 @@ import { authOptions, getAuthUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getAiConfig } from "@/lib/ai-config";
 import { checkRateLimit, getRateLimitHeaders } from "@/lib/rate-limit";
+import { requireId, invalidIdResponse } from "@/lib/api-utils";
 
 export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -21,14 +22,27 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const { postId, question } = await request.json();
-
-  if (!postId || !question) {
-    return NextResponse.json({ error: "缺少参数" }, { status: 400 });
+  let postId: string, question: string;
+  try {
+    const body = await request.json();
+    postId = body.postId;
+    question = body.question;
+  } catch {
+    return NextResponse.json({ error: "请求格式无效" }, { status: 400 });
   }
 
+  if (!postId || !question || typeof question !== "string") {
+    return NextResponse.json({ error: "缺少参数" }, { status: 400 });
+  }
+  if (question.length > 500) {
+    return NextResponse.json({ error: "问题不能超过500个字符" }, { status: 400 });
+  }
+
+  let postIdNum: number;
+  try { postIdNum = requireId(postId); } catch { return invalidIdResponse(); }
+
   const post = await prisma.post.findUnique({
-    where: { id: postId },
+    where: { id: postIdNum },
     select: { title: true, content: true },
   });
 

@@ -2,12 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions, getAuthUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { requireId, invalidIdResponse } from "@/lib/api-utils";
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const postId = parseInt(id);
-    if (isNaN(postId)) return NextResponse.json({ error: "无效ID" }, { status: 400 });
+    let postId: number;
+    try { postId = requireId(id); } catch { return invalidIdResponse(); }
 
     const collaborators = await prisma.postCollaborator.findMany({
       where: { postId },
@@ -27,8 +28,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     if (!userId) return NextResponse.json({ error: "请先登录" }, { status: 401 });
 
     const { id } = await params;
-    const postId = parseInt(id);
-    if (isNaN(postId)) return NextResponse.json({ error: "无效ID" }, { status: 400 });
+    let postId: number;
+    try { postId = requireId(id); } catch { return invalidIdResponse(); }
 
     const post = await prisma.post.findUnique({ where: { id: postId } });
     if (!post) return NextResponse.json({ error: "文章不存在" }, { status: 404 });
@@ -36,11 +37,24 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const isAuthor = post.authorId === userId || post.userId === userId;
     if (!isAuthor) return NextResponse.json({ error: "无权限" }, { status: 403 });
 
-    const { userId: targetUserId, role } = await request.json();
+    let targetUserId: string, role: string | undefined;
+    try {
+      const body = await request.json();
+      targetUserId = body.userId;
+      role = body.role;
+    } catch {
+      return NextResponse.json({ error: "请求格式无效" }, { status: 400 });
+    }
     if (!targetUserId) return NextResponse.json({ error: "请选择用户" }, { status: 400 });
+    let targetUid: number;
+    try { targetUid = requireId(targetUserId); } catch { return invalidIdResponse(); }
+
+    const allowedRoles = ["EDITOR", "VIEWER"] as const;
+    type AllowedRole = (typeof allowedRoles)[number];
+    const collaboratorRole: AllowedRole = allowedRoles.includes(role as AllowedRole) ? (role as AllowedRole) : "EDITOR";
 
     const collaborator = await prisma.postCollaborator.create({
-      data: { postId, userId: parseInt(targetUserId), role: role || "EDITOR" },
+      data: { postId, userId: targetUid, role: collaboratorRole },
       include: { user: { select: { id: true, name: true, username: true, avatar: true } } },
     });
     return NextResponse.json(collaborator, { status: 201 });
@@ -57,8 +71,8 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
     if (!userId) return NextResponse.json({ error: "请先登录" }, { status: 401 });
 
     const { id } = await params;
-    const postId = parseInt(id);
-    if (isNaN(postId)) return NextResponse.json({ error: "无效ID" }, { status: 400 });
+    let postId: number;
+    try { postId = requireId(id); } catch { return invalidIdResponse(); }
 
     const post = await prisma.post.findUnique({ where: { id: postId } });
     if (!post) return NextResponse.json({ error: "文章不存在" }, { status: 404 });
@@ -69,9 +83,11 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
     const { searchParams } = new URL(request.url);
     const targetUserId = searchParams.get("userId");
     if (!targetUserId) return NextResponse.json({ error: "请选择用户" }, { status: 400 });
+    let targetUid: number;
+    try { targetUid = requireId(targetUserId); } catch { return invalidIdResponse(); }
 
     await prisma.postCollaborator.delete({
-      where: { postId_userId: { postId, userId: parseInt(targetUserId) } },
+      where: { postId_userId: { postId, userId: targetUid } },
     });
     return NextResponse.json({ success: true });
   } catch (e) {

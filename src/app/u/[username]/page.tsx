@@ -58,7 +58,7 @@ export default function UserProfilePage() {
   const [tab, setTab] = useState<ProfileTab>("posts");
   const [loading, setLoading] = useState(true);
 
-  const isOwn = session?.user && (session.user as { username?: string }).username === username;
+  const isOwn = session?.user && session.user.username === username;
 
   useEffect(() => {
     fetch(`/api/users/${username}`)
@@ -130,7 +130,7 @@ export default function UserProfilePage() {
       <div className="flex items-start gap-6 mb-8">
         <UserAvatar name={profile.name} avatar={profile.avatar} size="xl" />
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-3 mb-2">
+          <div className="flex flex-wrap items-center gap-3 mb-2">
             <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">{profile.name}</h1>
             {!isOwn && session && profile.username && <FollowButton username={profile.username} />}
             {!isOwn && session && (

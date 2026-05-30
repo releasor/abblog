@@ -5,6 +5,7 @@ import { Folder, Plus, Pencil, Trash2, Check, X } from "lucide-react";
 import { SkeletonRow } from "@/components/skeleton";
 import { EmptyState } from "@/components/empty-state";
 import { showToast } from "@/components/toast";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 
 interface Category {
   id: number;
@@ -24,6 +25,7 @@ export default function AdminCategoriesPage() {
   const [editError, setEditError] = useState("");
   const [saving, setSaving] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [deleteTargetId, setDeleteTargetId] = useState<number | null>(null);
 
   const fetchCategories = useCallback(async () => {
     try {
@@ -98,7 +100,6 @@ export default function AdminCategoriesPage() {
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm("确定要删除此分类吗？该分类下的文章将变为未分类。")) return;
     try {
       setDeleteId(id);
       const res = await fetch(`/api/categories/${id}`, { method: "DELETE" });
@@ -248,7 +249,7 @@ export default function AdminCategoriesPage() {
                             <Pencil className="w-4 h-4" />
                           </button>
                           <button
-                            onClick={() => handleDelete(category.id)}
+                            onClick={() => setDeleteTargetId(category.id)}
                             disabled={deleteId === category.id}
                             className="p-2 rounded-lg text-zinc-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50 transition-colors"
                             aria-label={`删除 ${category.name}`}
@@ -265,6 +266,19 @@ export default function AdminCategoriesPage() {
           </table>
         </div>
       )}
+
+      <ConfirmDialog
+        open={deleteTargetId !== null}
+        title="删除分类"
+        message="确定要删除此分类吗？该分类下的文章将变为未分类。此操作无法撤销。"
+        confirmLabel="删除"
+        variant="danger"
+        onConfirm={() => {
+          if (deleteTargetId) handleDelete(deleteTargetId);
+          setDeleteTargetId(null);
+        }}
+        onCancel={() => setDeleteTargetId(null)}
+      />
     </div>
   );
 }

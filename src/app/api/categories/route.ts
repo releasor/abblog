@@ -29,7 +29,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "请先登录" }, { status: 401 });
     }
 
-    const body = await request.json();
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: "请求格式无效" }, { status: 400 });
+    }
     const { name } = body;
 
     if (!name || typeof name !== "string" || name.trim().length < 1 || name.trim().length > 50) {
@@ -55,12 +60,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const category = await prisma.category.create({
-      data: { name: trimmedName, slug },
-      include: { _count: { select: { posts: true } } },
-    });
-
-    return NextResponse.json(category, { status: 201 });
+    try {
+      const category = await prisma.category.create({
+        data: { name: trimmedName, slug },
+        include: { _count: { select: { posts: true } } },
+      });
+      return NextResponse.json(category, { status: 201 });
+    } catch (createErr: unknown) {
+      if ((createErr as { code?: string }).code === "P2002") {
+        return NextResponse.json({ error: "该分类已存在" }, { status: 409 });
+      }
+      throw createErr;
+    }
   } catch (e) {
     console.error("[Categories] Failed to create category:", e);
     return NextResponse.json({ error: "创建分类失败" }, { status: 500 });

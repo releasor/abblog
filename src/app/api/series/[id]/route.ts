@@ -2,12 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions, getAuthUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { requireId, invalidIdResponse } from "@/lib/api-utils";
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const seriesId = parseInt(id);
-    if (isNaN(seriesId)) return NextResponse.json({ error: "无效ID" }, { status: 400 });
+    let seriesId: number;
+    try { seriesId = requireId(id); } catch { return invalidIdResponse(); }
 
     const series = await prisma.postSeries.findUnique({
       where: { id: seriesId },
@@ -37,14 +38,19 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     if (!userId) return NextResponse.json({ error: "请先登录" }, { status: 401 });
 
     const { id } = await params;
-    const seriesId = parseInt(id);
-    if (isNaN(seriesId)) return NextResponse.json({ error: "无效ID" }, { status: 400 });
+    let seriesId: number;
+    try { seriesId = requireId(id); } catch { return invalidIdResponse(); }
 
     const series = await prisma.postSeries.findUnique({ where: { id: seriesId } });
     if (!series) return NextResponse.json({ error: "系列不存在" }, { status: 404 });
     if (series.userId !== userId) return NextResponse.json({ error: "无权限" }, { status: 403 });
 
-    const body = await request.json();
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: "请求格式无效" }, { status: 400 });
+    }
     const updated = await prisma.postSeries.update({
       where: { id: seriesId },
       data: {
@@ -67,8 +73,8 @@ export async function DELETE(_request: NextRequest, { params }: { params: Promis
     if (!userId) return NextResponse.json({ error: "请先登录" }, { status: 401 });
 
     const { id } = await params;
-    const seriesId = parseInt(id);
-    if (isNaN(seriesId)) return NextResponse.json({ error: "无效ID" }, { status: 400 });
+    let seriesId: number;
+    try { seriesId = requireId(id); } catch { return invalidIdResponse(); }
 
     const series = await prisma.postSeries.findUnique({ where: { id: seriesId } });
     if (!series) return NextResponse.json({ error: "系列不存在" }, { status: 404 });

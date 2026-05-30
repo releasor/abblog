@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions, getAuthUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { requireId, invalidIdResponse } from "@/lib/api-utils";
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -10,10 +11,8 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     if (!userId) return NextResponse.json({ error: "请先登录" }, { status: 401 });
 
     const { id } = await params;
-    const postId = parseInt(id);
-    if (isNaN(postId)) {
-      return NextResponse.json({ error: "无效ID" }, { status: 400 });
-    }
+    let postId: number;
+    try { postId = requireId(id); } catch { return invalidIdResponse(); }
 
     const versions = await prisma.postVersion.findMany({
       where: { postId },
@@ -35,17 +34,23 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     if (!userId) return NextResponse.json({ error: "请先登录" }, { status: 401 });
 
     const { id } = await params;
-    const postId = parseInt(id);
-    if (isNaN(postId)) {
-      return NextResponse.json({ error: "无效ID" }, { status: 400 });
-    }
+    let postId: number;
+    try { postId = requireId(id); } catch { return invalidIdResponse(); }
 
-    const { versionId } = await request.json();
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: "请求格式无效" }, { status: 400 });
+    }
+    const { versionId } = body;
     if (!versionId) {
       return NextResponse.json({ error: "缺少版本ID" }, { status: 400 });
     }
+    let versionIdNum: number;
+    try { versionIdNum = requireId(versionId); } catch { return invalidIdResponse(); }
 
-    const version = await prisma.postVersion.findUnique({ where: { id: parseInt(versionId) } });
+    const version = await prisma.postVersion.findUnique({ where: { id: versionIdNum } });
     if (!version || version.postId !== postId) return NextResponse.json({ error: "版本不存在" }, { status: 404 });
 
     await prisma.post.update({

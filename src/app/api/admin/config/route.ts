@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { authOptions, isAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);
-    const role = (session?.user as { role?: string })?.role;
-    if (role !== "admin") return NextResponse.json({ error: "无权限" }, { status: 403 });
+    if (!isAdmin(session)) return NextResponse.json({ error: "无权限" }, { status: 403 });
 
     const configs = await prisma.siteConfig.findMany();
 
@@ -21,10 +20,15 @@ export async function GET() {
 export async function PUT(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    const role = (session?.user as { role?: string })?.role;
-    if (role !== "admin") return NextResponse.json({ error: "无权限" }, { status: 403 });
+    if (!isAdmin(session)) return NextResponse.json({ error: "无权限" }, { status: 403 });
 
-    const { configs } = await request.json();
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: "请求格式无效" }, { status: 400 });
+    }
+    const { configs } = body;
     if (!Array.isArray(configs)) {
       return NextResponse.json({ error: "参数无效" }, { status: 400 });
     }

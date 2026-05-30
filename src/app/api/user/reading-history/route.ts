@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions, getAuthUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { parsePagination, paginationMeta } from "@/lib/pagination";
+import { requireId, invalidIdResponse } from "@/lib/api-utils";
 
 export async function GET(request: NextRequest) {
   try {
@@ -10,14 +12,13 @@ export async function GET(request: NextRequest) {
     if (!userId) return NextResponse.json({ error: "请先登录" }, { status: 401 });
 
     const { searchParams } = new URL(request.url);
-    const page = Math.max(1, parseInt(searchParams.get("page") || "1"));
-    const limit = 20;
+    const { page, limit, skip } = parsePagination(searchParams);
 
     const [history, total] = await Promise.all([
       prisma.readHistory.findMany({
         where: { userId },
         orderBy: { readAt: "desc" },
-        skip: (page - 1) * limit,
+        skip,
         take: limit,
         include: {
           post: {
@@ -30,7 +31,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       items: history,
-      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+      pagination: paginationMeta(page, limit, total),
     }, { headers: { "Cache-Control": "private, max-age=10, stale-while-revalidate=20" } });
   } catch (e) {
     console.error("[ReadingHistory] Failed to fetch reading history:", e);
@@ -48,10 +49,8 @@ export async function DELETE(request: NextRequest) {
     const postId = searchParams.get("postId");
 
     if (postId) {
-      const parsedPostId = parseInt(postId);
-      if (isNaN(parsedPostId)) {
-        return NextResponse.json({ error: "无效的文章ID" }, { status: 400 });
-      }
+      let parsedPostId: number;
+      try { parsedPostId = requireId(postId); } catch { return invalidIdResponse(); }
       await prisma.readHistory.deleteMany({ where: { userId, postId: parsedPostId } });
     } else {
       await prisma.readHistory.deleteMany({ where: { userId } });

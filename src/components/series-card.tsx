@@ -26,6 +26,7 @@ export const SeriesCard = memo(function SeriesCard({ series }: SeriesCardProps) 
             src={series.coverImage}
             alt={series.name}
             fill
+            loading="lazy"
             className="object-cover group-hover:scale-105 transition-transform"
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           />

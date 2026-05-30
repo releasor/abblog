@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, memo } from "react";
+import { useState, useEffect, useCallback, memo } from "react";
 import { Bookmark, Plus, Check } from "lucide-react";
 import { showToast } from "./toast";
 
@@ -21,6 +21,17 @@ export const BookmarkPicker = memo(function BookmarkPicker({ postId, initialBook
   const [collections, setCollections] = useState<Collection[]>([]);
   const [showPicker, setShowPicker] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  const closePicker = useCallback(() => setShowPicker(false), []);
+
+  useEffect(() => {
+    if (!showPicker) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closePicker();
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [showPicker, closePicker]);
 
   useEffect(() => {
     if (showPicker) {

@@ -63,6 +63,7 @@ export const PostActions = memo(function PostActions({ postId }: PostActionsProp
           onClick={toggleLike}
           disabled={liking}
           aria-label={isLiked ? "取消点赞" : "点赞"}
+          aria-pressed={isLiked}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors ${
             isLiked
               ? "bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400"

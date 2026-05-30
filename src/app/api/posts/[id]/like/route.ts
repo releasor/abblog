@@ -3,6 +3,8 @@ import { getServerSession } from "next-auth";
 import { authOptions, getAuthUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { createActivity } from "@/lib/activity";
+import { checkRateLimit, RATE_LIMITS, getRateLimitHeaders } from "@/lib/rate-limit";
+import { requireId, invalidIdResponse } from "@/lib/api-utils";
 
 export async function GET(
   _request: NextRequest,
@@ -10,10 +12,8 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const postId = parseInt(id);
-    if (isNaN(postId)) {
-      return NextResponse.json({ error: "无效ID" }, { status: 400 });
-    }
+    let postId: number;
+    try { postId = requireId(id); } catch { return invalidIdResponse(); }
 
     const session = await getServerSession(authOptions);
     const userId = getAuthUserId(session);
@@ -41,16 +41,19 @@ export async function POST(
 ) {
   try {
     const { id } = await params;
-    const postId = parseInt(id);
-    if (isNaN(postId)) {
-      return NextResponse.json({ error: "无效ID" }, { status: 400 });
-    }
+    let postId: number;
+    try { postId = requireId(id); } catch { return invalidIdResponse(); }
 
     const session = await getServerSession(authOptions);
     const userId = getAuthUserId(session);
 
     if (!userId) {
       return NextResponse.json({ error: "请先登录" }, { status: 401 });
+    }
+
+    const rl = checkRateLimit(`like:${userId}`, RATE_LIMITS.api);
+    if (!rl.allowed) {
+      return NextResponse.json({ error: "操作太频繁，请稍后再试" }, { status: 429, headers: getRateLimitHeaders(rl) });
     }
 
     const existing = await prisma.like.findUnique({
@@ -62,7 +65,11 @@ export async function POST(
       const count = await prisma.like.count({ where: { postId } });
       return NextResponse.json({ isLiked: false, count });
     } else {
-      await prisma.like.create({ data: { postId, userId } });
+      try {
+        await prisma.like.create({ data: { postId, userId } });
+      } catch (e: unknown) {
+        if ((e as { code?: string }).code !== "P2002") throw e;
+      }
       const count = await prisma.like.count({ where: { postId } });
       await createActivity(userId, "LIKE_ADDED", postId);
       return NextResponse.json({ isLiked: true, count });

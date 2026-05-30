@@ -18,7 +18,7 @@ export function JoinGroupButton({ groupId }: JoinGroupButtonProps) {
       fetch(`/api/groups/${groupId}/membership`)
         .then((res) => (res.ok ? res.json() : null))
         .then((data) => { if (data) setIsMember(data.isMember); })
-        .catch(() => {});
+        .catch((e) => console.error("[JoinButton] Failed to check membership:", e));
     }
   }, [session, groupId]);
 

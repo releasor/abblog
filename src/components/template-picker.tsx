@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, memo } from "react";
+import { useState, useEffect, useCallback, memo } from "react";
 import { FileText, Plus, Trash2 } from "lucide-react";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 
@@ -23,6 +23,17 @@ export const TemplatePicker = memo(function TemplatePicker({ onSelect }: Templat
   const [newName, setNewName] = useState("");
   const [newContent, setNewContent] = useState("");
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
+
+  const closePicker = useCallback(() => setShow(false), []);
+
+  useEffect(() => {
+    if (!show) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closePicker();
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [show, closePicker]);
 
   useEffect(() => {
     fetch("/api/templates")
@@ -74,7 +85,7 @@ export const TemplatePicker = memo(function TemplatePicker({ onSelect }: Templat
       </button>
 
       {show && (
-        <div className="absolute top-full left-0 mt-1 w-72 bg-white dark:bg-zinc-900 rounded-xl shadow-lg border border-zinc-200 dark:border-zinc-800 z-10">
+        <div className="absolute top-full left-0 mt-1 w-72 bg-white dark:bg-zinc-900 rounded-xl shadow-lg border border-zinc-200 dark:border-zinc-800 z-10" role="dialog" aria-modal="true" aria-label="文章模板">
           <div className="p-3 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
             <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">文章模板</span>
             <button

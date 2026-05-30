@@ -107,6 +107,7 @@ export const CollaboratorManager = memo(function CollaboratorManager({ postId, i
           <select
             value={role}
             onChange={(e) => setRole(e.target.value)}
+            aria-label="协作者角色"
             className="px-2 py-1.5 text-sm border border-zinc-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800"
           >
             <option value="EDITOR">编辑</option>
@@ -131,7 +132,7 @@ export const CollaboratorManager = memo(function CollaboratorManager({ postId, i
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center overflow-hidden">
                 {c.user.avatar ? (
-                  <Image src={c.user.avatar} alt="" width={32} height={32} className="rounded-full" />
+                  <Image src={c.user.avatar} alt={c.user.name} width={32} height={32} className="rounded-full" />
                 ) : (
                   <span className="text-sm font-medium">{c.user.name[0]}</span>
                 )}

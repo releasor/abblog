@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, memo } from "react";
+import { useState, useEffect, useCallback, memo } from "react";
 import { Heart, X } from "lucide-react";
 import { showToast } from "./toast";
 
@@ -19,6 +19,21 @@ export const DonateButton = memo(function DonateButton({ recipientId, recipientN
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
 
+  const closeModal = useCallback(() => {
+    setShow(false);
+    setDone(false);
+    setMessage("");
+  }, []);
+
+  useEffect(() => {
+    if (!show) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeModal();
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [show, closeModal]);
+
   const handleDonate = async () => {
     setLoading(true);
     try {
@@ -29,11 +44,7 @@ export const DonateButton = memo(function DonateButton({ recipientId, recipientN
       });
       if (res.ok) {
         setDone(true);
-        setTimeout(() => {
-          setShow(false);
-          setDone(false);
-          setMessage("");
-        }, 2000);
+        setTimeout(closeModal, 2000);
       } else {
         const data = await res.json().catch(() => null);
         showToast(data?.error || "赞赏失败，请稍后重试", "error");
@@ -56,11 +67,11 @@ export const DonateButton = memo(function DonateButton({ recipientId, recipientN
       </button>
 
       {show && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="fixed inset-0 bg-black/50" onClick={() => setShow(false)} />
+        <div className="fixed inset-0 z-50 flex items-center justify-center" role="dialog" aria-modal="true" aria-label={`赞赏 ${recipientName}`}>
+          <div className="fixed inset-0 bg-black/50" onClick={closeModal} />
           <div className="relative bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl p-6 w-80">
             <button
-              onClick={() => setShow(false)}
+              onClick={closeModal}
               className="absolute top-3 right-3 p-1 text-zinc-400 hover:text-zinc-600"
               aria-label="关闭"
             >

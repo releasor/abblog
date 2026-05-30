@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { parsePagination, paginationMeta } from "@/lib/pagination";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
-  const page = Math.max(1, parseInt(searchParams.get("page") || "1"));
-  const limit = 20;
+  const { page, limit, skip } = parsePagination(searchParams, { limit: 20 });
   const userId = searchParams.get("userId");
 
   const userIdNum = userId ? parseInt(userId) : NaN;
@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
       prisma.activity.findMany({
         where,
         orderBy: { createdAt: "desc" },
-        skip: (page - 1) * limit,
+        skip,
         take: limit,
         include: { user: { select: { id: true, name: true, username: true, avatar: true } } },
       }),
@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       activities,
-      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+      pagination: paginationMeta(page, limit, total),
     }, {
       headers: { "Cache-Control": "public, max-age=60" },
     });

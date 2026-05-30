@@ -8,6 +8,7 @@ import { SkeletonRow } from "@/components/skeleton";
 import { EmptyState } from "@/components/empty-state";
 import { SimplePagination } from "@/components/pagination";
 import { FilterTabs } from "@/components/filter-tabs";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 
 interface Comment {
   id: number;
@@ -34,6 +35,7 @@ export default function AdminCommentsPage() {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [actionId, setActionId] = useState<number | null>(null);
+  const [deleteTargetId, setDeleteTargetId] = useState<number | null>(null);
 
   const fetchComments = useCallback(async () => {
     try {
@@ -84,7 +86,6 @@ export default function AdminCommentsPage() {
   };
 
   const deleteComment = async (id: number) => {
-    if (!confirm("确定要删除这条评论吗？")) return;
     try {
       setActionId(id);
       const res = await fetch(`/api/comments/${id}`, { method: "DELETE" });
@@ -205,7 +206,7 @@ export default function AdminCommentsPage() {
                       </button>
                     )}
                     <button
-                      onClick={() => deleteComment(comment.id)}
+                      onClick={() => setDeleteTargetId(comment.id)}
                       disabled={actionId === comment.id}
                       className="p-2 rounded-lg text-zinc-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50 transition-colors"
                       aria-label="删除评论"
@@ -229,6 +230,19 @@ export default function AdminCommentsPage() {
           onPageChange={setPage}
         />
       )}
+
+      <ConfirmDialog
+        open={deleteTargetId !== null}
+        title="删除评论"
+        message="确定要删除这条评论吗？此操作无法撤销。"
+        confirmLabel="删除"
+        variant="danger"
+        onConfirm={() => {
+          if (deleteTargetId) deleteComment(deleteTargetId);
+          setDeleteTargetId(null);
+        }}
+        onCancel={() => setDeleteTargetId(null)}
+      />
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions, getAuthUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/slugify";
+import { requireId, invalidIdResponse } from "@/lib/api-utils";
 
 export async function GET(
   _request: NextRequest,
@@ -10,10 +11,8 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const categoryId = parseInt(id);
-    if (isNaN(categoryId)) {
-      return NextResponse.json({ error: "无效ID" }, { status: 400 });
-    }
+    let categoryId: number;
+    try { categoryId = requireId(id); } catch { return invalidIdResponse(); }
 
     const category = await prisma.category.findUnique({
       where: { id: categoryId },
@@ -45,12 +44,15 @@ export async function PUT(
     }
 
     const { id } = await params;
-    const categoryId = parseInt(id);
-    if (isNaN(categoryId)) {
-      return NextResponse.json({ error: "无效ID" }, { status: 400 });
-    }
+    let categoryId: number;
+    try { categoryId = requireId(id); } catch { return invalidIdResponse(); }
 
-    const body = await request.json();
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: "请求格式无效" }, { status: 400 });
+    }
     const { name } = body;
 
     if (!name || typeof name !== "string" || name.trim().length < 1 || name.trim().length > 50) {
@@ -108,10 +110,8 @@ export async function DELETE(
     }
 
     const { id } = await params;
-    const categoryId = parseInt(id);
-    if (isNaN(categoryId)) {
-      return NextResponse.json({ error: "无效ID" }, { status: 400 });
-    }
+    let categoryId: number;
+    try { categoryId = requireId(id); } catch { return invalidIdResponse(); }
 
     const existing = await prisma.category.findUnique({ where: { id: categoryId } });
     if (!existing) {

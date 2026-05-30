@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions, getAuthUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { createActivity } from "@/lib/activity";
+import { requireId, invalidIdResponse } from "@/lib/api-utils";
 
 export async function GET(
   _request: NextRequest,
@@ -10,10 +11,8 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const postId = parseInt(id);
-    if (isNaN(postId)) {
-      return NextResponse.json({ error: "无效ID" }, { status: 400 });
-    }
+    let postId: number;
+    try { postId = requireId(id); } catch { return invalidIdResponse(); }
 
     const session = await getServerSession(authOptions);
     const userId = getAuthUserId(session);
@@ -42,10 +41,8 @@ export async function POST(
 ) {
   try {
     const { id } = await params;
-    const postId = parseInt(id);
-    if (isNaN(postId)) {
-      return NextResponse.json({ error: "无效ID" }, { status: 400 });
-    }
+    let postId: number;
+    try { postId = requireId(id); } catch { return invalidIdResponse(); }
 
     const session = await getServerSession(authOptions);
     const userId = getAuthUserId(session);
@@ -72,20 +69,20 @@ export async function POST(
       });
       return NextResponse.json({ isBookmarked: false });
     } else {
-      // Get or create default collection
-      let defaultCollection = await prisma.bookmarkCollection.findFirst({
-        where: { userId, isDefault: true },
+      // Get or create default collection (upsert to avoid race condition)
+      const defaultCollection = await prisma.bookmarkCollection.upsert({
+        where: { userId_name: { userId, name: "默认收藏夹" } },
+        update: {},
+        create: { userId, name: "默认收藏夹", isDefault: true },
       });
 
-      if (!defaultCollection) {
-        defaultCollection = await prisma.bookmarkCollection.create({
-          data: { userId, name: "默认收藏夹", isDefault: true },
+      try {
+        await prisma.bookmarkItem.create({
+          data: { collectionId: defaultCollection.id, postId },
         });
+      } catch (e: unknown) {
+        if ((e as { code?: string }).code !== "P2002") throw e;
       }
-
-      await prisma.bookmarkItem.create({
-        data: { collectionId: defaultCollection.id, postId },
-      });
 
       await createActivity(userId, "BOOKMARK_ADDED", postId);
 

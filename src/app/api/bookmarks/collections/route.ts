@@ -34,18 +34,31 @@ export async function POST(request: NextRequest) {
     const userId = getAuthUserId(session);
     if (!userId) return NextResponse.json({ error: "请先登录" }, { status: 401 });
 
-    const { name, description } = await request.json();
-    if (!name) return NextResponse.json({ error: "请输入收藏夹名称" }, { status: 400 });
+    let name: string, description: string | undefined;
+    try {
+      const body = await request.json();
+      name = body.name;
+      description = body.description;
+    } catch {
+      return NextResponse.json({ error: "请求格式无效" }, { status: 400 });
+    }
+    if (!name || typeof name !== "string" || name.trim().length === 0) {
+      return NextResponse.json({ error: "请输入收藏夹名称" }, { status: 400 });
+    }
+    if (name.trim().length > 50) {
+      return NextResponse.json({ error: "收藏夹名称不能超过50个字符" }, { status: 400 });
+    }
 
-    const existingDefault = await prisma.bookmarkCollection.findFirst({ where: { userId } });
-
-    const collection = await prisma.bookmarkCollection.create({
-      data: {
-        userId,
-        name,
-        description: description || null,
-        isDefault: !existingDefault,
-      },
+    const collection = await prisma.$transaction(async (tx) => {
+      const existingDefault = await tx.bookmarkCollection.findFirst({ where: { userId } });
+      return tx.bookmarkCollection.create({
+        data: {
+          userId,
+          name: name.trim(),
+          description: typeof description === "string" ? description.trim().slice(0, 200) || null : null,
+          isDefault: !existingDefault,
+        },
+      });
     });
 
     return NextResponse.json(collection, { status: 201 });

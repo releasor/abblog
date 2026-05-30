@@ -122,7 +122,7 @@ export default function AdminUsersPage() {
                   {u.avatar ? (
                     <Image
                       src={u.avatar}
-                      alt=""
+                      alt={u.name}
                       width={36}
                       height={36}
                       className="rounded-full object-cover"

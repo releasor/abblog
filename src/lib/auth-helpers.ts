@@ -1,14 +1,22 @@
-export function getAuthUserId(session: { user?: unknown } | null): number | null {
-  const id = (session?.user as { id?: string })?.id;
+import type { Session } from "next-auth";
+
+type SessionLike = Session | { user?: Record<string, unknown> | null } | null;
+
+export function getAuthUserId(session: SessionLike): number | null {
+  const id = (session?.user as Record<string, unknown> | null)?.id as string | undefined;
   if (!id) return null;
   const parsed = parseInt(id);
   return isNaN(parsed) ? null : parsed;
 }
 
-export function getAuthUserRole(session: { user?: unknown } | null): string | null {
-  return (session?.user as { role?: string })?.role ?? null;
+export function getAuthUserRole(session: SessionLike): string | null {
+  return ((session?.user as Record<string, unknown> | null)?.role as string | undefined) ?? null;
 }
 
-export function getAuthUsername(session: { user?: unknown } | null): string | null {
-  return (session?.user as { username?: string })?.username ?? null;
+export function isAdmin(session: SessionLike): boolean {
+  return getAuthUserRole(session) === "admin";
+}
+
+export function getAuthUsername(session: SessionLike): string | null {
+  return ((session?.user as Record<string, unknown> | null)?.username as string | undefined) ?? null;
 }

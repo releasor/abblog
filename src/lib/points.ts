@@ -43,17 +43,15 @@ export function getProgressToNextLevel(points: number): { current: number; next:
 }
 
 export async function addPoints(userId: number, points: number) {
-  const user = await prisma.user.findUnique({
+  const user = await prisma.user.update({
     where: { id: userId },
+    data: { points: { increment: points } },
     select: { points: true },
   });
-  if (!user) return;
 
-  const newPoints = user.points + points;
-  const newLevel = getLevelForPoints(newPoints);
-
+  const newLevel = getLevelForPoints(user.points);
   await prisma.user.update({
     where: { id: userId },
-    data: { points: newPoints, level: newLevel },
+    data: { level: newLevel },
   });
 }

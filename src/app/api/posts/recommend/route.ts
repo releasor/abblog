@@ -6,8 +6,8 @@ import { prisma } from "@/lib/prisma";
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const postId = parseInt(searchParams.get("postId") || "0");
-    const limit = parseInt(searchParams.get("limit") || "4");
+    const postId = Math.max(0, parseInt(searchParams.get("postId") || "0"));
+    const limit = Math.min(20, Math.max(1, parseInt(searchParams.get("limit") || "4")));
 
     const session = await getServerSession(authOptions);
     const userId = getAuthUserId(session);
@@ -73,40 +73,24 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    const postSelect = {
+      id: true, title: true, slug: true, excerpt: true, coverImageUrl: true, publishedAt: true,
+      author: { select: { name: true } },
+      category: { select: { name: true, slug: true } },
+    };
+
     if (recommendedIds.length < limit) {
-      const fallback = await prisma.post.findMany({
-        where: {
-          status: "PUBLISHED",
-          id: { not: postId, notIn: recommendedIds },
-        },
-        select: {
-          id: true,
-          title: true,
-          slug: true,
-          excerpt: true,
-          coverImageUrl: true,
-          publishedAt: true,
-          author: { select: { name: true } },
-          category: { select: { name: true, slug: true } },
-        },
-        orderBy: { publishedAt: "desc" },
-        take: limit - recommendedIds.length,
-      });
-      const mainPosts = recommendedIds.length > 0
-        ? await prisma.post.findMany({
-            where: { id: { in: recommendedIds } },
-            select: {
-              id: true,
-              title: true,
-              slug: true,
-              excerpt: true,
-              coverImageUrl: true,
-              publishedAt: true,
-              author: { select: { name: true } },
-              category: { select: { name: true, slug: true } },
-            },
-          })
-        : [];
+      const [mainPosts, fallback] = await Promise.all([
+        recommendedIds.length > 0
+          ? prisma.post.findMany({ where: { id: { in: recommendedIds } }, select: postSelect })
+          : Promise.resolve([]),
+        prisma.post.findMany({
+          where: { status: "PUBLISHED", id: { not: postId, notIn: recommendedIds } },
+          select: postSelect,
+          orderBy: { publishedAt: "desc" },
+          take: limit - recommendedIds.length,
+        }),
+      ]);
       return NextResponse.json([...mainPosts, ...fallback], {
         headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600" },
       });
@@ -114,16 +98,7 @@ export async function GET(request: NextRequest) {
 
     const posts = await prisma.post.findMany({
       where: { id: { in: recommendedIds } },
-      select: {
-        id: true,
-        title: true,
-        slug: true,
-        excerpt: true,
-        coverImageUrl: true,
-        publishedAt: true,
-        author: { select: { name: true } },
-        category: { select: { name: true, slug: true } },
-      },
+      select: postSelect,
     });
 
     return NextResponse.json(posts, {

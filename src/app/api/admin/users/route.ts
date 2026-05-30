@@ -1,17 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { authOptions, isAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { parsePagination, paginationMeta } from "@/lib/pagination";
+import { requireId, invalidIdResponse } from "@/lib/api-utils";
 
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    const role = (session?.user as { role?: string })?.role;
-    if (role !== "admin") return NextResponse.json({ error: "无权限" }, { status: 403 });
+    if (!isAdmin(session)) return NextResponse.json({ error: "无权限" }, { status: 403 });
 
     const { searchParams } = new URL(request.url);
-    const page = Math.max(1, parseInt(searchParams.get("page") || "1"));
-    const limit = 20;
+    const { page, limit, skip } = parsePagination(searchParams, { limit: 20 });
     const q = searchParams.get("q") || "";
 
     const where = q
@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
       prisma.user.findMany({
         where,
         orderBy: { createdAt: "desc" },
-        skip: (page - 1) * limit,
+        skip,
         take: limit,
         select: {
           id: true,
@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       users,
-      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+      pagination: paginationMeta(page, limit, total),
     }, { headers: { "Cache-Control": "private, max-age=10, stale-while-revalidate=20" } });
   } catch (e) {
     console.error("[AdminUsers] Failed to fetch users:", e);
@@ -59,22 +59,31 @@ export async function GET(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    const role = (session?.user as { role?: string })?.role;
-    if (role !== "admin") return NextResponse.json({ error: "无权限" }, { status: 403 });
+    if (!isAdmin(session)) return NextResponse.json({ error: "无权限" }, { status: 403 });
 
-    const { userId, action, value } = await request.json();
+    let userId: string, action: string, value: string;
+    try {
+      const body = await request.json();
+      userId = body.userId;
+      action = body.action;
+      value = body.value;
+    } catch {
+      return NextResponse.json({ error: "请求格式无效" }, { status: 400 });
+    }
     if (!userId || !action) return NextResponse.json({ error: "参数无效" }, { status: 400 });
+    let userIdNum: number;
+    try { userIdNum = requireId(userId); } catch { return invalidIdResponse(); }
 
     switch (action) {
       case "setRole":
         if (!["USER", "EDITOR", "ADMIN"].includes(value)) {
           return NextResponse.json({ error: "无效角色" }, { status: 400 });
         }
-        await prisma.user.update({ where: { id: userId }, data: { role: value } });
+        await prisma.user.update({ where: { id: userIdNum }, data: { role: value as "USER" | "EDITOR" | "ADMIN" } });
         break;
       case "addPoints":
         await prisma.user.update({
-          where: { id: userId },
+          where: { id: userIdNum },
           data: { points: { increment: parseInt(value) || 0 } },
         });
         break;

@@ -49,6 +49,7 @@ export const RecommendedPosts = memo(function RecommendedPosts({ postId }: { pos
                   src={post.coverImageUrl}
                   alt={post.title}
                   fill
+                  loading="lazy"
                   className="object-cover"
                   sizes="80px"
                 />

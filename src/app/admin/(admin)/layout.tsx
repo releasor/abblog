@@ -58,6 +58,7 @@ function Sidebar({
         <button
           className="lg:hidden p-1.5 rounded-lg text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
           onClick={onClose}
+          aria-label="关闭侧边栏"
         >
           <X className="w-5 h-5" />
         </button>
@@ -104,6 +105,7 @@ function Sidebar({
             onClick={() => signOut({ callbackUrl: "/admin/login" })}
             className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
             title="退出登录"
+            aria-label="退出登录"
           >
             <LogOut className="w-4 h-4" />
           </button>
@@ -149,6 +151,7 @@ export default function AdminLayout({
           <button
             onClick={() => setSidebarOpen(true)}
             className="p-2 rounded-lg text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+            aria-label="打开侧边栏"
           >
             <Menu className="w-5 h-5" />
           </button>

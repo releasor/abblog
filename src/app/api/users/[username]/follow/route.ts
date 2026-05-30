@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions, getAuthUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { createActivity } from "@/lib/activity";
+import { checkRateLimit, RATE_LIMITS, getRateLimitHeaders } from "@/lib/rate-limit";
 
 export async function GET(
   _request: NextRequest,
@@ -53,6 +54,11 @@ export async function POST(
       return NextResponse.json({ error: "请先登录" }, { status: 401 });
     }
 
+    const rl = checkRateLimit(`follow:${userId}`, RATE_LIMITS.api);
+    if (!rl.allowed) {
+      return NextResponse.json({ error: "操作太频繁，请稍后再试" }, { status: 429, headers: getRateLimitHeaders(rl) });
+    }
+
     const targetUser = await prisma.user.findUnique({
       where: { username },
       select: { id: true },
@@ -77,11 +83,15 @@ export async function POST(
       const followerCount = await prisma.follow.count({ where: { followingId: targetId } });
       return NextResponse.json({ isFollowing: false, followerCount });
     } else {
-      await prisma.follow.create({ data: { followerId: userId, followingId: targetId } });
+      try {
+        await prisma.follow.create({ data: { followerId: userId, followingId: targetId } });
+      } catch (e: unknown) {
+        if ((e as { code?: string }).code !== "P2002") throw e;
+      }
       const followerCount = await prisma.follow.count({ where: { followingId: targetId } });
 
       const followerName = session?.user?.name || "有人";
-      const followerUsername = (session?.user as { username?: string })?.username;
+      const followerUsername = session?.user?.username;
 
       await prisma.notification.create({
         data: {

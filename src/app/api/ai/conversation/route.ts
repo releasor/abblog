@@ -21,7 +21,14 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const { messages, mode } = await request.json();
+  let messages: unknown[], mode: string | undefined;
+  try {
+    const body = await request.json();
+    messages = body.messages;
+    mode = body.mode;
+  } catch {
+    return NextResponse.json({ error: "请求格式无效" }, { status: 400 });
+  }
 
   if (!messages || !Array.isArray(messages) || messages.length === 0) {
     return NextResponse.json({ error: "缺少对话内容" }, { status: 400 });

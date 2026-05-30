@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions, getAuthUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { checkRateLimit, RATE_LIMITS, getRateLimitHeaders } from "@/lib/rate-limit";
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,11 +13,36 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "请先登录" }, { status: 401 });
     }
 
-    const body = await request.json();
+    const rl = checkRateLimit(`post:${userId}`, RATE_LIMITS.api);
+    if (!rl.allowed) {
+      return NextResponse.json({ error: "操作太频繁，请稍后再试" }, { status: 429, headers: getRateLimitHeaders(rl) });
+    }
+
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: "请求格式无效" }, { status: 400 });
+    }
     const { title, slug, content, excerpt, coverImageUrl, categoryId, tags, status } = body;
 
     if (!title || !slug || !content) {
       return NextResponse.json({ error: "标题、slug和内容不能为空" }, { status: 400 });
+    }
+    if (typeof title !== "string" || title.length > 200) {
+      return NextResponse.json({ error: "标题不能超过200个字符" }, { status: 400 });
+    }
+    if (typeof content !== "string" || content.length > 500000) {
+      return NextResponse.json({ error: "内容过长" }, { status: 400 });
+    }
+    if (typeof slug !== "string" || !/^[a-z0-9-]+$/.test(slug) || slug.length > 200) {
+      return NextResponse.json({ error: "slug 格式无效，只能包含小写字母、数字和连字符" }, { status: 400 });
+    }
+    if (categoryId && isNaN(parseInt(categoryId))) {
+      return NextResponse.json({ error: "无效的分类ID" }, { status: 400 });
+    }
+    if (tags && (!Array.isArray(tags) || tags.some((t: string) => isNaN(parseInt(t))))) {
+      return NextResponse.json({ error: "无效的标签ID" }, { status: 400 });
     }
 
     // Check slug uniqueness
@@ -33,29 +59,35 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    const post = await prisma.post.create({
-      data: {
-        title,
-        slug,
-        content,
-        excerpt: excerpt || null,
-        coverImageUrl: coverImageUrl || null,
-        status: status || "DRAFT",
-        publishedAt: status === "PUBLISHED" ? new Date() : null,
-        authorId: adminUser.id,
-        userId,
-        categoryId: categoryId ? parseInt(categoryId) : null,
-        ...(tags?.length > 0 && {
-          tags: {
-            create: tags.map((tagId: string) => ({
-              tag: { connect: { id: parseInt(tagId) } },
-            })),
-          },
-        }),
-      },
-    });
-
-    return NextResponse.json(post, { status: 201 });
+    try {
+      const post = await prisma.post.create({
+        data: {
+          title,
+          slug,
+          content,
+          excerpt: excerpt || null,
+          coverImageUrl: coverImageUrl || null,
+          status: status || "DRAFT",
+          publishedAt: status === "PUBLISHED" ? new Date() : null,
+          authorId: adminUser.id,
+          userId,
+          categoryId: categoryId ? parseInt(categoryId) : null,
+          ...(tags?.length > 0 && {
+            tags: {
+              create: tags.map((tagId: string) => ({
+                tag: { connect: { id: parseInt(tagId) } },
+              })),
+            },
+          }),
+        },
+      });
+      return NextResponse.json(post, { status: 201 });
+    } catch (createErr: unknown) {
+      if ((createErr as { code?: string }).code === "P2002") {
+        return NextResponse.json({ error: "slug 已存在" }, { status: 409 });
+      }
+      throw createErr;
+    }
   } catch (e) {
     console.error("[UserPosts] Failed to create post:", e);
     return NextResponse.json({ error: "创建文章失败" }, { status: 500 });

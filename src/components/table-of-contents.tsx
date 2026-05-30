@@ -63,7 +63,7 @@ export const TableOfContents = memo(function TableOfContents({ headings }: Table
       {/* Mobile/tablet floating button — hidden on mobile, visible on md */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-6 right-20 z-50 md:hidden lg:hidden xl:hidden bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-full w-12 h-12 flex items-center justify-center shadow-lg hover:scale-105 transition-transform"
+        className="fixed bottom-6 right-20 z-50 md:hidden bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-full w-12 h-12 flex items-center justify-center shadow-lg hover:scale-105 transition-transform"
         aria-label="切换目录"
       >
         <List className="w-5 h-5" />
@@ -71,7 +71,7 @@ export const TableOfContents = memo(function TableOfContents({ headings }: Table
 
       {/* Mobile/tablet overlay */}
       {isOpen && (
-        <div className="fixed inset-0 z-40 md:hidden lg:hidden xl:hidden">
+        <div className="fixed inset-0 z-40 md:hidden">
           <div
             className="absolute inset-0 bg-black/30"
             onClick={() => setIsOpen(false)}

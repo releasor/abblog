@@ -15,7 +15,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const body = await request.json();
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: "请求格式无效" }, { status: 400 });
+    }
     const { email, password, name } = body;
 
     if (!email || typeof email !== "string" || !email.includes("@")) {
@@ -52,19 +57,26 @@ export async function POST(request: NextRequest) {
       counter++;
     }
 
-    const user = await prisma.user.create({
-      data: {
-        email: email.toLowerCase().trim(),
-        passwordHash,
-        name: name.trim(),
-        username,
-      },
-    });
+    try {
+      const user = await prisma.user.create({
+        data: {
+          email: email.toLowerCase().trim(),
+          passwordHash,
+          name: name.trim(),
+          username,
+        },
+      });
 
-    return NextResponse.json(
-      { message: "注册成功", user: { id: user.id, email: user.email, name: user.name } },
-      { status: 201 }
-    );
+      return NextResponse.json(
+        { message: "注册成功", user: { id: user.id, email: user.email, name: user.name } },
+        { status: 201 }
+      );
+    } catch (createErr: unknown) {
+      if ((createErr as { code?: string }).code === "P2002") {
+        return NextResponse.json({ error: "该邮箱或用户名已被注册" }, { status: 409 });
+      }
+      throw createErr;
+    }
   } catch (e) {
     console.error("[Register] Failed to register user:", e);
     return NextResponse.json({ error: "注册失败，请稍后重试" }, { status: 500 });

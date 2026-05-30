@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions, getAuthUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { requireId, invalidIdResponse } from "@/lib/api-utils";
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -57,10 +58,17 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "请先登录" }, { status: 401 });
   }
 
+  let targetUserId: string;
   try {
-    const { targetUserId } = await request.json();
-    const tid = parseInt(targetUserId);
-    if (isNaN(tid)) return NextResponse.json({ error: "无效的用户ID" }, { status: 400 });
+    const body = await request.json();
+    targetUserId = body.targetUserId;
+  } catch {
+    return NextResponse.json({ error: "请求格式无效" }, { status: 400 });
+  }
+  let tid: number;
+  try { tid = requireId(targetUserId); } catch { return invalidIdResponse(); }
+
+  try {
 
     if (userId === tid) {
       return NextResponse.json({ error: "不能给自己发私信" }, { status: 400 });
@@ -90,7 +98,19 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json({ id: conversation.id });
-  } catch (e) {
+  } catch (e: unknown) {
+    // Handle race condition: if another request created the same conversation concurrently
+    if ((e as { code?: string }).code === "P2002") {
+      const retryMemberships = await prisma.conversationMember.findMany({
+        where: { userId: { in: [userId, tid] } },
+        include: { conversation: { include: { members: true } } },
+      });
+      const retryConv = retryMemberships.find((m) => {
+        const memberIds = m.conversation.members.map((mem) => mem.userId);
+        return memberIds.includes(userId) && memberIds.includes(tid) && memberIds.length === 2;
+      });
+      if (retryConv) return NextResponse.json({ id: retryConv.conversation.id });
+    }
     console.error("[Conversations] Failed to create conversation:", e);
     return NextResponse.json({ error: "创建会话失败" }, { status: 500 });
   }

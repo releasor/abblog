@@ -35,7 +35,7 @@ export default function ChatPage() {
   const [sending, setSending] = useState(false);
   const [loading, setLoading] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const userId = (session?.user as { id?: string })?.id;
+  const userId = session?.user?.id;
 
   useEffect(() => {
     if (status === "unauthenticated") router.push("/login");

@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useMemo } from "react";
 import hljs from "highlight.js/lib/core";
+import { sanitizeHtml } from "@/lib/sanitize";
 import javascript from "highlight.js/lib/languages/javascript";
 import typescript from "highlight.js/lib/languages/typescript";
 import python from "highlight.js/lib/languages/python";
@@ -28,6 +29,7 @@ interface PostContentProps {
 
 export function PostContent({ content }: PostContentProps) {
   const ref = useRef<HTMLDivElement>(null);
+  const sanitizedContent = useMemo(() => sanitizeHtml(content), [content]);
 
   useEffect(() => {
     if (ref.current) {
@@ -35,13 +37,13 @@ export function PostContent({ content }: PostContentProps) {
         hljs.highlightElement(block as HTMLElement);
       });
     }
-  }, [content]);
+  }, [sanitizedContent]);
 
   return (
     <div
       ref={ref}
       className="prose prose-zinc dark:prose-invert max-w-none"
-      dangerouslySetInnerHTML={{ __html: content }}
+      dangerouslySetInnerHTML={{ __html: sanitizedContent }}
     />
   );
 }

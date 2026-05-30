@@ -5,16 +5,15 @@ import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/slugify";
 import { createActivity } from "@/lib/activity";
 import { estimateReadingTime } from "@/lib/reading-time";
+import { requireId, invalidIdResponse } from "@/lib/api-utils";
 
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const postId = parseInt(id);
-  if (isNaN(postId)) {
-    return NextResponse.json({ error: "无效ID" }, { status: 400 });
-  }
+  let postId: number;
+  try { postId = requireId(id); } catch { return invalidIdResponse(); }
 
   try {
     const post = await prisma.post.findUnique({
@@ -53,12 +52,15 @@ export async function PUT(
   }
 
   const { id } = await params;
-  const postId = parseInt(id);
-  if (isNaN(postId)) {
-    return NextResponse.json({ error: "无效ID" }, { status: 400 });
-  }
+  let postId: number;
+  try { postId = requireId(id); } catch { return invalidIdResponse(); }
 
-  const body = await request.json();
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "请求格式无效" }, { status: 400 });
+  }
   const { title, content, excerpt, coverImageUrl, categoryId, tags, status, isPinned, scheduledAt } = body;
 
   if (title !== undefined && (typeof title !== "string" || title.length > 200)) {
@@ -66,6 +68,12 @@ export async function PUT(
   }
   if (content !== undefined && (typeof content !== "string" || content.length > 500000)) {
     return NextResponse.json({ error: "内容过长" }, { status: 400 });
+  }
+  if (categoryId && isNaN(parseInt(categoryId))) {
+    return NextResponse.json({ error: "无效的分类ID" }, { status: 400 });
+  }
+  if (tags && (!Array.isArray(tags) || tags.some((t: string) => isNaN(parseInt(t))))) {
+    return NextResponse.json({ error: "无效的标签ID" }, { status: 400 });
   }
 
   try {
@@ -178,10 +186,8 @@ export async function DELETE(
   }
 
   const { id } = await params;
-  const postId = parseInt(id);
-  if (isNaN(postId)) {
-    return NextResponse.json({ error: "无效ID" }, { status: 400 });
-  }
+  let postId: number;
+  try { postId = requireId(id); } catch { return invalidIdResponse(); }
 
   try {
     const existing = await prisma.post.findUnique({ where: { id: postId } });

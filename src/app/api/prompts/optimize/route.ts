@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions, getAuthUserId } from "@/lib/auth";
 import { getAiConfig } from "@/lib/ai-config";
+import { checkRateLimit, getRateLimitHeaders } from "@/lib/rate-limit";
 
 export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -11,7 +12,18 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "请先登录" }, { status: 401 });
   }
 
-  const { content } = await request.json();
+  const rl = checkRateLimit(`ai:${userId}`, { windowMs: 60_000, max: 10 });
+  if (!rl.allowed) {
+    return NextResponse.json({ error: "AI 请求过于频繁，请稍后再试" }, { status: 429, headers: getRateLimitHeaders(rl) });
+  }
+
+  let content: string;
+  try {
+    const body = await request.json();
+    content = body.content;
+  } catch {
+    return NextResponse.json({ error: "请求格式无效" }, { status: 400 });
+  }
 
   if (!content) {
     return NextResponse.json({ error: "缺少提示词内容" }, { status: 400 });

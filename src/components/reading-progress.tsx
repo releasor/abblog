@@ -6,15 +6,22 @@ export const ReadingProgress = memo(function ReadingProgress() {
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
+    let rafId: number;
     const updateProgress = () => {
-      const scrollTop = window.scrollY;
-      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-      const scrollPercent = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
-      setProgress(Math.min(100, Math.max(0, scrollPercent)));
+      cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(() => {
+        const scrollTop = window.scrollY;
+        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        const scrollPercent = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+        setProgress(Math.min(100, Math.max(0, scrollPercent)));
+      });
     };
 
     window.addEventListener("scroll", updateProgress, { passive: true });
-    return () => window.removeEventListener("scroll", updateProgress);
+    return () => {
+      cancelAnimationFrame(rafId);
+      window.removeEventListener("scroll", updateProgress);
+    };
   }, []);
 
   return (

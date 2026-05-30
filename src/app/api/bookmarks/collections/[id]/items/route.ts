@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions, getAuthUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { createActivity } from "@/lib/activity";
+import { requireId, invalidIdResponse } from "@/lib/api-utils";
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -11,17 +12,23 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     if (!userId) return NextResponse.json({ error: "请先登录" }, { status: 401 });
 
     const { id } = await params;
-    const collectionId = parseInt(id);
-    if (isNaN(collectionId)) return NextResponse.json({ error: "无效ID" }, { status: 400 });
+    let collectionId: number;
+    try { collectionId = requireId(id); } catch { return invalidIdResponse(); }
 
     const collection = await prisma.bookmarkCollection.findUnique({ where: { id: collectionId } });
     if (!collection || collection.userId !== userId)
       return NextResponse.json({ error: "无权限" }, { status: 403 });
 
-    const { postId } = await request.json();
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: "请求格式无效" }, { status: 400 });
+    }
+    const { postId } = body;
     if (!postId) return NextResponse.json({ error: "请选择文章" }, { status: 400 });
-    const postIdNum = parseInt(postId);
-    if (isNaN(postIdNum)) return NextResponse.json({ error: "无效文章ID" }, { status: 400 });
+    let postIdNum: number;
+    try { postIdNum = requireId(postId); } catch { return invalidIdResponse(); }
 
     const item = await prisma.bookmarkItem.create({
       data: { collectionId, postId: postIdNum },
@@ -42,14 +49,14 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
     if (!userId) return NextResponse.json({ error: "请先登录" }, { status: 401 });
 
     const { id } = await params;
-    const collectionId = parseInt(id);
-    if (isNaN(collectionId)) return NextResponse.json({ error: "无效ID" }, { status: 400 });
+    let collectionId: number;
+    try { collectionId = requireId(id); } catch { return invalidIdResponse(); }
 
     const { searchParams } = new URL(request.url);
     const postId = searchParams.get("postId");
     if (!postId) return NextResponse.json({ error: "请选择文章" }, { status: 400 });
-    const postIdNum = parseInt(postId);
-    if (isNaN(postIdNum)) return NextResponse.json({ error: "无效文章ID" }, { status: 400 });
+    let postIdNum: number;
+    try { postIdNum = requireId(postId); } catch { return invalidIdResponse(); }
 
     await prisma.bookmarkItem.delete({
       where: { collectionId_postId: { collectionId, postId: postIdNum } },

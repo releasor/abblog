@@ -56,7 +56,12 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: "请先登录" }, { status: 401 });
     }
 
-    const body = await request.json();
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: "请求格式无效" }, { status: 400 });
+    }
     const { name, username, bio, website, location } = body;
 
     if (name !== undefined && (typeof name !== "string" || name.trim().length === 0 || name.length > 50)) {
@@ -81,21 +86,27 @@ export async function PATCH(request: NextRequest) {
       }
     }
 
-    const user = await prisma.user.update({
-      where: { id: userId },
-      data: {
-        ...(name !== undefined && { name }),
-        ...(username !== undefined && { username }),
-        ...(bio !== undefined && { bio }),
-        ...(website !== undefined && { website }),
-        ...(location !== undefined && { location }),
-      },
-      select: {
-        id: true, name: true, username: true, avatar: true, bio: true, website: true, location: true,
-      },
-    });
-
-    return NextResponse.json(user);
+    try {
+      const user = await prisma.user.update({
+        where: { id: userId },
+        data: {
+          ...(name !== undefined && { name }),
+          ...(username !== undefined && { username }),
+          ...(bio !== undefined && { bio }),
+          ...(website !== undefined && { website }),
+          ...(location !== undefined && { location }),
+        },
+        select: {
+          id: true, name: true, username: true, avatar: true, bio: true, website: true, location: true,
+        },
+      });
+      return NextResponse.json(user);
+    } catch (updateErr: unknown) {
+      if ((updateErr as { code?: string }).code === "P2002") {
+        return NextResponse.json({ error: "用户名已被占用" }, { status: 409 });
+      }
+      throw updateErr;
+    }
   } catch (e) {
     console.error("[UserProfile] Failed to update profile:", e);
     return NextResponse.json({ error: "更新个人资料失败" }, { status: 500 });

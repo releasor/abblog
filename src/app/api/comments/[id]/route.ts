@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions, getAuthUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { requireId, invalidIdResponse } from "@/lib/api-utils";
 
 export async function PATCH(
   request: NextRequest,
@@ -15,12 +16,15 @@ export async function PATCH(
     }
 
     const { id } = await params;
-    const commentId = parseInt(id);
-    if (isNaN(commentId)) {
-      return NextResponse.json({ error: "无效ID" }, { status: 400 });
-    }
+    let commentId: number;
+    try { commentId = requireId(id); } catch { return invalidIdResponse(); }
 
-    const body = await request.json();
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: "请求格式无效" }, { status: 400 });
+    }
     const { status } = body;
 
     if (!status || !["PENDING", "APPROVED", "REJECTED"].includes(status)) {
@@ -62,10 +66,8 @@ export async function DELETE(
     }
 
     const { id } = await params;
-    const commentId = parseInt(id);
-    if (isNaN(commentId)) {
-      return NextResponse.json({ error: "无效ID" }, { status: 400 });
-    }
+    let commentId: number;
+    try { commentId = requireId(id); } catch { return invalidIdResponse(); }
 
     const existing = await prisma.comment.findUnique({ where: { id: commentId } });
     if (!existing) {

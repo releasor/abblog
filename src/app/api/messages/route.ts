@@ -42,7 +42,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const body = await request.json();
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: "请求格式无效" }, { status: 400 });
+    }
     const { content } = body;
 
     if (!content || typeof content !== "string" || content.trim().length === 0) {
@@ -53,7 +58,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "留言不能超过500字" }, { status: 400 });
     }
 
-    const name = session?.user?.name || body.name || "匿名用户";
+    const rawName = session?.user?.name || (typeof body.name === "string" ? body.name.trim() : "") || "匿名用户";
+    const name = rawName.slice(0, 50);
 
     const message = await prisma.message.create({
       data: {

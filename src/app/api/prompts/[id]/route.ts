@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions, getAuthUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { requireId, invalidIdResponse } from "@/lib/api-utils";
 
 export async function GET(
   _request: NextRequest,
@@ -16,8 +17,8 @@ export async function GET(
     }
 
     const { id } = await params;
-    const promptId = parseInt(id);
-    if (isNaN(promptId)) return NextResponse.json({ error: "无效ID" }, { status: 400 });
+    let promptId: number;
+    try { promptId = requireId(id); } catch { return invalidIdResponse(); }
 
     const prompt = await prisma.prompt.findFirst({
       where: { id: promptId, userId },
@@ -47,8 +48,8 @@ export async function PATCH(
     }
 
     const { id } = await params;
-    const promptId = parseInt(id);
-    if (isNaN(promptId)) return NextResponse.json({ error: "无效ID" }, { status: 400 });
+    let promptId: number;
+    try { promptId = requireId(id); } catch { return invalidIdResponse(); }
 
     const existing = await prisma.prompt.findFirst({
       where: { id: promptId, userId },
@@ -58,7 +59,12 @@ export async function PATCH(
       return NextResponse.json({ error: "提示词不存在" }, { status: 404 });
     }
 
-    const body = await request.json();
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: "请求格式无效" }, { status: 400 });
+    }
     const { title, content, category, tags, variables, isPinned } = body;
 
     const prompt = await prisma.prompt.update({
@@ -93,8 +99,8 @@ export async function DELETE(
     }
 
     const { id } = await params;
-    const promptId = parseInt(id);
-    if (isNaN(promptId)) return NextResponse.json({ error: "无效ID" }, { status: 400 });
+    let promptId: number;
+    try { promptId = requireId(id); } catch { return invalidIdResponse(); }
 
     const existing = await prisma.prompt.findFirst({
       where: { id: promptId, userId },

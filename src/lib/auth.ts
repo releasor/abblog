@@ -74,16 +74,16 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.role = (user as unknown as { role: string }).role;
-        token.username = (user as unknown as { username?: string }).username;
+        token.role = user.role;
+        token.username = user.username;
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        (session.user as { id: string }).id = token.id as string;
-        (session.user as { role: string }).role = token.role as string;
-        (session.user as { username?: string }).username = token.username as string | undefined;
+        session.user.id = token.id;
+        session.user.role = token.role;
+        session.user.username = token.username;
       }
       return session;
     },
@@ -93,22 +93,15 @@ export const authOptions: NextAuthOptions = {
 
 export function getSessionUser(session: { user?: unknown } | null): SessionUser | null {
   if (!session?.user) return null;
-  const user = session.user as Record<string, unknown>;
+  const user = session.user as { id?: string; name?: string | null; email?: string | null; role?: string; username?: string };
   if (!user.id || !user.role) return null;
   return {
     id: String(user.id),
     name: String(user.name || ""),
     email: String(user.email || ""),
     role: user.role as "admin" | "user",
-    username: user.username as string | undefined,
+    username: user.username,
   };
 }
 
-export function getAuthUserId(session: { user?: unknown } | null): number | null {
-  const id = (session?.user as { id?: string })?.id;
-  if (!id) return null;
-  const parsed = parseInt(id);
-  return isNaN(parsed) ? null : parsed;
-}
-
-export { getAuthUserRole, getAuthUsername } from "./auth-helpers";
+export { getAuthUserId, getAuthUserRole, getAuthUsername, isAdmin } from "./auth-helpers";

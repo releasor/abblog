@@ -54,26 +54,35 @@ export function useAutoSave(
   enabled: boolean = true
 ) {
   const lastSaved = useRef<string>("");
+  const dataRef = useRef(data);
+  const keyRef = useRef(key);
+  const enabledRef = useRef(enabled);
   const [lastSaveTime, setLastSaveTime] = useState<Date | null>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
+  // Keep refs in sync
+  dataRef.current = data;
+  keyRef.current = key;
+  enabledRef.current = enabled;
+
   const doSave = useCallback(() => {
-    if (!enabled) return;
-    const serialized = JSON.stringify(data);
+    if (!enabledRef.current) return;
+    const currentData = dataRef.current;
+    const serialized = JSON.stringify(currentData);
     if (serialized === lastSaved.current) return;
 
-    saveDraft(key, {
-      ...data,
-      excerpt: data.excerpt || "",
-      coverImageUrl: data.coverImageUrl || "",
-      categoryId: data.categoryId || "",
-      tags: data.tags || [],
+    saveDraft(keyRef.current, {
+      ...currentData,
+      excerpt: currentData.excerpt || "",
+      coverImageUrl: currentData.coverImageUrl || "",
+      categoryId: currentData.categoryId || "",
+      tags: currentData.tags || [],
       savedAt: new Date().toISOString(),
     });
     lastSaved.current = serialized;
     setLastSaveTime(new Date());
     setHasUnsavedChanges(false);
-  }, [key, data, enabled]);
+  }, []);
 
   useEffect(() => {
     if (!enabled) return;

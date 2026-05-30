@@ -5,6 +5,7 @@ import { Tag, Plus, Pencil, Trash2, Check, X } from "lucide-react";
 import { SkeletonRow } from "@/components/skeleton";
 import { EmptyState } from "@/components/empty-state";
 import { showToast } from "@/components/toast";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 
 interface TagItem {
   id: number;
@@ -24,6 +25,7 @@ export default function AdminTagsPage() {
   const [, setEditError] = useState("");
   const [saving, setSaving] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [deleteTargetId, setDeleteTargetId] = useState<number | null>(null);
 
   const fetchTags = useCallback(async () => {
     try {
@@ -98,7 +100,6 @@ export default function AdminTagsPage() {
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm("确定要删除此标签吗？该标签会从所有文章中移除。")) return;
     try {
       setDeleteId(id);
       const res = await fetch(`/api/tags/${id}`, { method: "DELETE" });
@@ -218,7 +219,7 @@ export default function AdminTagsPage() {
                       <Pencil className="w-3 h-3" />
                     </button>
                     <button
-                      onClick={() => handleDelete(tag.id)}
+                      onClick={() => setDeleteTargetId(tag.id)}
                       disabled={deleteId === tag.id}
                       className="p-1 rounded text-zinc-400 hover:text-red-500"
                       aria-label={`删除 ${tag.name}`}
@@ -232,6 +233,19 @@ export default function AdminTagsPage() {
           ))}
         </div>
       )}
+
+      <ConfirmDialog
+        open={deleteTargetId !== null}
+        title="删除标签"
+        message="确定要删除此标签吗？该标签会从所有文章中移除。此操作无法撤销。"
+        confirmLabel="删除"
+        variant="danger"
+        onConfirm={() => {
+          if (deleteTargetId) handleDelete(deleteTargetId);
+          setDeleteTargetId(null);
+        }}
+        onCancel={() => setDeleteTargetId(null)}
+      />
     </div>
   );
 }

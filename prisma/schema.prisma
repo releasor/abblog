@@ -174,6 +174,7 @@ model Message {
 
   user User? @relation(fields: [userId], references: [id])
 
+  @@index([createdAt])
   @@map("messages")
 }
 
@@ -228,7 +229,7 @@ model Notification {
 
   user User @relation(fields: [userId], references: [id])
 
-  @@index([userId, isRead])
+  @@index([userId, isRead, createdAt])
   @@map("notifications")
 }
 
@@ -287,6 +288,7 @@ model DirectMessage {
   conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   sender       User         @relation("sender", fields: [senderId], references: [id], onDelete: Cascade)
 
+  @@index([conversationId, createdAt])
   @@map("direct_messages")
 }
 
@@ -556,6 +558,8 @@ model Donation {
   recipient User     @relation("recipient", fields: [recipientId], references: [id])
   post      Post?    @relation(fields: [postId], references: [id])
 
+  @@index([donorId, createdAt])
+  @@index([recipientId, createdAt])
   @@map("donations")
 }
 

@@ -6,6 +6,7 @@ import { ImageIcon, Copy, Check, Trash2 } from "lucide-react";
 import { EmptyState } from "@/components/empty-state";
 import { showToast } from "@/components/toast";
 import { useCopyWithId } from "@/hooks/use-copy";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 
 interface MediaFile {
   filename: string;
@@ -25,6 +26,7 @@ export default function MediaPage() {
   const [loading, setLoading] = useState(true);
   const { copiedId, copy } = useCopyWithId<string>();
   const [deleteFile, setDeleteFile] = useState<string | null>(null);
+  const [deleteTargetFile, setDeleteTargetFile] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/media")
@@ -46,7 +48,6 @@ export default function MediaPage() {
   const copyUrl = (url: string) => copy(url, url);
 
   const handleDelete = async (filename: string) => {
-    if (!confirm("确定要删除此文件吗？")) return;
     setDeleteFile(filename);
     try {
       const res = await fetch(`/api/media/manage?filename=${encodeURIComponent(filename)}`, {
@@ -123,7 +124,7 @@ export default function MediaPage() {
                     )}
                   </button>
                   <button
-                    onClick={() => handleDelete(img.filename)}
+                    onClick={() => setDeleteTargetFile(img.filename)}
                     disabled={deleteFile === img.filename}
                     className="p-2 bg-white/90 dark:bg-zinc-900/90 rounded-lg text-zinc-700 dark:text-zinc-300 hover:text-red-600 dark:hover:text-red-400 hover:bg-white dark:hover:bg-zinc-900 disabled:opacity-50 transition-colors"
                     aria-label="删除图片"
@@ -148,6 +149,19 @@ export default function MediaPage() {
           ))}
         </div>
       )}
+
+      <ConfirmDialog
+        open={deleteTargetFile !== null}
+        title="删除文件"
+        message="确定要删除此文件吗？此操作无法撤销。"
+        confirmLabel="删除"
+        variant="danger"
+        onConfirm={() => {
+          if (deleteTargetFile) handleDelete(deleteTargetFile);
+          setDeleteTargetFile(null);
+        }}
+        onCancel={() => setDeleteTargetFile(null)}
+      />
     </div>
   );
 }

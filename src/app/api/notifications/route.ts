@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions, getAuthUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { requireId, invalidIdResponse } from "@/lib/api-utils";
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -39,11 +40,19 @@ export async function PATCH(request: NextRequest) {
   }
 
   try {
-    const { id } = await request.json();
+    let id: string | undefined;
+    try {
+      const body = await request.json();
+      id = body.id;
+    } catch {
+      return NextResponse.json({ error: "请求格式无效" }, { status: 400 });
+    }
 
     if (id) {
+      let idNum: number;
+      try { idNum = requireId(id); } catch { return invalidIdResponse(); }
       await prisma.notification.updateMany({
-        where: { id, userId },
+        where: { id: idNum, userId },
         data: { isRead: true },
       });
     } else {

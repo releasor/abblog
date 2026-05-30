@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions, getAuthUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { checkRateLimit, RATE_LIMITS, getRateLimitHeaders } from "@/lib/rate-limit";
+import { requireId, invalidIdResponse } from "@/lib/api-utils";
 
 export async function GET(
   request: NextRequest,
@@ -9,8 +11,8 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const conversationId = parseInt(id);
-    if (isNaN(conversationId)) return NextResponse.json({ error: "无效ID" }, { status: 400 });
+    let conversationId: number;
+    try { conversationId = requireId(id); } catch { return invalidIdResponse(); }
 
     const session = await getServerSession(authOptions);
     const userId = getAuthUserId(session);
@@ -63,8 +65,8 @@ export async function POST(
 ) {
   try {
     const { id } = await params;
-    const conversationId = parseInt(id);
-    if (isNaN(conversationId)) return NextResponse.json({ error: "无效ID" }, { status: 400 });
+    let conversationId: number;
+    try { conversationId = requireId(id); } catch { return invalidIdResponse(); }
 
     const session = await getServerSession(authOptions);
     const userId = getAuthUserId(session);
@@ -81,7 +83,18 @@ export async function POST(
       return NextResponse.json({ error: "无权访问" }, { status: 403 });
     }
 
-    const { content } = await request.json();
+    const rl = checkRateLimit(`dm:${userId}`, RATE_LIMITS.comment);
+    if (!rl.allowed) {
+      return NextResponse.json({ error: "发送太频繁，请稍后再试" }, { status: 429, headers: getRateLimitHeaders(rl) });
+    }
+
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: "请求格式无效" }, { status: 400 });
+    }
+    const { content } = body;
     if (!content?.trim()) {
       return NextResponse.json({ error: "消息不能为空" }, { status: 400 });
     }

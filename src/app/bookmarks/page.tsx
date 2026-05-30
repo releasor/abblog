@@ -7,6 +7,7 @@ import { Bookmark, Plus, Folder, Trash2 } from "lucide-react";
 import { showToast } from "@/components/toast";
 import { EmptyState } from "@/components/empty-state";
 import { Skeleton } from "@/components/skeleton";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 
 interface Collection {
   id: number;
@@ -32,6 +33,7 @@ export default function BookmarksPage() {
   const [showNew, setShowNew] = useState(false);
   const [newName, setNewName] = useState("");
   const [newDesc, setNewDesc] = useState("");
+  const [deleteTargetId, setDeleteTargetId] = useState<number | null>(null);
 
   useEffect(() => {
     fetchCollections();
@@ -78,7 +80,6 @@ export default function BookmarksPage() {
   }
 
   async function handleDelete(id: number) {
-    if (!confirm("确定删除此收藏夹？")) return;
     try {
       const res = await fetch(`/api/bookmarks/collections/${id}`, { method: "DELETE" });
       if (res.ok) {
@@ -199,7 +200,7 @@ export default function BookmarksPage() {
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleDelete(col.id);
+                        setDeleteTargetId(col.id);
                       }}
                       className="p-1 text-zinc-400 hover:text-red-500"
                       aria-label={`删除收藏夹 ${col.name}`}
@@ -234,7 +235,7 @@ export default function BookmarksPage() {
                         {item.post.coverImageUrl && (
                           <Image
                             src={item.post.coverImageUrl}
-                            alt=""
+                            alt={item.post.title}
                             width={80}
                             height={80}
                             className="w-20 h-20 object-cover rounded-lg"
@@ -273,6 +274,19 @@ export default function BookmarksPage() {
           </div>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={deleteTargetId !== null}
+        title="删除收藏夹"
+        message="确定要删除此收藏夹吗？此操作无法撤销。"
+        confirmLabel="删除"
+        variant="danger"
+        onConfirm={() => {
+          if (deleteTargetId) handleDelete(deleteTargetId);
+          setDeleteTargetId(null);
+        }}
+        onCancel={() => setDeleteTargetId(null)}
+      />
     </main>
   );
 }

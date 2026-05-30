@@ -2,22 +2,23 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions, getAuthUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { parsePagination, paginationMeta } from "@/lib/pagination";
+import { requireId, invalidIdResponse } from "@/lib/api-utils";
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
     const { searchParams } = new URL(request.url);
-    const page = Math.max(1, parseInt(searchParams.get("page") || "1"));
-    const limit = 12;
+    const { page, limit, skip } = parsePagination(searchParams, { limit: 12 });
 
-    const groupId = parseInt(id);
-    if (isNaN(groupId)) return NextResponse.json({ error: "无效ID" }, { status: 400 });
+    let groupId: number;
+    try { groupId = requireId(id); } catch { return invalidIdResponse(); }
 
     const [posts, total] = await Promise.all([
       prisma.groupPost.findMany({
         where: { groupId },
         orderBy: { createdAt: "desc" },
-        skip: (page - 1) * limit,
+        skip,
         take: limit,
         include: {
           post: {
@@ -34,7 +35,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     return NextResponse.json(
       {
         posts: posts.map((gp) => gp.post),
-        pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+        pagination: paginationMeta(page, limit, total),
       },
       { headers: { "Cache-Control": "public, s-maxage=120, stale-while-revalidate=300" } }
     );
@@ -51,18 +52,29 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     if (!userId) return NextResponse.json({ error: "请先登录" }, { status: 401 });
 
     const { id } = await params;
-    const groupId = parseInt(id);
-    if (isNaN(groupId)) return NextResponse.json({ error: "无效ID" }, { status: 400 });
+    let groupId: number;
+    try { groupId = requireId(id); } catch { return invalidIdResponse(); }
 
     const membership = await prisma.groupMember.findUnique({
       where: { groupId_userId: { groupId, userId } },
     });
     if (!membership) return NextResponse.json({ error: "请先加入圈子" }, { status: 403 });
 
-    const { postId } = await request.json();
+    let postId: string;
+    try {
+      const body = await request.json();
+      postId = body.postId;
+    } catch {
+      return NextResponse.json({ error: "请求格式无效" }, { status: 400 });
+    }
     if (!postId) return NextResponse.json({ error: "请选择文章" }, { status: 400 });
-    const postIdNum = parseInt(postId);
-    if (isNaN(postIdNum)) return NextResponse.json({ error: "无效文章ID" }, { status: 400 });
+    let postIdNum: number;
+    try { postIdNum = requireId(postId); } catch { return invalidIdResponse(); }
+
+    const existing = await prisma.groupPost.findUnique({
+      where: { groupId_postId: { groupId, postId: postIdNum } },
+    });
+    if (existing) return NextResponse.json({ error: "文章已在圈子中" }, { status: 409 });
 
     const gp = await prisma.groupPost.create({
       data: { groupId, postId: postIdNum },

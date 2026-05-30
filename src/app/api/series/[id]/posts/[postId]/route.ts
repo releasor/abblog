@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions, getAuthUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { requireId, invalidIdResponse } from "@/lib/api-utils";
 
 export async function DELETE(
   _request: NextRequest,
@@ -13,11 +14,10 @@ export async function DELETE(
     if (!userId) return NextResponse.json({ error: "请先登录" }, { status: 401 });
 
     const { id, postId } = await params;
-    const seriesId = parseInt(id);
-    const postIdNum = parseInt(postId);
-    if (isNaN(seriesId) || isNaN(postIdNum)) {
-      return NextResponse.json({ error: "无效ID" }, { status: 400 });
-    }
+    let seriesId: number;
+    let postIdNum: number;
+    try { seriesId = requireId(id); } catch { return invalidIdResponse(); }
+    try { postIdNum = requireId(postId); } catch { return invalidIdResponse(); }
 
     const series = await prisma.postSeries.findUnique({ where: { id: seriesId } });
     if (!series || series.userId !== userId) {

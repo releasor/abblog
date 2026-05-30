@@ -7,11 +7,11 @@ import { createActivity } from "@/lib/activity";
 import { addPoints, POINTS } from "@/lib/points";
 import { estimateReadingTime } from "@/lib/reading-time";
 import { checkRateLimit, RATE_LIMITS, getRateLimitHeaders } from "@/lib/rate-limit";
+import { parsePagination, paginationMeta } from "@/lib/pagination";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
-  const page = Math.max(1, parseInt(searchParams.get("page") || "1"));
-  const limit = Math.min(50, Math.max(1, parseInt(searchParams.get("limit") || "10")));
+  const { page, limit, skip } = parsePagination(searchParams, { limit: 10, maxLimit: 50 });
   const status = searchParams.get("status");
   const sortBy = searchParams.get("sortBy") || "createdAt";
   const sortOrder = searchParams.get("sortOrder") === "asc" ? "asc" as const : "desc" as const;
@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
       prisma.post.findMany({
         where,
         orderBy,
-        skip: (page - 1) * limit,
+        skip,
         take: limit,
         include: {
           category: { select: { name: true } },
@@ -52,12 +52,7 @@ export async function GET(request: NextRequest) {
         tags: p.tags.map((pt) => pt.tag),
         pendingComments: p._count.comments,
       })),
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
-      },
+      pagination: paginationMeta(page, limit, total),
     }, {
       headers: { "Cache-Control": "public, s-maxage=60, stale-while-revalidate=120" },
     });
@@ -82,7 +77,12 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const body = await request.json();
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "请求格式无效" }, { status: 400 });
+  }
   const { title, content, excerpt, coverImageUrl, categoryId, tags, status, isPinned, scheduledAt } = body;
 
   if (!title || !content) {
@@ -94,6 +94,12 @@ export async function POST(request: NextRequest) {
   if (typeof content !== "string" || content.length > 500000) {
     return NextResponse.json({ error: "内容过长" }, { status: 400 });
   }
+  if (categoryId && isNaN(parseInt(categoryId))) {
+    return NextResponse.json({ error: "无效的分类ID" }, { status: 400 });
+  }
+  if (tags && (!Array.isArray(tags) || tags.some((t: string) => isNaN(parseInt(t))))) {
+    return NextResponse.json({ error: "无效的标签ID" }, { status: 400 });
+  }
 
   try {
     const slug = body.slug || slugify(title);
@@ -104,42 +110,49 @@ export async function POST(request: NextRequest) {
 
     const isPublished = status === "PUBLISHED";
 
-    const post = await prisma.post.create({
-      data: {
-        title,
-        slug,
-        content,
-        excerpt: excerpt || null,
-        coverImageUrl: coverImageUrl || null,
-        status: isPublished ? "PUBLISHED" : "DRAFT",
-        publishedAt: isPublished ? new Date() : null,
-        isPinned: isPinned ? Boolean(isPinned) : false,
-        scheduledAt: scheduledAt ? new Date(scheduledAt) : null,
-        readingTime: estimateReadingTime(content),
-        authorId: userId,
-        categoryId: categoryId ? parseInt(categoryId) : null,
-        tags: tags?.length
-          ? {
-              create: tags.map((tagId: string) => ({
-                tag: { connect: { id: parseInt(tagId) } },
-              })),
-            }
-          : undefined,
-      },
-      include: {
-        category: true,
-        tags: { include: { tag: true } },
-      },
-    });
+    try {
+      const post = await prisma.post.create({
+        data: {
+          title,
+          slug,
+          content,
+          excerpt: excerpt || null,
+          coverImageUrl: coverImageUrl || null,
+          status: isPublished ? "PUBLISHED" : "DRAFT",
+          publishedAt: isPublished ? new Date() : null,
+          isPinned: isPinned ? Boolean(isPinned) : false,
+          scheduledAt: scheduledAt ? new Date(scheduledAt) : null,
+          readingTime: estimateReadingTime(content),
+          authorId: userId,
+          categoryId: categoryId ? parseInt(categoryId) : null,
+          tags: tags?.length
+            ? {
+                create: tags.map((tagId: string) => ({
+                  tag: { connect: { id: parseInt(tagId) } },
+                })),
+              }
+            : undefined,
+        },
+        include: {
+          category: true,
+          tags: { include: { tag: true } },
+        },
+      });
 
-    if (isPublished) {
-      await Promise.all([
-        createActivity(userId, "POST_PUBLISHED", post.id, { title: post.title }),
-        addPoints(userId, POINTS.POST_PUBLISHED),
-      ]);
+      if (isPublished) {
+        await Promise.all([
+          createActivity(userId, "POST_PUBLISHED", post.id, { title: post.title }),
+          addPoints(userId, POINTS.POST_PUBLISHED),
+        ]);
+      }
+
+      return NextResponse.json(post, { status: 201 });
+    } catch (createErr: unknown) {
+      if ((createErr as { code?: string }).code === "P2002") {
+        return NextResponse.json({ error: "该标识已被其他文章使用" }, { status: 409 });
+      }
+      throw createErr;
     }
-
-    return NextResponse.json(post, { status: 201 });
   } catch (e) {
     console.error("[Posts] Failed to create post:", e);
     return NextResponse.json({ error: "创建文章失败" }, { status: 500 });
