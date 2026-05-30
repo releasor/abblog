@@ -1,17 +1,19 @@
+import { memo } from "react";
+
 interface SkeletonProps {
   className?: string;
 }
 
-export function Skeleton({ className = "" }: SkeletonProps) {
+export const Skeleton = memo(function Skeleton({ className = "" }: SkeletonProps) {
   return (
     <div
       aria-hidden="true"
       className={`animate-pulse bg-zinc-200 dark:bg-zinc-800 rounded ${className}`}
     />
   );
-}
+});
 
-export function SkeletonText({ lines = 3, className = "" }: { lines?: number; className?: string }) {
+export const SkeletonText = memo(function SkeletonText({ lines = 3, className = "" }: { lines?: number; className?: string }) {
   return (
     <div className={`space-y-2 ${className}`}>
       {Array.from({ length: lines }).map((_, i) => (
@@ -22,9 +24,9 @@ export function SkeletonText({ lines = 3, className = "" }: { lines?: number; cl
       ))}
     </div>
   );
-}
+});
 
-export function SkeletonCard({ className = "" }: { className?: string }) {
+export const SkeletonCard = memo(function SkeletonCard({ className = "" }: { className?: string }) {
   return (
     <div className={`bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 ${className}`}>
       <div className="flex items-start gap-4">
@@ -36,9 +38,9 @@ export function SkeletonCard({ className = "" }: { className?: string }) {
       </div>
     </div>
   );
-}
+});
 
-export function SkeletonTable({ rows = 5, cols = 4 }: { rows?: number; cols?: number }) {
+export const SkeletonTable = memo(function SkeletonTable({ rows = 5, cols = 4 }: { rows?: number; cols?: number }) {
   return (
     <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden">
       <div className="px-5 py-3 border-b border-zinc-200 dark:border-zinc-800">
@@ -65,9 +67,9 @@ export function SkeletonTable({ rows = 5, cols = 4 }: { rows?: number; cols?: nu
       ))}
     </div>
   );
-}
+});
 
-export function SkeletonGrid({ count = 6, cols = 3 }: { count?: number; cols?: number }) {
+export const SkeletonGrid = memo(function SkeletonGrid({ count = 6, cols = 3 }: { count?: number; cols?: number }) {
   const colClass = cols === 4 ? "lg:grid-cols-4" : cols === 2 ? "lg:grid-cols-2" : "lg:grid-cols-3";
   return (
     <div className={`grid grid-cols-1 sm:grid-cols-2 ${colClass} gap-4`}>
@@ -76,9 +78,9 @@ export function SkeletonGrid({ count = 6, cols = 3 }: { count?: number; cols?: n
       ))}
     </div>
   );
-}
+});
 
-export function SkeletonStat({ count = 4 }: { count?: number }) {
+export const SkeletonStat = memo(function SkeletonStat({ count = 4 }: { count?: number }) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       {Array.from({ length: count }).map((_, i) => (
@@ -92,9 +94,9 @@ export function SkeletonStat({ count = 4 }: { count?: number }) {
       ))}
     </div>
   );
-}
+});
 
-export function SkeletonRow({ count = 5, height = "h-16" }: { count?: number; height?: string }) {
+export const SkeletonRow = memo(function SkeletonRow({ count = 5, height = "h-16" }: { count?: number; height?: string }) {
   return (
     <div className="space-y-3">
       {Array.from({ length: count }).map((_, i) => (
@@ -102,9 +104,9 @@ export function SkeletonRow({ count = 5, height = "h-16" }: { count?: number; he
       ))}
     </div>
   );
-}
+});
 
-export function SkeletonPost() {
+export const SkeletonPost = memo(function SkeletonPost() {
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       <Skeleton className="h-8 w-3/4" />
@@ -117,9 +119,9 @@ export function SkeletonPost() {
       <SkeletonText lines={8} />
     </div>
   );
-}
+});
 
-export function SkeletonProfile() {
+export const SkeletonProfile = memo(function SkeletonProfile() {
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       <div className="flex items-start gap-6">
@@ -138,9 +140,9 @@ export function SkeletonProfile() {
       <SkeletonRow count={3} height="h-24" />
     </div>
   );
-}
+});
 
-export function SkeletonList({ count = 5 }: { count?: number }) {
+export const SkeletonList = memo(function SkeletonList({ count = 5 }: { count?: number }) {
   return (
     <div className="space-y-3">
       {Array.from({ length: count }).map((_, i) => (
@@ -154,4 +156,4 @@ export function SkeletonList({ count = 5 }: { count?: number }) {
       ))}
     </div>
   );
-}
+});
