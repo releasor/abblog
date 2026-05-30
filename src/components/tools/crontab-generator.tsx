@@ -1,6 +1,18 @@
 "use client";
 
 import { useState } from "react";
+import { useCopyToClipboard } from "@/hooks/use-copy";
+
+const PRESETS = [
+  { label: "每分钟", value: "* * * * *" },
+  { label: "每小时", value: "0 * * * *" },
+  { label: "每天零点", value: "0 0 * * *" },
+  { label: "每天上午9点", value: "0 9 * * *" },
+  { label: "每周一上午9点", value: "0 9 * * 1" },
+  { label: "每月1号零点", value: "0 0 1 * *" },
+  { label: "每5分钟", value: "*/5 * * * *" },
+  { label: "工作日上午9点", value: "0 9 * * 1-5" },
+];
 
 export default function CrontabGenerator() {
   const [minute, setMinute] = useState("*");
@@ -8,20 +20,9 @@ export default function CrontabGenerator() {
   const [day, setDay] = useState("*");
   const [month, setMonth] = useState("*");
   const [weekday, setWeekday] = useState("*");
-  const [copied, setCopied] = useState(false);
+  const { copied, copy } = useCopyToClipboard();
 
   const cron = `${minute} ${hour} ${day} ${month} ${weekday}`;
-
-  const presets = [
-    { label: "每分钟", value: "* * * * *" },
-    { label: "每小时", value: "0 * * * *" },
-    { label: "每天零点", value: "0 0 * * *" },
-    { label: "每天上午9点", value: "0 9 * * *" },
-    { label: "每周一上午9点", value: "0 9 * * 1" },
-    { label: "每月1号零点", value: "0 0 1 * *" },
-    { label: "每5分钟", value: "*/5 * * * *" },
-    { label: "工作日上午9点", value: "0 9 * * 1-5" },
-  ];
 
   const describe = () => {
     const parts: string[] = [];
@@ -48,12 +49,6 @@ export default function CrontabGenerator() {
     setDay(d);
     setMonth(mo);
     setWeekday(w);
-  };
-
-  const copyCron = () => {
-    navigator.clipboard.writeText(cron);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
   };
 
   return (
@@ -85,7 +80,7 @@ export default function CrontabGenerator() {
             <div className="font-mono text-2xl font-bold text-zinc-900 dark:text-zinc-100 mt-1">{cron}</div>
             <div className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">{describe()}</div>
           </div>
-          <button onClick={copyCron} className="px-3 py-1.5 text-sm bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-lg hover:bg-zinc-300 dark:hover:bg-zinc-700 transition-colors">
+          <button onClick={() => copy(cron)} className="px-3 py-1.5 text-sm bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-lg hover:bg-zinc-300 dark:hover:bg-zinc-700 transition-colors">
             {copied ? "已复制" : "复制"}
           </button>
         </div>
@@ -94,7 +89,7 @@ export default function CrontabGenerator() {
       <div>
         <h3 className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">常用预设</h3>
         <div className="flex flex-wrap gap-2">
-          {presets.map((p) => (
+          {PRESETS.map((p) => (
             <button
               key={p.label}
               onClick={() => applyPreset(p.value)}
