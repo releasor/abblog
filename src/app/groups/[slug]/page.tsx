@@ -8,6 +8,16 @@ import { formatDate } from "@/lib/format-date";
 import { Users, FileText } from "lucide-react";
 import { JoinGroupButton } from "./join-button";
 
+export const revalidate = 600;
+
+export async function generateStaticParams() {
+  const groups = await prisma.group.findMany({
+    where: { isPublic: true },
+    select: { slug: true },
+  });
+  return groups.map((g) => ({ slug: g.slug }));
+}
+
 interface Props {
   params: Promise<{ slug: string }>;
 }

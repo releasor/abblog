@@ -7,6 +7,14 @@ import { EmptyState } from "@/components/empty-state";
 
 export const revalidate = 3600;
 
+export async function generateStaticParams() {
+  const categories = await prisma.category.findMany({
+    where: { posts: { some: { status: "PUBLISHED" } } },
+    select: { slug: true },
+  });
+  return categories.map((c) => ({ slug: c.slug }));
+}
+
 interface PageProps {
   params: Promise<{ slug: string }>;
 }

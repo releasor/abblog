@@ -7,6 +7,14 @@ import { BookOpen, Calendar } from "lucide-react";
 
 export const revalidate = 600;
 
+export async function generateStaticParams() {
+  const series = await prisma.postSeries.findMany({
+    where: { posts: { some: { post: { status: "PUBLISHED" } } } },
+    select: { slug: true },
+  });
+  return series.map((s) => ({ slug: s.slug }));
+}
+
 interface Props {
   params: Promise<{ slug: string }>;
 }

@@ -7,6 +7,14 @@ import { formatDate } from "@/lib/format-date";
 
 export const revalidate = 600;
 
+export async function generateStaticParams() {
+  const topics = await prisma.topic.findMany({
+    where: { posts: { some: { post: { status: "PUBLISHED" } } } },
+    select: { slug: true },
+  });
+  return topics.map((t) => ({ slug: t.slug }));
+}
+
 interface Props {
   params: Promise<{ slug: string }>;
 }
