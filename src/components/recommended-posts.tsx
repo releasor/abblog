@@ -4,6 +4,7 @@ import { useState, useEffect, memo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { formatDateShort } from "@/lib/format-date";
+import { fetchApi } from "@/lib/fetch-api";
 
 interface RecommendedPost {
   id: number;
@@ -20,13 +21,8 @@ export const RecommendedPosts = memo(function RecommendedPosts({ postId }: { pos
   const [posts, setPosts] = useState<RecommendedPost[]>([]);
 
   useEffect(() => {
-    fetch(`/api/posts/recommend?postId=${postId}&limit=4`)
-      .then((res) => {
-        if (res.ok) return res.json();
-        return [];
-      })
-      .then((data) => { if (Array.isArray(data)) setPosts(data); })
-      .catch((e) => console.error("[RecommendedPosts] Failed to fetch recommendations:", e));
+    fetchApi<RecommendedPost[]>(`/api/posts/recommend?postId=${postId}&limit=4`, { showErrorToast: false })
+      .then((res) => { if (res.ok) setPosts(res.data); });
   }, [postId]);
 
   if (posts.length === 0) return null;

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, memo } from "react";
 import Link from "next/link";
+import { fetchApi } from "@/lib/fetch-api";
 
 interface PopularPost {
   id: number;
@@ -17,13 +18,8 @@ export const PopularPosts = memo(function PopularPosts() {
   const [period, setPeriod] = useState<"week" | "month">("week");
 
   useEffect(() => {
-    fetch(`/api/posts/popular?period=${period}&limit=5`)
-      .then((res) => {
-        if (res.ok) return res.json();
-        return [];
-      })
-      .then((data) => { if (Array.isArray(data)) setPosts(data); })
-      .catch((e) => console.error("[PopularPosts] Failed to fetch popular posts:", e));
+    fetchApi<PopularPost[]>(`/api/posts/popular?period=${period}&limit=5`, { showErrorToast: false })
+      .then((res) => { if (res.ok) setPosts(res.data); });
   }, [period]);
 
   return (
