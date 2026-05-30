@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { useCopyToClipboard } from "@/hooks/use-copy";
 
 export default function YamlConverter() {
   const [input, setInput] = useState("");
   const [output, setOutput] = useState("");
   const [mode, setMode] = useState<"json2yaml" | "yaml2json">("json2yaml");
   const [error, setError] = useState("");
-  const [copied, setCopied] = useState(false);
+  const { copied, copy } = useCopyToClipboard();
 
   const jsonToYaml = (obj: unknown, indent = 0): string => {
     const pad = "  ".repeat(indent);
@@ -110,12 +111,6 @@ export default function YamlConverter() {
     }
   };
 
-  const copy = () => {
-    navigator.clipboard.writeText(output);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
   return (
     <div className="space-y-4">
       <div className="flex gap-2">
@@ -128,7 +123,7 @@ export default function YamlConverter() {
         <button onClick={convert} className="px-4 py-2 text-sm bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-lg hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors">
           转换
         </button>
-        <button onClick={copy} className="px-4 py-2 text-sm bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors">
+        <button onClick={() => copy(output)} className="px-4 py-2 text-sm bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors">
           {copied ? "已复制!" : "复制结果"}
         </button>
       </div>

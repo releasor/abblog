@@ -110,3 +110,5 @@ export function getAuthUserId(session: { user?: unknown } | null): number | null
   const parsed = parseInt(id);
   return isNaN(parsed) ? null : parsed;
 }
+
+export { getAuthUserRole, getAuthUsername } from "./auth-helpers";

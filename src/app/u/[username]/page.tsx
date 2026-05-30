@@ -33,6 +33,20 @@ interface UserPost {
   user?: { name: string; username: string } | null;
 }
 
+type ProfileTab = "posts" | "likes" | "bookmarks";
+
+const TAB_LABELS: Record<ProfileTab, string> = {
+  posts: "文章",
+  likes: "点赞",
+  bookmarks: "收藏",
+};
+
+const TAB_EMPTY_MSG: Record<ProfileTab, string> = {
+  posts: "暂无文章",
+  likes: "暂无点赞",
+  bookmarks: "暂无收藏",
+};
+
 export default function UserProfilePage() {
   const params = useParams();
   const router = useRouter();
@@ -41,7 +55,7 @@ export default function UserProfilePage() {
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [posts, setPosts] = useState<UserPost[]>([]);
-  const [tab, setTab] = useState<"posts" | "likes" | "bookmarks">("posts");
+  const [tab, setTab] = useState<ProfileTab>("posts");
   const [loading, setLoading] = useState(true);
 
   const isOwn = session?.user && (session.user as { username?: string }).username === username;
@@ -173,7 +187,7 @@ export default function UserProfilePage() {
       </div>
 
       <div className="flex gap-4 mb-6 border-b border-zinc-200 dark:border-zinc-800" role="tablist" aria-label="内容分类">
-        {(["posts", "likes", "bookmarks"] as const).map((t) => (
+        {(Object.keys(TAB_LABELS) as ProfileTab[]).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -181,14 +195,14 @@ export default function UserProfilePage() {
             aria-selected={tab === t}
             className={`pb-3 text-sm font-medium border-b-2 transition-colors ${tab === t ? "border-zinc-900 dark:border-zinc-100 text-zinc-900 dark:text-zinc-100" : "border-transparent text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"}`}
           >
-            {t === "posts" ? "文章" : t === "likes" ? "点赞" : "收藏"}
+            {TAB_LABELS[t]}
           </button>
         ))}
       </div>
 
       <div className="space-y-4">
         {posts.length === 0 ? (
-          <EmptyState compact message={tab === "posts" ? "暂无文章" : tab === "likes" ? "暂无点赞" : "暂无收藏"} />
+          <EmptyState compact message={TAB_EMPTY_MSG[tab]} />
         ) : (
           posts.map((post) => (
             <Link

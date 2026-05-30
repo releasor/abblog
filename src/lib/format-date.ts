@@ -1,7 +1,10 @@
+function toDate(date: Date | string): Date {
+  return typeof date === "string" ? new Date(date) : date;
+}
+
 export function formatDate(date: Date | string | null): string {
   if (!date) return "";
-  const d = typeof date === "string" ? new Date(date) : date;
-  return d.toLocaleDateString("zh-CN", {
+  return toDate(date).toLocaleDateString("zh-CN", {
     year: "numeric",
     month: "long",
     day: "numeric",
@@ -10,8 +13,7 @@ export function formatDate(date: Date | string | null): string {
 
 export function formatDateShort(date: Date | string | null): string {
   if (!date) return "";
-  const d = typeof date === "string" ? new Date(date) : date;
-  return d.toLocaleDateString("zh-CN", {
+  return toDate(date).toLocaleDateString("zh-CN", {
     month: "short",
     day: "numeric",
     year: "numeric",
@@ -20,14 +22,12 @@ export function formatDateShort(date: Date | string | null): string {
 
 export function formatMonthDay(date: Date | string | null): string {
   if (!date) return "";
-  const d = typeof date === "string" ? new Date(date) : date;
-  return d.toLocaleDateString("zh-CN", { month: "long", day: "numeric" });
+  return toDate(date).toLocaleDateString("zh-CN", { month: "long", day: "numeric" });
 }
 
 export function formatDateTime(date: Date | string | null): string {
   if (!date) return "";
-  const d = typeof date === "string" ? new Date(date) : date;
-  return d.toLocaleString("zh-CN", {
+  return toDate(date).toLocaleString("zh-CN", {
     year: "numeric",
     month: "long",
     day: "numeric",
@@ -37,7 +37,7 @@ export function formatDateTime(date: Date | string | null): string {
 }
 
 export function formatRelativeTime(date: Date | string): string {
-  const d = typeof date === "string" ? new Date(date) : date;
+  const d = toDate(date);
   const now = new Date();
   const diffMs = now.getTime() - d.getTime();
   const diffSeconds = Math.floor(diffMs / 1000);

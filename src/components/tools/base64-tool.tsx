@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { useCopyToClipboard } from "@/hooks/use-copy";
 
 export default function Base64Tool() {
   const [input, setInput] = useState("");
   const [output, setOutput] = useState("");
   const [mode, setMode] = useState<"encode" | "decode">("encode");
   const [error, setError] = useState("");
-  const [copied, setCopied] = useState(false);
+  const { copied, copy } = useCopyToClipboard();
 
   const process = () => {
     try {
@@ -21,12 +22,6 @@ export default function Base64Tool() {
       setError(mode === "decode" ? "无效的 Base64 字符串" : "编码失败");
       setOutput("");
     }
-  };
-
-  const copy = () => {
-    navigator.clipboard.writeText(output);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
   };
 
   return (
@@ -47,7 +42,7 @@ export default function Base64Tool() {
         <button onClick={process} className="px-4 py-2 text-sm bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-lg hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors">
           转换
         </button>
-        <button onClick={copy} className="px-4 py-2 text-sm bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors">
+        <button onClick={() => copy(output)} className="px-4 py-2 text-sm bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors">
           {copied ? "已复制!" : "复制结果"}
         </button>
       </div>

@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { useCopyToClipboard } from "@/hooks/use-copy";
 
 export default function JsonFormatter() {
   const [input, setInput] = useState("");
   const [output, setOutput] = useState("");
   const [error, setError] = useState("");
-  const [copied, setCopied] = useState(false);
+  const { copied, copy } = useCopyToClipboard();
 
   const format = () => {
     try {
@@ -30,12 +31,6 @@ export default function JsonFormatter() {
     }
   };
 
-  const copy = () => {
-    navigator.clipboard.writeText(output);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
   return (
     <div className="space-y-4">
       <div className="flex gap-2">
@@ -45,7 +40,7 @@ export default function JsonFormatter() {
         <button onClick={minify} className="px-4 py-2 text-sm bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors">
           压缩
         </button>
-        <button onClick={copy} className="px-4 py-2 text-sm bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors">
+        <button onClick={() => copy(output)} className="px-4 py-2 text-sm bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors">
           {copied ? "已复制!" : "复制结果"}
         </button>
       </div>

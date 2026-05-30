@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useCopyToClipboard } from "@/hooks/use-copy";
 
 export default function PasswordGenerator() {
   const [length, setLength] = useState(16);
@@ -9,7 +10,7 @@ export default function PasswordGenerator() {
   const [useNumbers, setUseNumbers] = useState(true);
   const [useSymbols, setUseSymbols] = useState(true);
   const [password, setPassword] = useState("");
-  const [copied, setCopied] = useState(false);
+  const { copied, setCopied, copy } = useCopyToClipboard();
 
   const generate = () => {
     let chars = "";
@@ -23,12 +24,6 @@ export default function PasswordGenerator() {
     crypto.getRandomValues(arr);
     setPassword(Array.from(arr, (x) => chars[x % chars.length]).join(""));
     setCopied(false);
-  };
-
-  const copy = () => {
-    navigator.clipboard.writeText(password);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
   };
 
   const getStrength = () => {
@@ -55,7 +50,7 @@ export default function PasswordGenerator() {
         {password && (
           <div className="flex items-center gap-2 mt-2">
             <span className={`text-sm font-medium ${strength.color}`}>强度: {strength.label}</span>
-            <button onClick={copy} className="ml-auto px-3 py-1 text-sm bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-lg hover:bg-zinc-300 dark:hover:bg-zinc-700 transition-colors">
+            <button onClick={() => copy(password)} className="ml-auto px-3 py-1 text-sm bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-lg hover:bg-zinc-300 dark:hover:bg-zinc-700 transition-colors">
               {copied ? "已复制" : "复制"}
             </button>
           </div>
