@@ -44,8 +44,6 @@ export default function TimestampConverter() {
     );
   };
 
-  const handleCopy = (text: string, label: string) => copy(text, label);
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between p-4 bg-zinc-50 dark:bg-zinc-950 rounded-lg border border-zinc-200 dark:border-zinc-800">
@@ -54,7 +52,7 @@ export default function TimestampConverter() {
           <div className="font-mono text-2xl font-bold text-zinc-900 dark:text-zinc-100 mt-1">{now}</div>
         </div>
         <button
-          onClick={() => handleCopy(String(now), "timestamp")}
+          onClick={() => copy(String(now), "timestamp")}
           className="px-3 py-1.5 text-sm bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-lg hover:bg-zinc-300 dark:hover:bg-zinc-700 transition-colors"
         >
           {copiedId === "timestamp" ? "已复制!" : "复制"}
