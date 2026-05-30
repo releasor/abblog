@@ -31,10 +31,12 @@ export default function AdminDonationsPage() {
     const params = new URLSearchParams({ page: page.toString(), limit: "20" });
     if (tab !== "all") params.set("type", tab);
     fetch(`/api/donations?${params}`)
-      .then((r) => r.json())
+      .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
-        setDonations(data.donations || []);
-        setTotalPages(data.pagination?.totalPages || 1);
+        if (data) {
+          setDonations(data.donations || []);
+          setTotalPages(data.pagination?.totalPages || 1);
+        }
       })
       .catch((e) => console.error("[Donations] Failed to fetch donations:", e))
       .finally(() => setLoading(false));

@@ -79,8 +79,8 @@ export default function PostForm({ mode, apiEndpoint, redirectPath, initialData 
 
   useEffect(() => {
     Promise.all([
-      fetch("/api/categories").then((r) => r.json()),
-      fetch("/api/tags").then((r) => r.json()),
+      fetch("/api/categories").then((r) => (r.ok ? r.json() : [])),
+      fetch("/api/tags").then((r) => (r.ok ? r.json() : [])),
     ])
       .then(([cats, tgs]) => {
         setCategories(cats);

@@ -24,8 +24,8 @@ export const VersionHistory = memo(function VersionHistory({ postId, onRestore }
 
   useEffect(() => {
     fetch(`/api/posts/${postId}/versions`)
-      .then((r) => r.json())
-      .then((data) => setVersions(data.versions || []))
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => { if (data) setVersions(data.versions || []); })
       .catch(() => showToast("加载版本历史失败", "error"));
   }, [postId]);
 

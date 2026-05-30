@@ -26,7 +26,7 @@ export const TemplatePicker = memo(function TemplatePicker({ onSelect }: Templat
 
   useEffect(() => {
     fetch("/api/templates")
-      .then((r) => r.json())
+      .then((r) => (r.ok ? r.json() : []))
       .then((data) => setTemplates(Array.isArray(data) ? data : []))
       .catch((e) => console.error("[TemplatePicker] Failed to fetch templates:", e));
   }, []);

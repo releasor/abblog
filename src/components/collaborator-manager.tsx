@@ -31,7 +31,7 @@ export const CollaboratorManager = memo(function CollaboratorManager({ postId, i
 
   useEffect(() => {
     fetch(`/api/posts/${postId}/collaborators`)
-      .then((r) => r.json())
+      .then((r) => (r.ok ? r.json() : []))
       .then((data) => setCollaborators(data))
       .catch(() => showToast("加载协作者失败", "error"));
   }, [postId]);
