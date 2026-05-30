@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Save, Check } from "lucide-react";
-import { showToast } from "@/components/toast";
+import { fetchApi } from "@/lib/fetch-api";
 
 interface ConfigItem {
   key: string;
@@ -32,25 +32,16 @@ export default function AdminConfigPage() {
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
-    fetch("/api/admin/config")
-      .then((r) => {
-        if (r.ok) return r.json();
-        showToast("加载配置失败", "error");
-        return null;
-      })
-      .then((data) => {
-        if (Array.isArray(data)) {
+    fetchApi<{ key: string; value: string }[]>("/api/admin/config", { errorMessage: "加载配置失败" })
+      .then((result) => {
+        if (result.ok && Array.isArray(result.data)) {
           setConfigs((prev) =>
             prev.map((c) => {
-              const found = data.find((d: { key: string }) => d.key === c.key);
+              const found = result.data.find((d) => d.key === c.key);
               return found ? { ...c, value: found.value } : c;
             })
           );
         }
-      })
-      .catch((e) => {
-        console.error("[Config] Failed to fetch config:", e);
-        showToast("加载配置失败", "error");
       });
   }, []);
 
@@ -61,24 +52,17 @@ export default function AdminConfigPage() {
   };
 
   const handleSave = async () => {
-    try {
-      setSaving(true);
-      const res = await fetch("/api/admin/config", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ configs: configs.map((c) => ({ key: c.key, value: c.value })) }),
-      });
-      if (res.ok) {
-        setSaved(true);
-        setTimeout(() => setSaved(false), 2000);
-      } else {
-        showToast("保存失败", "error");
-      }
-    } catch (e) {
-      console.error("[Config] Failed to save config:", e);
-      showToast("保存失败，请稍后重试", "error");
-    } finally {
-      setSaving(false);
+    setSaving(true);
+    const result = await fetchApi("/api/admin/config", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ configs: configs.map((c) => ({ key: c.key, value: c.value })) }),
+      errorMessage: "保存失败",
+    });
+    setSaving(false);
+    if (result.ok) {
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
     }
   };
 
