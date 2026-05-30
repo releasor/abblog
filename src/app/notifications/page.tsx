@@ -33,16 +33,6 @@ export default function NotificationsPage() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/login");
-      return;
-    }
-    if (status !== "authenticated") return;
-
-    fetchNotifications();
-  }, [status]);
-
   const fetchNotifications = async () => {
     const result = await fetchApi<{ notifications: Notification[]; unreadCount: number }>("/api/notifications", {
       showErrorToast: false,
@@ -54,10 +44,19 @@ export default function NotificationsPage() {
     }
   };
 
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/login");
+      return;
+    }
+    if (status !== "authenticated") return;
+
+    fetchNotifications();
+  }, [status, router]);
+
   const markAsRead = async (id?: number) => {
     const result = await fetchApi("/api/notifications", {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(id ? { id } : {}),
       errorMessage: "标记已读失败",
     });

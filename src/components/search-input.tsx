@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
+import { fetchApi } from "@/lib/fetch-api";
 
 export function SearchInput() {
   const [isOpen, setIsOpen] = useState(false);
@@ -23,30 +24,22 @@ export function SearchInput() {
       return;
     }
 
-    try {
-      const res = await fetch(
-        `/api/search?q=${encodeURIComponent(q)}&suggestions=true`
-      );
-      if (!res.ok) return;
-      const data = await res.json();
-      setSuggestions(data.suggestions || []);
+    const res = await fetchApi<{ suggestions: Array<{ id: number; title: string; slug: string }> }>(
+      `/api/search?q=${encodeURIComponent(q)}&suggestions=true`,
+      { showErrorToast: false }
+    );
+    if (res.ok) {
+      setSuggestions(res.data.suggestions || []);
       setShowSuggestions(true);
-    } catch {
-      // ignore fetch errors for suggestions
     }
   }, []);
 
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
 
-    if (query.trim().length >= 2) {
-      debounceRef.current = setTimeout(() => {
-        fetchSuggestions(query);
-      }, 300);
-    } else {
-      setSuggestions([]);
-      setShowSuggestions(false);
-    }
+    debounceRef.current = setTimeout(() => {
+      fetchSuggestions(query);
+    }, 300);
 
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);

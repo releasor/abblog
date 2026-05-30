@@ -2,11 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcrypt";
 import { prisma } from "@/lib/prisma";
 import { checkRateLimit, RATE_LIMITS, getRateLimitHeaders } from "@/lib/rate-limit";
+import { getClientIp } from "@/lib/api-utils";
 
 export async function POST(request: NextRequest) {
   try {
     // Rate limit by IP
-    const ip = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown";
+    const ip = getClientIp(request);
     const rl = checkRateLimit(`register:${ip}`, RATE_LIMITS.auth);
     if (!rl.allowed) {
       return NextResponse.json(
@@ -46,7 +47,7 @@ export async function POST(request: NextRequest) {
     const passwordHash = await bcrypt.hash(password, 10);
 
     // Generate unique username from name
-    let baseUsername = name.trim()
+    const baseUsername = name.trim()
       .toLowerCase()
       .replace(/[^a-z0-9一-鿿]/g, "")
       .slice(0, 15) || "user";

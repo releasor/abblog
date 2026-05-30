@@ -30,7 +30,6 @@ export const VoteButtons = memo(function VoteButtons({ postId, initialScore = 0,
     setLoading(true);
     const result = await fetchApi<{ score: number; userVote: number | null }>(`/api/posts/${postId}/vote`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ value }),
       errorMessage: "投票失败",
     });

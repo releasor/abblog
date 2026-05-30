@@ -43,7 +43,7 @@ export default function SeriesManagePage() {
         setLoading(false);
         if (result.ok) setSeries(result.data.series || []);
       });
-  }, [status]);
+  }, [status, router]);
 
   const handleCreate = async () => {
     if (!form.name.trim()) return;
@@ -52,7 +52,6 @@ export default function SeriesManagePage() {
 
     const result = await fetchApi<Series>("/api/series", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(form),
       successMessage: "系列创建成功",
       errorMessage: "创建失败",
@@ -72,7 +71,6 @@ export default function SeriesManagePage() {
 
     const result = await fetchApi<Partial<Series>>(`/api/series/${id}`, {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(form),
       successMessage: "系列更新成功",
       errorMessage: "更新失败",

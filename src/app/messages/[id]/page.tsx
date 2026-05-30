@@ -54,7 +54,7 @@ export default function ChatPage() {
         setLoading(false);
         if (result.ok) setMessages(result.data);
       });
-  }, [status, conversationId]);
+  }, [status, conversationId, router]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -68,7 +68,6 @@ export default function ChatPage() {
 
     const result = await fetchApi<Message>(`/api/conversations/${conversationId}/messages`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ content }),
       errorMessage: "发送失败",
     });

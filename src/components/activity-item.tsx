@@ -1,4 +1,3 @@
-import { memo } from "react";
 import Link from "next/link";
 import { FileText, MessageCircle, Heart, UserPlus, Bookmark } from "lucide-react";
 import { formatDate } from "@/lib/format-date";
@@ -35,7 +34,7 @@ const typeLabels: Record<string, string> = {
   BOOKMARK_ADDED: "收藏了文章",
 };
 
-export const ActivityItem = memo(function ActivityItem({ activity }: ActivityItemProps) {
+export function ActivityItem({ activity }: ActivityItemProps) {
   const Icon = typeIcons[activity.type] || FileText;
   const label = typeLabels[activity.type] || activity.type;
   let metadata: { title?: string } | null = null;
@@ -69,4 +68,4 @@ export const ActivityItem = memo(function ActivityItem({ activity }: ActivityIte
       </div>
     </div>
   );
-});
+}

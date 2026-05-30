@@ -29,7 +29,7 @@ export function checkRateLimit(
 ): { allowed: boolean; remaining: number; resetAt: number } {
   cleanupExpired();
   const now = Date.now();
-  const key = `${identifier}`;
+  const key = identifier;
   const entry = store.get(key);
 
   if (!entry || now > entry.resetAt) {

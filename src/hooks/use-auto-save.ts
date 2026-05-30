@@ -61,9 +61,11 @@ export function useAutoSave(
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   // Keep refs in sync
-  dataRef.current = data;
-  keyRef.current = key;
-  enabledRef.current = enabled;
+  useEffect(() => {
+    dataRef.current = data;
+    keyRef.current = key;
+    enabledRef.current = enabled;
+  });
 
   const doSave = useCallback(() => {
     if (!enabledRef.current) return;

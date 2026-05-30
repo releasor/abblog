@@ -32,7 +32,6 @@ export const VersionHistory = memo(function VersionHistory({ postId, onRestore }
     setRestoring(versionId);
     const result = await fetchApi(`/api/posts/${postId}/versions`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ versionId }),
       successMessage: "版本已恢复",
       errorMessage: "恢复版本失败",

@@ -37,9 +37,16 @@ export async function GET(request: NextRequest) {
         orderBy,
         skip,
         take: limit,
-        include: {
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          status: true,
+          isPinned: true,
+          publishedAt: true,
+          createdAt: true,
           category: { select: { name: true } },
-          tags: { include: { tag: { select: { id: true, name: true, slug: true } } } },
+          tags: { select: { tag: { select: { id: true, name: true, slug: true } } } },
           _count: { select: { comments: { where: { status: "PENDING" } } } },
         },
       }),

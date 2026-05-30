@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
+import { fetchApi } from "@/lib/fetch-api";
 import { SkeletonPost } from "@/components/skeleton";
 
 const PostForm = dynamic(() => import("@/components/post-form"), {
@@ -30,23 +31,22 @@ export default function EditPostPage() {
 
   useEffect(() => {
     const fetchPost = async () => {
-      const res = await fetch(`/api/posts/${params.id}`);
+      const res = await fetchApi<PostData>(`/api/posts/${params.id}`, { showErrorToast: false });
       if (!res.ok) {
         setError("文章未找到");
         setLoading(false);
         return;
       }
-      const data = await res.json();
       setPost({
-        id: data.id,
-        title: data.title,
-        slug: data.slug,
-        content: data.content,
-        excerpt: data.excerpt || "",
-        coverImageUrl: data.coverImageUrl || "",
-        categoryId: data.categoryId,
-        tags: data.tags,
-        status: data.status,
+        id: res.data.id,
+        title: res.data.title,
+        slug: res.data.slug,
+        content: res.data.content,
+        excerpt: res.data.excerpt || "",
+        coverImageUrl: res.data.coverImageUrl || "",
+        categoryId: res.data.categoryId,
+        tags: res.data.tags,
+        status: res.data.status,
       });
       setLoading(false);
     };

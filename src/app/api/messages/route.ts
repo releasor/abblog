@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions, getAuthUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { checkRateLimit, RATE_LIMITS, getRateLimitHeaders } from "@/lib/rate-limit";
+import { getClientIp } from "@/lib/api-utils";
 
 export async function GET() {
   try {
@@ -33,7 +34,7 @@ export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     const userId = getAuthUserId(session);
-    const ip = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown";
+    const ip = getClientIp(request);
     const rl = checkRateLimit(`message:${userId || ip}`, RATE_LIMITS.comment);
     if (!rl.allowed) {
       return NextResponse.json(

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Bookmark, Plus, Folder, Trash2 } from "lucide-react";
@@ -35,28 +35,30 @@ export default function BookmarksPage() {
   const [newDesc, setNewDesc] = useState("");
   const [deleteTargetId, setDeleteTargetId] = useState<number | null>(null);
 
-  useEffect(() => {
-    fetchCollections();
-  }, []);
-
-  async function fetchCollections() {
+  const fetchCollections = useCallback(async () => {
     const result = await fetchApi<{ collections: Collection[] }>("/api/bookmarks/collections", {
       errorMessage: "加载收藏夹失败",
     });
     setLoading(false);
     if (result.ok) {
       setCollections(result.data.collections || []);
-      if (result.data.collections?.length > 0 && activeCollection === null) {
-        setActiveCollection(result.data.collections[0].id);
-      }
+      setActiveCollection((prev) => {
+        if (prev === null && result.data.collections?.length > 0) {
+          return result.data.collections[0].id;
+        }
+        return prev;
+      });
     }
-  }
+  }, []);
+
+  useEffect(() => {
+    fetchCollections();
+  }, [fetchCollections]);
 
   async function handleCreate() {
     if (!newName.trim()) return;
     const result = await fetchApi("/api/bookmarks/collections", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name: newName, description: newDesc }),
       errorMessage: "创建收藏夹失败",
     });

@@ -199,31 +199,31 @@ export function Header() {
         >
           <X className="w-5 h-5" />
         </button>
-        <Link href="/" className="mobile-overlay-link" onClick={() => setMenuOpen(false)}>首页</Link>
-        <Link href="/posts" className="mobile-overlay-link" onClick={() => setMenuOpen(false)}>文章</Link>
-        <Link href="/series" className="mobile-overlay-link" onClick={() => setMenuOpen(false)}>系列</Link>
-        <Link href="/groups" className="mobile-overlay-link" onClick={() => setMenuOpen(false)}>圈子</Link>
-        <Link href="/timeline" className="mobile-overlay-link" onClick={() => setMenuOpen(false)}>动态</Link>
-        <Link href="/topics" className="mobile-overlay-link" onClick={() => setMenuOpen(false)}>话题</Link>
-        <Link href="/tools" className="mobile-overlay-link" onClick={() => setMenuOpen(false)}>工具箱</Link>
-        <Link href="/prompts" className="mobile-overlay-link" onClick={() => setMenuOpen(false)}>Prompt</Link>
-        <Link href="/guestbook" className="mobile-overlay-link" onClick={() => setMenuOpen(false)}>留言墙</Link>
-        <Link href="/uses" className="mobile-overlay-link" onClick={() => setMenuOpen(false)}>装备</Link>
-        <Link href="/links" className="mobile-overlay-link" onClick={() => setMenuOpen(false)}>友链</Link>
-        <Link href="/archive" className="mobile-overlay-link" onClick={() => setMenuOpen(false)}>归档</Link>
-        <Link href="/about" className="mobile-overlay-link" onClick={() => setMenuOpen(false)}>关于</Link>
+        <Link prefetch={false} href="/" className="mobile-overlay-link" onClick={() => setMenuOpen(false)}>首页</Link>
+        <Link prefetch={false} href="/posts" className="mobile-overlay-link" onClick={() => setMenuOpen(false)}>文章</Link>
+        <Link prefetch={false} href="/series" className="mobile-overlay-link" onClick={() => setMenuOpen(false)}>系列</Link>
+        <Link prefetch={false} href="/groups" className="mobile-overlay-link" onClick={() => setMenuOpen(false)}>圈子</Link>
+        <Link prefetch={false} href="/timeline" className="mobile-overlay-link" onClick={() => setMenuOpen(false)}>动态</Link>
+        <Link prefetch={false} href="/topics" className="mobile-overlay-link" onClick={() => setMenuOpen(false)}>话题</Link>
+        <Link prefetch={false} href="/tools" className="mobile-overlay-link" onClick={() => setMenuOpen(false)}>工具箱</Link>
+        <Link prefetch={false} href="/prompts" className="mobile-overlay-link" onClick={() => setMenuOpen(false)}>Prompt</Link>
+        <Link prefetch={false} href="/guestbook" className="mobile-overlay-link" onClick={() => setMenuOpen(false)}>留言墙</Link>
+        <Link prefetch={false} href="/uses" className="mobile-overlay-link" onClick={() => setMenuOpen(false)}>装备</Link>
+        <Link prefetch={false} href="/links" className="mobile-overlay-link" onClick={() => setMenuOpen(false)}>友链</Link>
+        <Link prefetch={false} href="/archive" className="mobile-overlay-link" onClick={() => setMenuOpen(false)}>归档</Link>
+        <Link prefetch={false} href="/about" className="mobile-overlay-link" onClick={() => setMenuOpen(false)}>关于</Link>
         {session ? (
           <>
-            <Link href="/posts/new" className="mobile-overlay-link" onClick={() => setMenuOpen(false)}>发布文章</Link>
-            <Link href="/messages" className="mobile-overlay-link" onClick={() => setMenuOpen(false)}>私信</Link>
-            <Link href="/bookmarks" className="mobile-overlay-link" onClick={() => setMenuOpen(false)}>我的收藏</Link>
-            <Link href="/settings" className="mobile-overlay-link" onClick={() => setMenuOpen(false)}>设置</Link>
+            <Link prefetch={false} href="/posts/new" className="mobile-overlay-link" onClick={() => setMenuOpen(false)}>发布文章</Link>
+            <Link prefetch={false} href="/messages" className="mobile-overlay-link" onClick={() => setMenuOpen(false)}>私信</Link>
+            <Link prefetch={false} href="/bookmarks" className="mobile-overlay-link" onClick={() => setMenuOpen(false)}>我的收藏</Link>
+            <Link prefetch={false} href="/settings" className="mobile-overlay-link" onClick={() => setMenuOpen(false)}>设置</Link>
             <button className="mobile-overlay-link text-left" onClick={() => { signOut(); setMenuOpen(false); }}>退出</button>
           </>
         ) : (
           <>
-            <Link href="/login" className="mobile-overlay-link" onClick={() => setMenuOpen(false)}>登录</Link>
-            <Link href="/register" className="mobile-overlay-link" onClick={() => setMenuOpen(false)}>注册</Link>
+            <Link prefetch={false} href="/login" className="mobile-overlay-link" onClick={() => setMenuOpen(false)}>登录</Link>
+            <Link prefetch={false} href="/register" className="mobile-overlay-link" onClick={() => setMenuOpen(false)}>注册</Link>
           </>
         )}
       </div>

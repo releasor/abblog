@@ -8,6 +8,7 @@ import Placeholder from "@tiptap/extension-placeholder";
 import { VideoExtension } from "./tiptap-video";
 import { useEffect, useRef, useState, memo } from "react";
 import { List, ListOrdered, Quote, Link2, Image as ImageIcon, Video, Film } from "lucide-react";
+import { showToast } from "./toast";
 
 interface TiptapEditorProps {
   content: string;
@@ -40,7 +41,7 @@ const TiptapEditor = memo(function TiptapEditor({ content, onChange }: TiptapEdi
     if (editor && content !== editor.getHTML()) {
       editor.commands.setContent(content);
     }
-  }, [content]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [content, editor]);
 
   if (!editor) return null;
 
@@ -75,13 +76,17 @@ function Toolbar({ editor }: { editor: ReturnType<typeof useEditor> }) {
     try {
       const res = await fetch("/api/upload", { method: "POST", body: formData });
       const data = await res.json();
-      if (res.ok) {
-        if (type === "image") {
-          editor.chain().focus().setImage({ src: data.url }).run();
-        } else {
-          editor.chain().focus().setVideo({ src: data.url, type: "upload" }).run();
-        }
+      if (!res.ok) {
+        showToast(data.error || "上传失败", "error");
+        return;
       }
+      if (type === "image") {
+        editor.chain().focus().setImage({ src: data.url }).run();
+      } else {
+        editor.chain().focus().setVideo({ src: data.url, type: "upload" }).run();
+      }
+    } catch {
+      showToast("上传失败，请稍后重试", "error");
     } finally {
       setUploading(false);
     }

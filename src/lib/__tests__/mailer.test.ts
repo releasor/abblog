@@ -31,4 +31,17 @@ describe("notificationEmailTemplate", () => {
     expect(html).toContain("style=");
     expect(html).toContain("font-family");
   });
+
+  it("escapes HTML in title, message, and link to prevent XSS", () => {
+    const html = notificationEmailTemplate(
+      '<script>alert("xss")</script>',
+      'Hello <img src=x onerror=alert(1)>',
+      'javascript:alert(1)'
+    );
+    expect(html).not.toContain("<script>");
+    expect(html).not.toContain("<img");
+    expect(html).toContain("&lt;script&gt;");
+    expect(html).toContain("&lt;img");
+    expect(html).toContain("javascript:alert(1)");
+  });
 });

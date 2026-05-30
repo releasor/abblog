@@ -4,6 +4,7 @@ import { useState, FormEvent } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { fetchApi } from "@/lib/fetch-api";
 
 export default function RegisterPage() {
   const [name, setName] = useState("");
@@ -18,38 +19,32 @@ export default function RegisterPage() {
     setError("");
     setLoading(true);
 
-    try {
-      const res = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
-      });
+    const res = await fetchApi("/api/auth/register", {
+      method: "POST",
+      body: JSON.stringify({ name, email, password }),
+    });
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.error || "注册失败");
-        return;
-      }
-
-      // Auto login after registration
-      const signInRes = await signIn("credentials", {
-        email,
-        password,
-        type: "user",
-        redirect: false,
-      });
-
-      if (signInRes?.error) {
-        router.push("/login");
-      } else {
-        router.push("/");
-        router.refresh();
-      }
-    } catch {
-      setError("注册失败，请重试");
-    } finally {
+    if (!res.ok) {
+      setError(res.error || "注册失败");
       setLoading(false);
+      return;
+    }
+
+    // Auto login after registration
+    const signInRes = await signIn("credentials", {
+      email,
+      password,
+      type: "user",
+      redirect: false,
+    });
+
+    setLoading(false);
+
+    if (signInRes?.error) {
+      router.push("/login");
+    } else {
+      router.push("/");
+      router.refresh();
     }
   };
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, memo } from "react";
+import { useState, useEffect, useCallback, useRef, memo } from "react";
 import { Heart, X } from "lucide-react";
 import { fetchApi } from "@/lib/fetch-api";
 
@@ -18,6 +18,9 @@ export const DonateButton = memo(function DonateButton({ recipientId, recipientN
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  useEffect(() => () => clearTimeout(timerRef.current), []);
 
   const closeModal = useCallback(() => {
     setShow(false);
@@ -38,14 +41,13 @@ export const DonateButton = memo(function DonateButton({ recipientId, recipientN
     setLoading(true);
     const result = await fetchApi("/api/donations", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ recipientId, postId, amount, message }),
       errorMessage: "赞赏失败，请稍后重试",
     });
     setLoading(false);
     if (result.ok) {
       setDone(true);
-      setTimeout(closeModal, 2000);
+      timerRef.current = setTimeout(closeModal, 2000);
     }
   };
 

@@ -29,9 +29,13 @@ describe("shouldCompress", () => {
 });
 
 describe("getCompressFormat", () => {
-  it("always returns webp", () => {
-    expect(getCompressFormat("image/jpeg")).toBe("webp");
-    expect(getCompressFormat("image/png")).toBe("webp");
+  it("returns matching format for known types", () => {
+    expect(getCompressFormat("image/jpeg")).toBe("jpeg");
+    expect(getCompressFormat("image/png")).toBe("png");
+  });
+
+  it("defaults to webp for unknown types", () => {
     expect(getCompressFormat("image/gif")).toBe("webp");
+    expect(getCompressFormat("image/webp")).toBe("webp");
   });
 });

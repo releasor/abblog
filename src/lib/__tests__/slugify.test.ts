@@ -25,8 +25,12 @@ describe("slugify", () => {
     expect(slugify("")).toBe("");
   });
 
-  it("handles Chinese characters", () => {
-    expect(slugify("你好世界")).toBe("");
+  it("preserves Chinese characters", () => {
+    expect(slugify("你好世界")).toBe("你好世界");
+  });
+
+  it("handles mixed Chinese and English", () => {
+    expect(slugify("React 入门教程")).toBe("react-入门教程");
   });
 
   it("preserves numbers", () => {

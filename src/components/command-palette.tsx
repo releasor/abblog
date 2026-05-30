@@ -22,7 +22,7 @@ export const CommandPalette = memo(function CommandPalette({ isOpen, onClose }: 
   const [query, setQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
 
-  const commands: Command[] = [
+  const commands: Command[] = useMemo(() => [
     {
       id: "home",
       label: "首页",
@@ -76,7 +76,7 @@ export const CommandPalette = memo(function CommandPalette({ isOpen, onClose }: 
       },
       keywords: ["theme", "dark", "light", "主题", "暗色", "亮色"],
     },
-  ];
+  ], [router, onClose]);
 
   const filtered = useMemo(() => commands.filter((cmd) => {
     if (!query) return true;

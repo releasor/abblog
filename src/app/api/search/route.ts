@@ -2,9 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { highlightTerms } from "@/lib/highlight";
 import { checkRateLimit, RATE_LIMITS, getRateLimitHeaders } from "@/lib/rate-limit";
+import { getClientIp } from "@/lib/api-utils";
 
 export async function GET(request: NextRequest) {
-  const ip = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown";
+  const ip = getClientIp(request);
   const rl = checkRateLimit(`search:${ip}`, RATE_LIMITS.search);
   if (!rl.allowed) {
     return NextResponse.json(

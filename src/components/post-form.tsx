@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import ImageUpload from "./image-upload";
@@ -54,8 +54,8 @@ export default function PostForm({ mode, apiEndpoint, redirectPath, initialData 
   const draft = mode === "create" ? getDraft(draftKey) : null;
 
   const [title, setTitle] = useState(draft?.title || initialData?.title || "");
-  const [slug, setSlug] = useState(draft ? slugify(draft.title) : initialData?.slug || "");
-  const [slugEdited, setSlugEdited] = useState(false);
+  const [manualSlug, setManualSlug] = useState<string | null>(null);
+  const slug = manualSlug ?? (title ? slugify(title) : initialData?.slug || "");
   const [content, setContent] = useState(draft?.content || initialData?.content || "");
   const [excerpt, setExcerpt] = useState(draft?.excerpt || initialData?.excerpt || "");
   const [coverImageUrl, setCoverImageUrl] = useState(draft?.coverImageUrl || initialData?.coverImageUrl || "");
@@ -88,11 +88,14 @@ export default function PostForm({ mode, apiEndpoint, redirectPath, initialData 
     });
   }, []);
 
-  useEffect(() => {
-    if (!slugEdited && title) {
-      setSlug(slugify(title));
-    }
-  }, [title, slugEdited]);
+
+  const handleTemplateSelect = useCallback((t: string) => {
+    setContent((prev) => prev + t);
+  }, [setContent]);
+
+  const handleVersionRestore = useCallback(() => {
+    router.refresh();
+  }, [router]);
 
   const toggleTag = (tagId: string) => {
     setSelectedTags((prev) =>
@@ -221,10 +224,7 @@ export default function PostForm({ mode, apiEndpoint, redirectPath, initialData 
           id="slug"
           type="text"
           value={slug}
-          onChange={(e) => {
-            setSlug(e.target.value);
-            setSlugEdited(true);
-          }}
+          onChange={(e) => setManualSlug(e.target.value)}
           className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500"
         />
       </div>
@@ -234,7 +234,7 @@ export default function PostForm({ mode, apiEndpoint, redirectPath, initialData 
           <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
             内容
           </label>
-          <TemplatePicker onSelect={(t) => setContent(content + t)} />
+          <TemplatePicker onSelect={handleTemplateSelect} />
         </div>
         <TiptapEditor content={content} onChange={setContent} />
       </div>
@@ -358,14 +358,11 @@ export default function PostForm({ mode, apiEndpoint, redirectPath, initialData 
       {mode === "edit" && initialData?.id && (
         <VersionHistory
           postId={initialData.id}
-          onRestore={() => {
-            router.refresh();
-            window.location.reload();
-          }}
+          onRestore={handleVersionRestore}
         />
       )}
 
-      <div className="flex gap-3 pt-4 border-t border-zinc-200 dark:border-zinc-800">
+      <div className="flex flex-wrap gap-3 pt-4 border-t border-zinc-200 dark:border-zinc-800">
         <button
           type="submit"
           disabled={saving}

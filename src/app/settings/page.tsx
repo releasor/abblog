@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { fetchApi } from "@/lib/fetch-api";
 import { UserAvatar } from "@/components/user-avatar";
 import { UserLevelProgress } from "@/components/user-level-badge";
 import { Input } from "@/components/ui/input";
@@ -47,52 +48,42 @@ export default function SettingsPage() {
     if (status !== "authenticated") return;
 
     Promise.all([
-      fetch("/api/user/profile").then((res) => (res.ok ? res.json() : null)),
-      fetch("/api/user/ai-settings").then((res) => (res.ok ? res.json() : null)),
-      fetch("/api/user/notification-settings").then((res) => (res.ok ? res.json() : null)),
-    ])
-      .then(([profileData, aiData, notifData]) => {
-        if (profileData) {
-          setName(profileData.name || "");
-          setUsername(profileData.username || "");
-          setBio(profileData.bio || "");
-          setWebsite(profileData.website || "");
-          setLocation(profileData.location || "");
-          setAvatar(profileData.avatar || null);
-        }
-        if (aiData) {
-          setAiApiKey(aiData.aiApiKey || "");
-          setAiApiUrl(aiData.aiApiUrl || "");
-          setAiModel(aiData.aiModel || "");
-        }
-        if (notifData) {
-          setEmailNotifications(notifData.emailNotifications ?? true);
-        }
-      })
-      .catch((e) => console.error("[Settings] Failed to fetch settings:", e));
-  }, [status]);
+      fetchApi<{ name: string; username: string; bio: string; website: string; location: string; avatar: string | null }>("/api/user/profile", { showErrorToast: false }),
+      fetchApi<{ aiApiKey: string; aiApiUrl: string; aiModel: string }>("/api/user/ai-settings", { showErrorToast: false }),
+      fetchApi<{ emailNotifications: boolean }>("/api/user/notification-settings", { showErrorToast: false }),
+    ]).then(([profileRes, aiRes, notifRes]) => {
+      if (profileRes.ok) {
+        setName(profileRes.data.name || "");
+        setUsername(profileRes.data.username || "");
+        setBio(profileRes.data.bio || "");
+        setWebsite(profileRes.data.website || "");
+        setLocation(profileRes.data.location || "");
+        setAvatar(profileRes.data.avatar || null);
+      }
+      if (aiRes.ok) {
+        setAiApiKey(aiRes.data.aiApiKey || "");
+        setAiApiUrl(aiRes.data.aiApiUrl || "");
+        setAiModel(aiRes.data.aiModel || "");
+      }
+      if (notifRes.ok) {
+        setEmailNotifications(notifRes.data.emailNotifications ?? true);
+      }
+    });
+  }, [status, router]);
 
   const saveProfile = async () => {
     setSaving(true);
     setMessage("");
-    try {
-      const res = await fetch("/api/user/profile", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, username, bio, website, location }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setMessage("保存成功");
-        update({ name: data.name });
-      } else {
-        setMessage(data.error || "保存失败");
-      }
-    } catch (e) {
-      console.error("[Settings] Failed to save profile:", e);
-      setMessage("保存失败，请稍后重试");
-    } finally {
-      setSaving(false);
+    const res = await fetchApi<{ name: string }>("/api/user/profile", {
+      method: "PATCH",
+      body: JSON.stringify({ name, username, bio, website, location }),
+    });
+    setSaving(false);
+    if (res.ok) {
+      setMessage("保存成功");
+      update({ name: res.data.name });
+    } else {
+      setMessage(res.error || "保存失败");
     }
   };
 
@@ -127,47 +118,32 @@ export default function SettingsPage() {
       setMessage("两次输入的密码不一致");
       return;
     }
-    try {
-      const res = await fetch("/api/user/password", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ currentPassword, newPassword }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setMessage("密码修改成功");
-        setCurrentPassword("");
-        setNewPassword("");
-        setConfirmPassword("");
-      } else {
-        setMessage(data.error || "修改失败");
-      }
-    } catch (e) {
-      console.error("[Settings] Failed to change password:", e);
-      setMessage("修改失败，请稍后重试");
+    const res = await fetchApi("/api/user/password", {
+      method: "PATCH",
+      body: JSON.stringify({ currentPassword, newPassword }),
+    });
+    if (res.ok) {
+      setMessage("密码修改成功");
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+    } else {
+      setMessage(res.error || "修改失败");
     }
   };
 
   const saveNotificationSettings = async () => {
     setSaving(true);
     setMessage("");
-    try {
-      const res = await fetch("/api/user/notification-settings", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ emailNotifications }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setMessage("通知设置保存成功");
-      } else {
-        setMessage(data.error || "保存失败");
-      }
-    } catch (e) {
-      console.error("[Settings] Failed to save notification settings:", e);
-      setMessage("保存失败，请稍后重试");
-    } finally {
-      setSaving(false);
+    const res = await fetchApi("/api/user/notification-settings", {
+      method: "PATCH",
+      body: JSON.stringify({ emailNotifications }),
+    });
+    setSaving(false);
+    if (res.ok) {
+      setMessage("通知设置保存成功");
+    } else {
+      setMessage(res.error || "保存失败");
     }
   };
 
@@ -176,23 +152,15 @@ export default function SettingsPage() {
   const saveAiSettings = async () => {
     setSaving(true);
     setMessage("");
-    try {
-      const res = await fetch("/api/user/ai-settings", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ aiApiKey, aiApiUrl, aiModel }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setMessage("AI 设置保存成功");
-      } else {
-        setMessage(data.error || "保存失败");
-      }
-    } catch (e) {
-      console.error("[Settings] Failed to save AI settings:", e);
-      setMessage("保存失败，请稍后重试");
-    } finally {
-      setSaving(false);
+    const res = await fetchApi("/api/user/ai-settings", {
+      method: "PATCH",
+      body: JSON.stringify({ aiApiKey, aiApiUrl, aiModel }),
+    });
+    setSaving(false);
+    if (res.ok) {
+      setMessage("AI 设置保存成功");
+    } else {
+      setMessage(res.error || "保存失败");
     }
   };
 

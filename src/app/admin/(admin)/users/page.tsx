@@ -62,7 +62,6 @@ export default function AdminUsersPage() {
   const handleRoleChange = async (userId: number, role: string) => {
     const result = await fetchApi("/api/admin/users", {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ userId, action: "setRole", value: role }),
       errorMessage: "角色修改失败",
     });
@@ -154,6 +153,7 @@ export default function AdminUsersPage() {
           {
             key: "level",
             label: "等级",
+            hideOnMobile: true,
             render: (u) => (
               <div className="flex items-center gap-1.5">
                 <Star className="w-3.5 h-3.5 text-amber-500" />
@@ -167,6 +167,7 @@ export default function AdminUsersPage() {
           {
             key: "stats",
             label: "统计",
+            hideOnMobile: true,
             render: (u) => (
               <span className="text-sm text-zinc-500 dark:text-zinc-400">
                 {u._count.posts} 文 / {u._count.comments} 评
@@ -176,6 +177,7 @@ export default function AdminUsersPage() {
           {
             key: "createdAt",
             label: "注册时间",
+            hideOnMobile: true,
             render: (u) => (
               <span className="text-sm text-zinc-500 dark:text-zinc-400">
                 {formatDate(u.createdAt)}

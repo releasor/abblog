@@ -1,8 +1,9 @@
 "use client";
 
-import { memo, useCallback } from "react";
+import { memo, useCallback, useMemo } from "react";
 import { Check, Link2 } from "lucide-react";
 import { useCopyToClipboard } from "@/hooks/use-copy";
+import { fetchApi } from "@/lib/fetch-api";
 
 interface ShareButtonsProps {
   title: string;
@@ -36,19 +37,19 @@ export const ShareButtons = memo(function ShareButtons({ title, url, postId }: S
 
   const trackShare = useCallback((platform: string) => {
     if (postId) {
-      fetch(`/api/posts/${postId}/share`, {
+      fetchApi(`/api/posts/${postId}/share`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ platform }),
-      }).catch((e) => console.error("[ShareButtons] Failed to track share:", e));
+        showErrorToast: false,
+      });
     }
   }, [postId]);
 
-  const shareLinks = [
+  const shareLinks = useMemo(() => [
     { name: "微博", platform: "weibo", url: `https://service.weibo.com/share/share.php?title=${encodedTitle}&url=${encodedUrl}`, icon: WeiboIcon },
     { name: "Twitter", platform: "twitter", url: `https://twitter.com/intent/tweet?text=${encodedTitle}&url=${encodedUrl}`, icon: TwitterIcon },
     { name: "微信", platform: "wechat", url: `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodedUrl}`, icon: WechatIcon },
-  ];
+  ], [encodedTitle, encodedUrl]);
 
   const copyLink = useCallback(() => {
     copy(url);

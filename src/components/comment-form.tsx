@@ -4,6 +4,7 @@ import { useState, FormEvent, memo } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { Skeleton } from "@/components/skeleton";
+import { fetchApi } from "@/lib/fetch-api";
 
 interface CommentFormProps {
   postId: number;
@@ -67,36 +68,24 @@ export const CommentForm = memo(function CommentForm({ postId, onCommentAdded }:
     }
 
     setSubmitting(true);
-    try {
-      const res = await fetch(`/api/posts/${postId}/comments`, {
+    const result = await fetchApi<{ comment: { id: number; authorName: string; content: string; createdAt: string } }>(
+      `/api/posts/${postId}/comments`,
+      {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ content: content.trim() }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        if (res.status === 429) {
-          setError("请稍后再提交评论");
-        } else if (res.status === 401) {
-          setError("请先登录");
-        } else {
-          setError(data.error || "提交失败，请重试");
-        }
-        return;
+        showErrorToast: false,
       }
+    );
+    setSubmitting(false);
 
-      setSuccess(true);
-      setContent("");
-      if (onCommentAdded && data.comment) {
-        onCommentAdded(data.comment);
-      }
-    } catch {
-      setError("提交失败，请重试。");
-    } finally {
-      setSubmitting(false);
+    if (!result.ok) {
+      setError(result.error);
+      return;
     }
+
+    setSuccess(true);
+    setContent("");
+    onCommentAdded?.(result.data.comment);
   };
 
   return (

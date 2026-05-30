@@ -22,7 +22,13 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         take: limit,
         include: {
           post: {
-            include: {
+            select: {
+              id: true,
+              title: true,
+              slug: true,
+              excerpt: true,
+              coverImageUrl: true,
+              publishedAt: true,
               category: { select: { name: true, slug: true } },
               user: { select: { id: true, name: true, username: true } },
             },

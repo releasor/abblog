@@ -44,7 +44,6 @@ export default function AdminTagsPage() {
 
     const result = await fetchApi<{ error?: string }>("/api/tags", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name: newName }),
       showErrorToast: false,
     });
@@ -63,7 +62,6 @@ export default function AdminTagsPage() {
 
     const result = await fetchApi(`/api/tags/${id}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name: editName }),
       errorMessage: "保存标签失败",
     });

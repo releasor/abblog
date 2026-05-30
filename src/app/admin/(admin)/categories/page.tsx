@@ -45,7 +45,6 @@ export default function AdminCategoriesPage() {
 
     const result = await fetchApi<{ error?: string }>("/api/categories", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name: newName }),
       showErrorToast: false,
     });
@@ -65,7 +64,6 @@ export default function AdminCategoriesPage() {
 
     const result = await fetchApi(`/api/categories/${id}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name: editName }),
       showErrorToast: false,
     });
@@ -138,10 +136,10 @@ export default function AdminCategoriesPage() {
                 <th className="px-5 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
                   名称
                 </th>
-                <th className="px-5 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+                <th className="px-5 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider hidden md:table-cell">
                   Slug
                 </th>
-                <th className="px-5 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+                <th className="px-5 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider hidden md:table-cell">
                   文章数
                 </th>
                 <th className="px-5 py-3 text-right text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
@@ -179,10 +177,10 @@ export default function AdminCategoriesPage() {
                       </span>
                     )}
                   </td>
-                  <td className="px-5 py-3.5 text-sm text-zinc-500 dark:text-zinc-400 font-mono">
+                  <td className="px-5 py-3.5 text-sm text-zinc-500 dark:text-zinc-400 font-mono hidden md:table-cell">
                     {category.slug}
                   </td>
-                  <td className="px-5 py-3.5 text-sm text-zinc-500 dark:text-zinc-400">
+                  <td className="px-5 py-3.5 text-sm text-zinc-500 dark:text-zinc-400 hidden md:table-cell">
                     {category._count.posts}
                   </td>
                   <td className="px-5 py-3.5">

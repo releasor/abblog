@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Save, Check } from "lucide-react";
 import { fetchApi } from "@/lib/fetch-api";
 
@@ -30,6 +30,9 @@ export default function AdminConfigPage() {
   const [configs, setConfigs] = useState<ConfigItem[]>(defaultConfigs);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  useEffect(() => () => clearTimeout(timerRef.current), []);
 
   useEffect(() => {
     fetchApi<{ key: string; value: string }[]>("/api/admin/config", { errorMessage: "加载配置失败" })
@@ -55,14 +58,14 @@ export default function AdminConfigPage() {
     setSaving(true);
     const result = await fetchApi("/api/admin/config", {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ configs: configs.map((c) => ({ key: c.key, value: c.value })) }),
       errorMessage: "保存失败",
     });
     setSaving(false);
     if (result.ok) {
       setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
+      clearTimeout(timerRef.current);
+      timerRef.current = setTimeout(() => setSaved(false), 2000);
     }
   };
 
@@ -116,15 +119,15 @@ export default function AdminConfigPage() {
                 role="switch"
                 aria-checked={config.value === "true"}
                 aria-label={config.label}
-                className={`relative w-10 h-5.5 rounded-full transition-colors ${
+                className={`relative w-10 h-[22px] rounded-full transition-colors ${
                   config.value === "true"
                     ? "bg-zinc-900 dark:bg-zinc-100"
                     : "bg-zinc-200 dark:bg-zinc-700"
                 }`}
               >
                 <span
-                  className={`absolute top-0.5 left-0.5 w-4.5 h-4.5 bg-white dark:bg-zinc-900 rounded-full shadow-sm transition-transform ${
-                    config.value === "true" ? "translate-x-4.5" : ""
+                  className={`absolute top-[2px] left-[2px] w-[18px] h-[18px] bg-white dark:bg-zinc-900 rounded-full shadow-sm transition-transform ${
+                    config.value === "true" ? "translate-x-[18px]" : ""
                   }`}
                 />
               </button>

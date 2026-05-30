@@ -51,6 +51,8 @@ export function shouldCompress(mimeType: string): boolean {
   return ["image/jpeg", "image/png", "image/gif", "image/webp"].includes(mimeType);
 }
 
-export function getCompressFormat(_mimeType: string): "webp" | "jpeg" | "png" {
+export function getCompressFormat(mimeType: string): "webp" | "jpeg" | "png" {
+  if (mimeType === "image/png") return "png";
+  if (mimeType === "image/jpeg") return "jpeg";
   return "webp";
 }

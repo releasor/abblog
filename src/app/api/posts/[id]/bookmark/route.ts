@@ -4,6 +4,7 @@ import { authOptions, getAuthUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { createActivity } from "@/lib/activity";
 import { requireId, invalidIdResponse } from "@/lib/api-utils";
+import { checkRateLimit, RATE_LIMITS, getRateLimitHeaders } from "@/lib/rate-limit";
 
 export async function GET(
   _request: NextRequest,
@@ -36,20 +37,28 @@ export async function GET(
 }
 
 export async function POST(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await params;
-    let postId: number;
-    try { postId = requireId(id); } catch { return invalidIdResponse(); }
-
     const session = await getServerSession(authOptions);
     const userId = getAuthUserId(session);
 
     if (!userId) {
       return NextResponse.json({ error: "请先登录" }, { status: 401 });
     }
+
+    const rl = checkRateLimit(`bookmark:${userId}`, RATE_LIMITS.api);
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { error: "操作太频繁，请稍后再试" },
+        { status: 429, headers: getRateLimitHeaders(rl) }
+      );
+    }
+
+    const { id } = await params;
+    let postId: number;
+    try { postId = requireId(id); } catch { return invalidIdResponse(); }
 
     // Check if already bookmarked in any collection
     const existing = await prisma.bookmarkItem.findFirst({

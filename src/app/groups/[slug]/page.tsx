@@ -77,7 +77,7 @@ export default async function GroupDetailPage({ params }: Props) {
         <div className="relative h-48 rounded-xl overflow-hidden mb-6">
           <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 to-teal-600" />
           {group.coverImage && (
-            <Image src={group.coverImage} alt={group.name} fill className="object-cover" sizes="(max-width: 768px) 100vw, 768px" />
+            <Image src={group.coverImage} alt={group.name} fill className="object-cover" sizes="(max-width: 768px) 100vw, 768px" priority />
           )}
           <div className="absolute inset-0 bg-black/30" />
           <div className="absolute bottom-4 left-4 right-4">

@@ -3,7 +3,7 @@ import { requireId, invalidIdResponse, getErrorMessage } from "../api-utils";
 describe("requireId", () => {
   it("returns number for valid numeric string", () => {
     expect(requireId("42")).toBe(42);
-    expect(requireId("0")).toBe(0);
+    expect(requireId("1")).toBe(1);
     expect(requireId("999")).toBe(999);
   });
 
@@ -14,6 +14,12 @@ describe("requireId", () => {
 
   it("throws for NaN", () => {
     expect(() => requireId("NaN")).toThrow("无效ID");
+  });
+
+  it("throws for zero and negative numbers", () => {
+    expect(() => requireId("0")).toThrow("无效ID");
+    expect(() => requireId("-1")).toThrow("无效ID");
+    expect(() => requireId("-999")).toThrow("无效ID");
   });
 });
 

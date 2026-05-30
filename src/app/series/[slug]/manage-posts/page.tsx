@@ -63,7 +63,6 @@ export default function ManageSeriesPostsPage() {
 
     const result = await fetchApi<{ id: number; order: number }>(`/api/series/${series.id}/posts`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ postId }),
       successMessage: "文章已添加到系列",
       errorMessage: "添加失败",
@@ -105,7 +104,6 @@ export default function ManageSeriesPostsPage() {
     const order = posts.map((p) => p.post.id);
     await fetchApi(`/api/series/${series.id}/posts`, {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ order }),
       successMessage: "排序已保存",
       errorMessage: "保存失败",

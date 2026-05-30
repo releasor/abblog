@@ -38,26 +38,21 @@ export default function AdminCommentsPage() {
   const [deleteTargetId, setDeleteTargetId] = useState<number | null>(null);
 
   const fetchComments = useCallback(async () => {
-    try {
-      setLoading(true);
-      const params = new URLSearchParams({
-        page: page.toString(),
-        limit: "20",
-      });
-      if (statusFilter !== "all") {
-        params.set("status", statusFilter);
-      }
-
-      const res = await fetch(`/api/admin/comments?${params}`);
-      if (!res.ok) return;
-      const data = await res.json();
-      setComments(data.comments);
-      setPagination(data.pagination);
-    } catch (e) {
-      console.error("[AdminComments] Failed to fetch comments:", e);
-    } finally {
-      setLoading(false);
+    setLoading(true);
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: "20",
+    });
+    if (statusFilter !== "all") {
+      params.set("status", statusFilter);
     }
+
+    const res = await fetchApi<{ comments: Comment[]; pagination: Pagination }>(`/api/admin/comments?${params}`, { showErrorToast: false });
+    if (res.ok) {
+      setComments(res.data.comments);
+      setPagination(res.data.pagination);
+    }
+    setLoading(false);
   }, [page, statusFilter]);
 
   useEffect(() => {
@@ -68,7 +63,6 @@ export default function AdminCommentsPage() {
     setActionId(id);
     const result = await fetchApi(`/api/comments/${id}`, {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status }),
       errorMessage: "更新评论状态失败",
     });

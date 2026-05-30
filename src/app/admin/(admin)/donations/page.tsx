@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { Heart } from "lucide-react";
+import { fetchApi } from "@/lib/fetch-api";
 import { formatDate } from "@/lib/format-date";
 import { DataTable } from "@/components/data-table";
-
 import { SimplePagination } from "@/components/pagination";
 import { FilterTabs } from "@/components/filter-tabs";
 
@@ -30,15 +30,13 @@ export default function AdminDonationsPage() {
     setLoading(true);
     const params = new URLSearchParams({ page: page.toString(), limit: "20" });
     if (tab !== "all") params.set("type", tab);
-    fetch(`/api/donations?${params}`)
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data) => {
-        if (data) {
-          setDonations(data.donations || []);
-          setTotalPages(data.pagination?.totalPages || 1);
+    fetchApi<{ donations: Donation[]; pagination: { totalPages: number } }>(`/api/donations?${params}`, { showErrorToast: false })
+      .then((res) => {
+        if (res.ok) {
+          setDonations(res.data.donations || []);
+          setTotalPages(res.data.pagination?.totalPages || 1);
         }
       })
-      .catch((e) => console.error("[Donations] Failed to fetch donations:", e))
       .finally(() => setLoading(false));
   }, [page, tab]);
 
@@ -114,6 +112,7 @@ export default function AdminDonationsPage() {
           {
             key: "post",
             label: "文章",
+            hideOnMobile: true,
             render: (d) => (
               <span className="text-sm text-zinc-500 dark:text-zinc-400 truncate max-w-xs block">
                 {d.post ? d.post.title : "—"}
@@ -138,6 +137,7 @@ export default function AdminDonationsPage() {
           {
             key: "createdAt",
             label: "时间",
+            hideOnMobile: true,
             render: (d) => (
               <span className="text-sm text-zinc-500 dark:text-zinc-400">
                 {formatDate(d.createdAt)}

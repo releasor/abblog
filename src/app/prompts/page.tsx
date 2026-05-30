@@ -17,7 +17,7 @@ export default function PromptsPage() {
 
   useEffect(() => {
     if (status === "unauthenticated") router.push("/login");
-  }, [status]);
+  }, [status, router]);
 
   if (status !== "authenticated") {
     return (
@@ -92,22 +92,18 @@ function ChatTab() {
     setMessages((prev) => [...prev, { role: "user", content: userMsg }]);
     setLoading(true);
 
-    try {
-      const res = await fetch("/api/ai/conversation", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          messages: [...messages, { role: "user", content: userMsg }],
-          mode: "chat",
-        }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setMessages((prev) => [...prev, { role: "assistant", content: data.reply }]);
-      } else {
-        setMessages((prev) => [...prev, { role: "assistant", content: "请求失败，请重试" }]);
-      }
-    } catch {
+    const res = await fetchApi<{ reply: string }>("/api/ai/conversation", {
+      method: "POST",
+      body: JSON.stringify({
+        messages: [...messages, { role: "user", content: userMsg }],
+        mode: "chat",
+      }),
+      showErrorToast: false,
+    });
+
+    if (res.ok) {
+      setMessages((prev) => [...prev, { role: "assistant", content: res.data.reply }]);
+    } else {
       setMessages((prev) => [...prev, { role: "assistant", content: "请求失败，请重试" }]);
     }
     setLoading(false);
@@ -201,7 +197,6 @@ function OptimizerTab() {
 
     const result = await fetchApi<{ optimized: string }>("/api/prompts/optimize", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ content: input }),
       errorMessage: "优化失败",
     });

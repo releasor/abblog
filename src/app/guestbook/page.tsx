@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { formatRelativeTime } from "@/lib/format-date";
+import { fetchApi } from "@/lib/fetch-api";
 import { Skeleton } from "@/components/skeleton";
 import { EmptyState } from "@/components/empty-state";
 
@@ -23,14 +24,9 @@ export default function GuestbookPage() {
   const [error, setError] = useState("");
 
   const fetchMessages = useCallback(async () => {
-    try {
-      const res = await fetch("/api/messages");
-      if (res.ok) setMessages(await res.json());
-    } catch (e) {
-      console.error("[Guestbook] Failed to fetch messages:", e);
-    } finally {
-      setLoading(false);
-    }
+    const res = await fetchApi<Message[]>("/api/messages", { showErrorToast: false });
+    if (res.ok) setMessages(res.data);
+    setLoading(false);
   }, []);
 
   useEffect(() => {
@@ -44,9 +40,8 @@ export default function GuestbookPage() {
     setSending(true);
     setError("");
 
-    const res = await fetch("/api/messages", {
+    const res = await fetchApi<Message>("/api/messages", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         content: content.trim(),
         name: session?.user?.name || name || undefined,
@@ -56,13 +51,11 @@ export default function GuestbookPage() {
     setSending(false);
 
     if (res.ok) {
-      const msg = await res.json();
-      setMessages((prev) => [msg, ...prev]);
+      setMessages((prev) => [res.data, ...prev]);
       setContent("");
       setName("");
     } else {
-      const data = await res.json();
-      setError(data.error || "发送失败");
+      setError(res.error || "发送失败");
     }
   };
 

@@ -1,13 +1,17 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 
 export function useCopyToClipboard(resetDelay = 2000) {
   const [copied, setCopied] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  useEffect(() => () => clearTimeout(timerRef.current), []);
 
   const copy = useCallback(async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
       setCopied(true);
-      setTimeout(() => setCopied(false), resetDelay);
+      clearTimeout(timerRef.current);
+      timerRef.current = setTimeout(() => setCopied(false), resetDelay);
     } catch {
       // Clipboard API may fail in insecure contexts
     }
@@ -18,12 +22,16 @@ export function useCopyToClipboard(resetDelay = 2000) {
 
 export function useCopyWithId<T extends string | number>(resetDelay = 2000) {
   const [copiedId, setCopiedId] = useState<T | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  useEffect(() => () => clearTimeout(timerRef.current), []);
 
   const copy = useCallback(async (text: string, id: T) => {
     try {
       await navigator.clipboard.writeText(text);
       setCopiedId(id);
-      setTimeout(() => setCopiedId(null), resetDelay);
+      clearTimeout(timerRef.current);
+      timerRef.current = setTimeout(() => setCopiedId(null), resetDelay);
     } catch {
       // Clipboard API may fail in insecure contexts
     }

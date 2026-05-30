@@ -1,8 +1,9 @@
 export function parsePagination(searchParams: URLSearchParams, defaults?: { page?: number; limit?: number; maxLimit?: number }) {
-  const page = Math.max(1, parseInt(searchParams.get("page") || String(defaults?.page ?? 1)));
-  const rawLimit = parseInt(searchParams.get("limit") || String(defaults?.limit ?? 20));
+  const rawPage = parseInt(searchParams.get("page") || "");
+  const page = Math.max(1, isNaN(rawPage) ? (defaults?.page ?? 1) : rawPage);
+  const rawLimit = parseInt(searchParams.get("limit") || "");
   const maxLimit = defaults?.maxLimit ?? 50;
-  const limit = Math.min(maxLimit, Math.max(1, rawLimit));
+  const limit = Math.min(maxLimit, Math.max(1, isNaN(rawLimit) ? (defaults?.limit ?? 20) : rawLimit));
   return { page, limit, skip: (page - 1) * limit };
 }
 

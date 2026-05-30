@@ -1,12 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Download, FileJson } from "lucide-react";
 import { showToast } from "@/components/toast";
 
 export default function AdminExportPage() {
   const [exporting, setExporting] = useState(false);
   const [exported, setExported] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  useEffect(() => () => clearTimeout(timerRef.current), []);
 
   const handleExport = async () => {
     setExporting(true);
@@ -26,7 +29,8 @@ export default function AdminExportPage() {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
       setExported(true);
-      setTimeout(() => setExported(false), 3000);
+      clearTimeout(timerRef.current);
+      timerRef.current = setTimeout(() => setExported(false), 3000);
     } catch {
       showToast("导出失败，请稍后重试", "error");
     } finally {

@@ -33,7 +33,7 @@ export const TableOfContents = memo(function TableOfContents({ headings }: Table
 
     if (headingElements.length === 0) return;
 
-    observerRef.current = new IntersectionObserver(
+    const observer = new IntersectionObserver(
       (entries) => {
         const visible = entries
           .filter((e) => e.isIntersecting)
@@ -48,8 +48,9 @@ export const TableOfContents = memo(function TableOfContents({ headings }: Table
         threshold: 0,
       }
     );
+    observerRef.current = observer;
 
-    headingElements.forEach((el) => observerRef.current!.observe(el));
+    headingElements.forEach((el) => observer.observe(el));
 
     return () => {
       observerRef.current?.disconnect();

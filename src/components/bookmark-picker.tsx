@@ -56,7 +56,6 @@ export const BookmarkPicker = memo(function BookmarkPicker({ postId, initialBook
     setLoading(true);
     const result = await fetchApi(`/api/bookmarks/collections/${collectionId}/items`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ postId }),
       errorMessage: "添加到收藏夹失败",
     });

@@ -6,6 +6,7 @@ interface Column<T> {
   label: string;
   render?: (item: T) => ReactNode;
   className?: string;
+  hideOnMobile?: boolean;
 }
 
 interface DataTableProps<T> {
@@ -57,7 +58,7 @@ export const DataTable = memo(function DataTable<T>({
             {columns.map((col) => (
               <th
                 key={col.key}
-                className={`px-5 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider ${col.className || ""}`}
+                className={`px-5 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider ${col.hideOnMobile ? "hidden md:table-cell" : ""} ${col.className || ""}`}
               >
                 {col.label}
               </th>
@@ -72,7 +73,7 @@ export const DataTable = memo(function DataTable<T>({
               onClick={() => onRowClick?.(item)}
             >
               {columns.map((col) => (
-                <td key={col.key} className={`px-5 py-4 text-sm ${col.className || ""}`}>
+                <td key={col.key} className={`px-5 py-4 text-sm ${col.hideOnMobile ? "hidden md:table-cell" : ""} ${col.className || ""}`}>
                   {col.render ? col.render(item) : (item as Record<string, unknown>)[col.key] as ReactNode}
                 </td>
               ))}

@@ -6,8 +6,10 @@ import { prisma } from "@/lib/prisma";
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const postId = Math.max(0, parseInt(searchParams.get("postId") || "0"));
-    const limit = Math.min(20, Math.max(1, parseInt(searchParams.get("limit") || "4")));
+    const rawPostId = parseInt(searchParams.get("postId") || "");
+    const postId = Math.max(0, isNaN(rawPostId) ? 0 : rawPostId);
+    const rawLimit = parseInt(searchParams.get("limit") || "");
+    const limit = Math.min(20, Math.max(1, isNaN(rawLimit) ? 4 : rawLimit));
 
     const session = await getServerSession(authOptions);
     const userId = getAuthUserId(session);

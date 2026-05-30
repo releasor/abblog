@@ -174,6 +174,7 @@ export default function AdminPostsPage() {
           {
             key: "category",
             label: "分类",
+            hideOnMobile: true,
             render: (post) => (
               <span className="text-sm text-zinc-500 dark:text-zinc-400">
                 {post.category?.name || "—"}
@@ -183,6 +184,7 @@ export default function AdminPostsPage() {
           {
             key: "date",
             label: "日期",
+            hideOnMobile: true,
             render: (post) => (
               <span className="text-sm text-zinc-500 dark:text-zinc-400">
                 {formatDateShort(post.publishedAt || post.createdAt) || "—"}

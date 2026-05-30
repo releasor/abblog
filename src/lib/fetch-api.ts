@@ -22,6 +22,14 @@ export async function fetchApi<T = unknown>(
   const { successMessage, errorMessage, showErrorToast = true, ...fetchOptions } = options;
 
   try {
+    // Auto-set Content-Type for JSON bodies
+    if (fetchOptions.body && typeof fetchOptions.body === "string") {
+      const h = fetchOptions.headers as Record<string, string> | undefined;
+      if (!h?.["Content-Type"]) {
+        fetchOptions.headers = { ...h, "Content-Type": "application/json" };
+      }
+    }
+
     const res = await fetch(url, fetchOptions);
 
     if (res.ok) {

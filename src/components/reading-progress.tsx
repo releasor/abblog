@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect, memo } from "react";
+import { useEffect, useRef, memo } from "react";
 
 export const ReadingProgress = memo(function ReadingProgress() {
-  const [progress, setProgress] = useState(0);
+  const barRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     let rafId: number;
@@ -13,7 +13,9 @@ export const ReadingProgress = memo(function ReadingProgress() {
         const scrollTop = window.scrollY;
         const docHeight = document.documentElement.scrollHeight - window.innerHeight;
         const scrollPercent = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
-        setProgress(Math.min(100, Math.max(0, scrollPercent)));
+        if (barRef.current) {
+          barRef.current.style.width = `${Math.min(100, Math.max(0, scrollPercent))}%`;
+        }
       });
     };
 
@@ -27,8 +29,9 @@ export const ReadingProgress = memo(function ReadingProgress() {
   return (
     <div className="fixed top-0 left-0 right-0 z-[60] h-1">
       <div
+        ref={barRef}
         className="h-full bg-zinc-900 dark:bg-zinc-100 transition-[width] duration-100"
-        style={{ width: `${progress}%` }}
+        style={{ width: "0%" }}
       />
     </div>
   );

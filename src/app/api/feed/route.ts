@@ -8,7 +8,11 @@ export async function GET() {
       where: { status: "PUBLISHED" },
       orderBy: { publishedAt: "desc" },
       take: 20,
-      include: {
+      select: {
+        title: true,
+        slug: true,
+        excerpt: true,
+        publishedAt: true,
         author: { select: { name: true } },
         category: { select: { name: true } },
       },

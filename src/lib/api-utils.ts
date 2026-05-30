@@ -1,8 +1,12 @@
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
+
+export function getClientIp(request: NextRequest): string {
+  return request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown";
+}
 
 export function requireId(value: string): number {
   const id = parseInt(value);
-  if (isNaN(id)) throw new InvalidIdError();
+  if (isNaN(id) || id <= 0) throw new InvalidIdError();
   return id;
 }
 

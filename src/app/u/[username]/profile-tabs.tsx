@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { fetchApi } from "@/lib/fetch-api";
 import { formatDate } from "@/lib/format-date";
 import { EmptyState } from "@/components/empty-state";
 import { Skeleton } from "@/components/skeleton";
@@ -36,10 +37,8 @@ export function ProfileTabs({ username }: { username: string }) {
 
   useEffect(() => {
     setLoading(true);
-    fetch(`/api/users/${username}/posts?tab=${tab}`)
-      .then((res) => (res.ok ? res.json() : []))
-      .then(setPosts)
-      .catch((e) => console.error("[Profile] Failed to fetch user posts:", e))
+    fetchApi<UserPost[]>(`/api/users/${username}/posts?tab=${tab}`, { showErrorToast: false })
+      .then((res) => { if (res.ok) setPosts(res.data); })
       .finally(() => setLoading(false));
   }, [tab, username]);
 

@@ -46,12 +46,14 @@ export async function addPoints(userId: number, points: number) {
   const user = await prisma.user.update({
     where: { id: userId },
     data: { points: { increment: points } },
-    select: { points: true },
+    select: { points: true, level: true },
   });
 
   const newLevel = getLevelForPoints(user.points);
-  await prisma.user.update({
-    where: { id: userId },
-    data: { level: newLevel },
-  });
+  if (newLevel !== user.level) {
+    await prisma.user.update({
+      where: { id: userId },
+      data: { level: newLevel },
+    });
+  }
 }

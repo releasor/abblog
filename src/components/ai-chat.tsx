@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, memo } from "react";
 import { X, MessageCircle } from "lucide-react";
+import { fetchApi } from "@/lib/fetch-api";
 
 
 export const AiChat = memo(function AiChat({ postId }: { postId: number }) {
@@ -23,21 +24,16 @@ export const AiChat = memo(function AiChat({ postId }: { postId: number }) {
     setMessages((prev) => [...prev, { role: "user", content: q }]);
     setLoading(true);
 
-    try {
-      const res = await fetch("/api/ai/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ postId, question: q }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setMessages((prev) => [...prev, { role: "ai", content: data.answer || "无法生成回答" }]);
-      } else {
-        setMessages((prev) => [...prev, { role: "ai", content: "请求失败，请稍后再试" }]);
-      }
-    } catch {
-      setMessages((prev) => [...prev, { role: "ai", content: "请求失败，请稍后再试" }]);
-    }
+    const result = await fetchApi<{ answer?: string }>("/api/ai/chat", {
+      method: "POST",
+      body: JSON.stringify({ postId, question: q }),
+      showErrorToast: false,
+    });
+
+    setMessages((prev) => [
+      ...prev,
+      { role: "ai", content: result.ok ? (result.data.answer || "无法生成回答") : "请求失败，请稍后再试" },
+    ]);
     setLoading(false);
   };
 

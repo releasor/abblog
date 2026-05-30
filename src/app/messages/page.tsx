@@ -39,7 +39,6 @@ function MessagesContent() {
     if (targetUserId) {
       fetchApi<{ id: number }>("/api/conversations", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ targetUserId }),
         errorMessage: "创建会话失败",
       }).then((result) => {
@@ -53,7 +52,7 @@ function MessagesContent() {
         setLoading(false);
         if (result.ok && Array.isArray(result.data)) setConversations(result.data);
       });
-  }, [status, targetUserId]);
+  }, [status, targetUserId, router]);
 
   if (status !== "authenticated" || loading) {
     return (

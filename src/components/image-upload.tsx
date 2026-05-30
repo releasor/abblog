@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback, memo } from "react";
+import Image from "next/image";
 import { Upload } from "lucide-react";
 
 interface ImageUploadProps {
@@ -81,10 +82,13 @@ const ImageUpload = memo(function ImageUpload({ value, onChange }: ImageUploadPr
     <div className="space-y-2">
       {value ? (
         <div className="relative">
-          <img
+          <Image
             src={value}
             alt="封面图片"
+            width={448}
+            height={192}
             className="w-full max-w-md h-48 object-cover rounded-md border border-zinc-200 dark:border-zinc-700"
+            unoptimized
           />
           <button
             type="button"
