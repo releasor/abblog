@@ -12,6 +12,7 @@ const TiptapEditor = dynamic(() => import("./tiptap-editor"), {
 });
 import { slugify } from "@/lib/slugify";
 import { formatDateTime, formatTime } from "@/lib/format-date";
+import { fetchApi } from "@/lib/fetch-api";
 import { useAutoSave, getDraft, clearDraft } from "@/hooks/use-auto-save";
 import { TemplatePicker } from "./template-picker";
 import { VersionHistory } from "./version-history";
@@ -79,14 +80,12 @@ export default function PostForm({ mode, apiEndpoint, redirectPath, initialData 
 
   useEffect(() => {
     Promise.all([
-      fetch("/api/categories").then((r) => (r.ok ? r.json() : [])),
-      fetch("/api/tags").then((r) => (r.ok ? r.json() : [])),
-    ])
-      .then(([cats, tgs]) => {
-        setCategories(cats);
-        setTags(tgs);
-      })
-      .catch((e) => console.error("[PostForm] Failed to fetch categories/tags:", e));
+      fetchApi<Category[]>("/api/categories"),
+      fetchApi<Tag[]>("/api/tags"),
+    ]).then(([cats, tgs]) => {
+      if (cats.ok) setCategories(cats.data);
+      if (tgs.ok) setTags(tgs.data);
+    });
   }, []);
 
   useEffect(() => {
@@ -103,20 +102,14 @@ export default function PostForm({ mode, apiEndpoint, redirectPath, initialData 
 
   const createTag = async () => {
     if (!newTag.trim()) return;
-    try {
-      const res = await fetch("/api/tags", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: newTag.trim() }),
-      });
-      if (res.ok) {
-        const tag = await res.json();
-        setTags((prev) => [...prev, tag].sort((a, b) => a.name.localeCompare(b.name)));
-        setSelectedTags((prev) => [...prev, tag.id.toString()]);
-        setNewTag("");
-      }
-    } catch (e) {
-      console.error("[PostForm] Failed to create tag:", e);
+    const res = await fetchApi<Tag>("/api/tags", {
+      method: "POST",
+      body: JSON.stringify({ name: newTag.trim() }),
+    });
+    if (res.ok) {
+      setTags((prev) => [...prev, res.data].sort((a, b) => a.name.localeCompare(b.name)));
+      setSelectedTags((prev) => [...prev, res.data.id.toString()]);
+      setNewTag("");
     }
   };
 
@@ -125,43 +118,34 @@ export default function PostForm({ mode, apiEndpoint, redirectPath, initialData 
     setSaving(true);
     setError("");
 
-    try {
-      const body = {
-        title,
-        slug,
-        content,
-        excerpt,
-        coverImageUrl,
-        categoryId: categoryId || null,
-        tags: selectedTags,
-        status,
-      };
+    const body = {
+      title,
+      slug,
+      content,
+      excerpt,
+      coverImageUrl,
+      categoryId: categoryId || null,
+      tags: selectedTags,
+      status,
+    };
 
-      const url = apiEndpoint || (mode === "create" ? "/api/posts" : `/api/posts/${initialData?.id}`);
-      const method = mode === "create" ? "POST" : "PUT";
+    const url = apiEndpoint || (mode === "create" ? "/api/posts" : `/api/posts/${initialData?.id}`);
+    const method = mode === "create" ? "POST" : "PUT";
 
-      const res = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
+    const res = await fetchApi(url, {
+      method,
+      body: JSON.stringify(body),
+    });
 
-      if (!res.ok) {
-        const data = await res.json();
-        setError(data.error || "保存失败");
-        return;
-      }
-
-      // Clear draft after successful save
-      clearDraft(draftKey);
-      router.push(redirectPath || "/admin/posts");
-      router.refresh();
-    } catch (e) {
-      console.error("[PostForm] Failed to save post:", e);
-      setError("保存失败，请稍后重试");
-    } finally {
+    if (!res.ok) {
+      setError(res.error);
       setSaving(false);
+      return;
     }
+
+    clearDraft(draftKey);
+    router.push(redirectPath || "/admin/posts");
+    router.refresh();
   };
 
   const handleDiscardDraft = () => {

@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, memo } from "react";
 import { FileText, Plus, Trash2 } from "lucide-react";
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import { fetchApi } from "@/lib/fetch-api";
 
 interface Template {
   id: number;
@@ -36,40 +37,29 @@ export const TemplatePicker = memo(function TemplatePicker({ onSelect }: Templat
   }, [show, closePicker]);
 
   useEffect(() => {
-    fetch("/api/templates")
-      .then((r) => (r.ok ? r.json() : []))
-      .then((data) => setTemplates(Array.isArray(data) ? data : []))
-      .catch((e) => console.error("[TemplatePicker] Failed to fetch templates:", e));
+    fetchApi<Template[]>("/api/templates").then((res) => {
+      if (res.ok) setTemplates(Array.isArray(res.data) ? res.data : []);
+    });
   }, []);
 
   const handleCreate = async () => {
     if (!newName.trim() || !newContent.trim()) return;
-    try {
-      const res = await fetch("/api/templates", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: newName, content: newContent }),
-      });
-      if (res.ok) {
-        const t = await res.json();
-        setTemplates([t, ...templates]);
-        setNewName("");
-        setNewContent("");
-        setShowCreate(false);
-      }
-    } catch (e) {
-      console.error("[TemplatePicker] Failed to create template:", e);
+    const res = await fetchApi<Template>("/api/templates", {
+      method: "POST",
+      body: JSON.stringify({ name: newName, content: newContent }),
+    });
+    if (res.ok) {
+      setTemplates([res.data, ...templates]);
+      setNewName("");
+      setNewContent("");
+      setShowCreate(false);
     }
   };
 
   const handleDelete = async (id: number) => {
-    try {
-      const res = await fetch(`/api/templates/${id}`, { method: "DELETE" });
-      if (res.ok) {
-        setTemplates(templates.filter((t) => t.id !== id));
-      }
-    } catch (e) {
-      console.error("[TemplatePicker] Failed to delete template:", e);
+    const res = await fetchApi(`/api/templates/${id}`, { method: "DELETE" });
+    if (res.ok) {
+      setTemplates(templates.filter((t) => t.id !== id));
     }
     setConfirmDeleteId(null);
   };

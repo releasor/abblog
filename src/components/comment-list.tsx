@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, memo } from "react";
 import { formatRelativeTime } from "@/lib/format-date";
 import { EmptyState } from "@/components/empty-state";
 import { Skeleton } from "@/components/skeleton";
+import { fetchApi } from "@/lib/fetch-api";
 
 interface Comment {
   id: number;
@@ -35,22 +36,14 @@ const CommentItem = memo(function CommentItem({ comment }: { comment: Comment })
   );
 });
 
-export function CommentList({ postId, refreshKey }: CommentListProps) {
+export const CommentList = memo(function CommentList({ postId, refreshKey }: CommentListProps) {
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchComments = useCallback(async () => {
-    try {
-      const res = await fetch(`/api/posts/${postId}/comments`);
-      if (res.ok) {
-        const data = await res.json();
-        setComments(data.comments);
-      }
-    } catch {
-      // Silently fail — comments are non-critical
-    } finally {
-      setLoading(false);
-    }
+    const res = await fetchApi<{ comments: Comment[] }>(`/api/posts/${postId}/comments`);
+    if (res.ok) setComments(res.data.comments);
+    setLoading(false);
   }, [postId]);
 
   useEffect(() => {
@@ -85,4 +78,4 @@ export function CommentList({ postId, refreshKey }: CommentListProps) {
       ))}
     </div>
   );
-}
+});
