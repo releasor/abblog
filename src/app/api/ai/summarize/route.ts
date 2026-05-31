@@ -6,22 +6,22 @@ import { checkRateLimit, getRateLimitHeaders } from "@/lib/rate-limit";
 import { requireId, invalidIdResponse } from "@/lib/api-utils";
 
 export async function POST(request: NextRequest) {
-  const session = await getServerSession(authOptions);
-  const userId = getAuthUserId(session);
-  if (!userId) {
-    return NextResponse.json({ error: "请先登录" }, { status: 401 });
-  }
+  try {
+    const session = await getServerSession(authOptions);
+    const userId = getAuthUserId(session);
+    if (!userId) {
+      return NextResponse.json({ error: "请先登录" }, { status: 401 });
+    }
 
-  // Rate limit AI requests
-  const rl = checkRateLimit(`ai:${userId}`, { windowMs: 60_000, max: 10 });
-  if (!rl.allowed) {
-    return NextResponse.json(
-      { error: "AI 请求过于频繁，请稍后再试" },
-      { status: 429, headers: getRateLimitHeaders(rl) }
-    );
-  }
+    const rl = checkRateLimit(`ai:${userId}`, { windowMs: 60_000, max: 10 });
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { error: "AI 请求过于频繁，请稍后再试" },
+        { status: 429, headers: getRateLimitHeaders(rl) }
+      );
+    }
 
-  let postId: string;
+    let postId: string;
   try {
     const body = await request.json();
     postId = body.postId;
@@ -89,9 +89,13 @@ export async function POST(request: NextRequest) {
     const data = await res.json();
     const summary = data.choices?.[0]?.message?.content || "暂无摘要";
     return NextResponse.json({ summary });
+    } catch (e) {
+      console.error("[AI Summarize]", e);
+      const summary = plainText.slice(0, 150) + (plainText.length > 150 ? "..." : "");
+      return NextResponse.json({ summary });
+    }
   } catch (e) {
-    console.error("[AI Summarize]", e);
-    const summary = plainText.slice(0, 150) + (plainText.length > 150 ? "..." : "");
-    return NextResponse.json({ summary });
+    console.error("[AI Summarize] Unexpected error:", e);
+    return NextResponse.json({ error: "请求处理失败" }, { status: 500 });
   }
 }
