@@ -5,23 +5,23 @@ import { getAiConfig } from "@/lib/ai-config";
 import { checkRateLimit, getRateLimitHeaders } from "@/lib/rate-limit";
 
 export async function POST(request: NextRequest) {
-  const session = await getServerSession(authOptions);
-  const userId = getAuthUserId(session);
+  try {
+    const session = await getServerSession(authOptions);
+    const userId = getAuthUserId(session);
 
-  if (!userId) {
-    return NextResponse.json({ error: "请先登录" }, { status: 401 });
-  }
+    if (!userId) {
+      return NextResponse.json({ error: "请先登录" }, { status: 401 });
+    }
 
-  // Rate limit AI requests
-  const rl = checkRateLimit(`ai:${userId}`, { windowMs: 60_000, max: 10 });
-  if (!rl.allowed) {
-    return NextResponse.json(
-      { error: "AI 请求过于频繁，请稍后再试" },
-      { status: 429, headers: getRateLimitHeaders(rl) }
-    );
-  }
+    const rl = checkRateLimit(`ai:${userId}`, { windowMs: 60_000, max: 10 });
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { error: "AI 请求过于频繁，请稍后再试" },
+        { status: 429, headers: getRateLimitHeaders(rl) }
+      );
+    }
 
-  let messages: unknown[], mode: string | undefined;
+    let messages: unknown[], mode: string | undefined;
   try {
     const body = await request.json();
     messages = body.messages;
@@ -100,8 +100,12 @@ export async function POST(request: NextRequest) {
     const data = await res.json();
     const reply = data.choices?.[0]?.message?.content || "无法生成回复";
     return NextResponse.json({ reply });
+    } catch (e) {
+      console.error("AI fetch error:", e);
+      return NextResponse.json({ reply: "请求失败，请检查AI设置后重试" });
+    }
   } catch (e) {
-    console.error("AI fetch error:", e);
-    return NextResponse.json({ reply: "请求失败，请检查AI设置后重试" });
+    console.error("[AI Conversation] Unexpected error:", e);
+    return NextResponse.json({ error: "请求处理失败" }, { status: 500 });
   }
 }
