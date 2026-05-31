@@ -225,6 +225,7 @@ export default function BookmarksPage() {
                             width={80}
                             height={80}
                             className="w-20 h-20 object-cover rounded-lg"
+                            sizes="80px"
                             loading="lazy"
                           />
                         )}

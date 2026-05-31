@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useMemo, memo } from "react";
 import { useRouter } from "next/navigation";
 import { Search, FileText, Folder, Tag, Sun, Home, PenSquare } from "lucide-react";
+import { useTheme } from "./theme-provider";
 
 interface Command {
   id: string;
@@ -19,6 +20,7 @@ interface CommandPaletteProps {
 
 export const CommandPalette = memo(function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
   const router = useRouter();
+  const { toggleTheme } = useTheme();
   const [query, setQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
 
@@ -70,13 +72,12 @@ export const CommandPalette = memo(function CommandPalette({ isOpen, onClose }: 
       label: "切换主题",
       icon: Sun,
       action: () => {
-        document.documentElement.classList.toggle("dark");
-        localStorage.setItem("theme", document.documentElement.classList.contains("dark") ? "dark" : "light");
+        toggleTheme();
         onClose();
       },
       keywords: ["theme", "dark", "light", "主题", "暗色", "亮色"],
     },
-  ], [router, onClose]);
+  ], [router, onClose, toggleTheme]);
 
   const filtered = useMemo(() => commands.filter((cmd) => {
     if (!query) return true;

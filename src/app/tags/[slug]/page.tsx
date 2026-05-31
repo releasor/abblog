@@ -79,6 +79,14 @@ export default async function TagPage({ params }: PageProps) {
 
   const jsonLd = {
     "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: `#${tag.name}`,
+    url: absoluteUrl(`/tags/${slug}`),
+    numberOfItems: posts.length,
+  };
+
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
       { "@type": "ListItem", position: 1, name: "首页", item: absoluteUrl("/") },
@@ -92,6 +100,10 @@ export default async function TagPage({ params }: PageProps) {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
       <div className="mb-8">
         <p className="text-sm text-zinc-500 dark:text-zinc-500 mb-1">标签</p>

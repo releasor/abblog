@@ -1,19 +1,17 @@
-import { memo } from "react";
-
 interface SkeletonProps {
   className?: string;
 }
 
-export const Skeleton = memo(function Skeleton({ className = "" }: SkeletonProps) {
+export function Skeleton({ className = "" }: SkeletonProps) {
   return (
     <div
       aria-hidden="true"
       className={`animate-pulse bg-zinc-200 dark:bg-zinc-800 rounded ${className}`}
     />
   );
-});
+}
 
-export const SkeletonText = memo(function SkeletonText({ lines = 3, className = "" }: { lines?: number; className?: string }) {
+export function SkeletonText({ lines = 3, className = "" }: { lines?: number; className?: string }) {
   return (
     <div className={`space-y-2 ${className}`}>
       {Array.from({ length: lines }).map((_, i) => (
@@ -24,9 +22,9 @@ export const SkeletonText = memo(function SkeletonText({ lines = 3, className = 
       ))}
     </div>
   );
-});
+}
 
-export const SkeletonCard = memo(function SkeletonCard({ className = "" }: { className?: string }) {
+export function SkeletonCard({ className = "" }: { className?: string }) {
   return (
     <div className={`bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 ${className}`}>
       <div className="flex items-start gap-4">
@@ -38,9 +36,9 @@ export const SkeletonCard = memo(function SkeletonCard({ className = "" }: { cla
       </div>
     </div>
   );
-});
+}
 
-export const SkeletonTable = memo(function SkeletonTable({ rows = 5, cols = 4 }: { rows?: number; cols?: number }) {
+export function SkeletonTable({ rows = 5, cols = 4 }: { rows?: number; cols?: number }) {
   return (
     <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden">
       <div className="px-5 py-3 border-b border-zinc-200 dark:border-zinc-800">
@@ -67,9 +65,9 @@ export const SkeletonTable = memo(function SkeletonTable({ rows = 5, cols = 4 }:
       ))}
     </div>
   );
-});
+}
 
-export const SkeletonGrid = memo(function SkeletonGrid({ count = 6, cols = 3 }: { count?: number; cols?: number }) {
+export function SkeletonGrid({ count = 6, cols = 3 }: { count?: number; cols?: number }) {
   const colClass = cols === 4 ? "lg:grid-cols-4" : cols === 2 ? "lg:grid-cols-2" : "lg:grid-cols-3";
   return (
     <div className={`grid grid-cols-1 sm:grid-cols-2 ${colClass} gap-4`}>
@@ -78,9 +76,9 @@ export const SkeletonGrid = memo(function SkeletonGrid({ count = 6, cols = 3 }: 
       ))}
     </div>
   );
-});
+}
 
-export const SkeletonStat = memo(function SkeletonStat({ count = 4 }: { count?: number }) {
+export function SkeletonStat({ count = 4 }: { count?: number }) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       {Array.from({ length: count }).map((_, i) => (
@@ -94,9 +92,9 @@ export const SkeletonStat = memo(function SkeletonStat({ count = 4 }: { count?: 
       ))}
     </div>
   );
-});
+}
 
-export const SkeletonRow = memo(function SkeletonRow({ count = 5, height = "h-16" }: { count?: number; height?: string }) {
+export function SkeletonRow({ count = 5, height = "h-16" }: { count?: number; height?: string }) {
   return (
     <div className="space-y-3">
       {Array.from({ length: count }).map((_, i) => (
@@ -104,9 +102,9 @@ export const SkeletonRow = memo(function SkeletonRow({ count = 5, height = "h-16
       ))}
     </div>
   );
-});
+}
 
-export const SkeletonPost = memo(function SkeletonPost() {
+export function SkeletonPost() {
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       <Skeleton className="h-8 w-3/4" />
@@ -119,9 +117,9 @@ export const SkeletonPost = memo(function SkeletonPost() {
       <SkeletonText lines={8} />
     </div>
   );
-});
+}
 
-export const SkeletonProfile = memo(function SkeletonProfile() {
+export function SkeletonProfile() {
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       <div className="flex items-start gap-6">
@@ -140,9 +138,9 @@ export const SkeletonProfile = memo(function SkeletonProfile() {
       <SkeletonRow count={3} height="h-24" />
     </div>
   );
-});
+}
 
-export const SkeletonList = memo(function SkeletonList({ count = 5 }: { count?: number }) {
+export function SkeletonList({ count = 5 }: { count?: number }) {
   return (
     <div className="space-y-3">
       {Array.from({ length: count }).map((_, i) => (
@@ -156,4 +154,28 @@ export const SkeletonList = memo(function SkeletonList({ count = 5 }: { count?: 
       ))}
     </div>
   );
-});
+}
+
+export function SkeletonPostListItem({ count = 5 }: { count?: number }) {
+  return (
+    <div className="space-y-4">
+      {Array.from({ length: count }).map((_, i) => (
+        <div
+          key={i}
+          className="flex gap-4 p-5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl"
+        >
+          <div className="flex-1 space-y-3">
+            <Skeleton className="h-5 w-3/4" />
+            <Skeleton className="h-3 w-full" />
+            <Skeleton className="h-3 w-2/3" />
+            <div className="flex gap-2 mt-2">
+              <Skeleton className="h-5 w-16 rounded-full" />
+              <Skeleton className="h-5 w-16 rounded-full" />
+            </div>
+          </div>
+          <Skeleton className="w-24 h-24 rounded-lg flex-shrink-0" />
+        </div>
+      ))}
+    </div>
+  );
+}

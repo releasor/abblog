@@ -72,7 +72,6 @@ describe("GET /api/posts/recommend", () => {
     mockPrisma.post.findMany.mockResolvedValue([mockPost]);
 
     const res = await GET(makeRequest("http://localhost:3000/api/posts/recommend?postId=99"));
-    const data = await res.json();
 
     expect(res.status).toBe(200);
     expect(mockPrisma.readHistory.findMany).toHaveBeenCalled();

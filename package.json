@@ -20,6 +20,7 @@
     "@tiptap/react": "^3.24.0",
     "@tiptap/starter-kit": "^3.24.0",
     "bcrypt": "^6.0.0",
+    "dotenv": "^17.4.2",
     "highlight.js": "^11.11.1",
     "isomorphic-dompurify": "^3.15.0",
     "lucide-react": "^1.17.0",

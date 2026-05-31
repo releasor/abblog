@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "设置 - billionaire",
   description: "管理你的个人资料、账号安全和通知偏好",
+  robots: { index: false, follow: false },
 };
 
 export default function SettingsLayout({ children }: { children: React.ReactNode }) {

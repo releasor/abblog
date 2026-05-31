@@ -88,6 +88,7 @@ const ImageUpload = memo(function ImageUpload({ value, onChange }: ImageUploadPr
             width={448}
             height={192}
             className="w-full max-w-md h-48 object-cover rounded-md border border-zinc-200 dark:border-zinc-700"
+            sizes="448px"
             unoptimized
           />
           <button

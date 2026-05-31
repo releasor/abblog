@@ -111,6 +111,7 @@ export default function AdminUsersPage() {
                       width={36}
                       height={36}
                       className="rounded-full object-cover"
+                      sizes="36px"
                       loading="lazy"
                     />
                   ) : (

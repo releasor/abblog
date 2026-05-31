@@ -25,6 +25,5 @@ export function sanitizeHtml(html: string): string {
     ALLOWED_TAGS,
     ALLOWED_ATTR: ALLOWED_ATTRS,
     ADD_ATTR: ["loading", "decoding"],
-    ADD_TAGS: ["style"],
   });
 }

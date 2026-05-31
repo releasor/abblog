@@ -78,6 +78,21 @@ export default async function SeriesDetailPage({ params }: Props) {
 
   if (!series) notFound();
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: series.name,
+    description: series.description || undefined,
+    url: absoluteUrl(`/series/${series.slug}`),
+    author: { "@type": "Person", name: series.user.name },
+    hasPart: series.posts.map((sp, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name: sp.post.title,
+      url: absoluteUrl(`/posts/${sp.post.slug}`),
+    })),
+  };
+
   const breadcrumbJsonLd = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -90,6 +105,10 @@ export default async function SeriesDetailPage({ params }: Props) {
 
   return (
     <main className="container mx-auto px-4 py-8">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}

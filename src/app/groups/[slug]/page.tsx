@@ -89,7 +89,7 @@ export default async function GroupDetailPage({ params }: Props) {
     "@type": "Organization",
     name: group.name,
     description: group.description || undefined,
-    url: `/groups/${group.slug}`,
+    url: absoluteUrl(`/groups/${group.slug}`),
     memberCount: group._count.members,
   };
 

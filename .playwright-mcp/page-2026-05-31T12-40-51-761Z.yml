@@ -1,0 +1,77 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - img [ref=e9]
+        - heading "TaskFlow" [level=1] [ref=e11]
+      - generic [ref=e12]:
+        - img [ref=e13]
+        - textbox "搜索任务... (Ctrl+N 新建)" [ref=e15]
+      - generic [ref=e16]:
+        - generic [ref=e17]:
+          - button "看板视图" [ref=e18] [cursor=pointer]:
+            - img [ref=e19]
+          - button "列表视图" [ref=e21] [cursor=pointer]:
+            - img [ref=e22]
+          - button "日历视图" [ref=e24] [cursor=pointer]:
+            - img [ref=e25]
+        - button "新建任务" [ref=e27] [cursor=pointer]:
+          - img [ref=e28]
+          - generic [ref=e30]: 新建任务
+        - button "导出/导入" [ref=e32] [cursor=pointer]:
+          - img [ref=e33]
+        - button "默认顺序" [ref=e36] [cursor=pointer]:
+          - img [ref=e37]
+          - generic [ref=e39]: 默认顺序
+        - button "标签管理" [ref=e40] [cursor=pointer]:
+          - img [ref=e41]
+        - button "已完成任务" [ref=e43] [cursor=pointer]:
+          - img [ref=e44]
+        - button "统计面板 (Ctrl+/)" [ref=e46] [cursor=pointer]:
+          - img [ref=e47]
+        - button "主题设置" [ref=e49] [cursor=pointer]:
+          - img [ref=e50]
+        - button "暗色模式 (Ctrl+D)" [ref=e52] [cursor=pointer]:
+          - img [ref=e53]
+  - main [ref=e55]:
+    - generic [ref=e56]:
+      - generic [ref=e61]:
+        - generic [ref=e62]: 0/0 已完成
+        - generic [ref=e63]: 0%
+      - generic [ref=e64]:
+        - img [ref=e65]
+        - combobox [ref=e67] [cursor=pointer]:
+          - option "默认排序" [selected]
+          - option "优先级"
+          - option "截止日期"
+          - option "创建时间"
+          - option "标题"
+    - generic [ref=e68]:
+      - combobox [ref=e69]:
+        - option "所有状态" [selected]
+        - option "待办"
+        - option "进行中"
+        - option "审核中"
+        - option "已完成"
+      - combobox [ref=e70]:
+        - option "所有优先级" [selected]
+        - option "低"
+        - option "中"
+        - option "高"
+        - option "紧急"
+      - combobox [ref=e71]:
+        - option "所有分类" [selected]
+      - generic [ref=e72]:
+        - textbox "截止日期从" [ref=e73]
+        - generic [ref=e74]: 至
+        - textbox "截止日期至" [ref=e75]
+  - contentinfo [ref=e249]:
+    - generic [ref=e250]:
+      - generic [ref=e251]: Ctrl+N 新建
+      - generic [ref=e252]: 123 切换视图
+      - generic [ref=e253]: Ctrl+/ 统计
+      - generic [ref=e254]: Ctrl+D 主题
+      - generic [ref=e255]: "? 快捷键"
+      - generic [ref=e256]: Esc 关闭
+  - button "番茄钟" [ref=e257] [cursor=pointer]:
+    - img [ref=e258]

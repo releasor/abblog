@@ -51,13 +51,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "文章不存在" }, { status: 404 });
     }
 
-    const config = userId
-      ? await getAiConfig(userId)
-      : {
-          apiKey: process.env.AI_API_KEY || "",
-          apiUrl: process.env.AI_API_URL || "https://api.openai.com/v1/chat/completions",
-          model: process.env.AI_MODEL || "gpt-3.5-turbo",
-        };
+    const config = await getAiConfig(userId);
 
     if (!config.apiKey) {
       return NextResponse.json({

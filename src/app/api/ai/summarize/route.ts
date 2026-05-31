@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions, getAuthUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getAiConfig } from "@/lib/ai-config";
 import { checkRateLimit, RATE_LIMITS, getRateLimitHeaders } from "@/lib/rate-limit";
 import { requireId, invalidIdResponse } from "@/lib/api-utils";
 import { stripHtml, truncate } from "@/lib/text";
@@ -47,11 +48,9 @@ export async function POST(request: NextRequest) {
 
     const plainText = stripHtml(post.content);
 
-    const apiKey = process.env.AI_API_KEY;
-    const apiUrl = process.env.AI_API_URL || "https://api.openai.com/v1/chat/completions";
-    const model = process.env.AI_MODEL || "gpt-3.5-turbo";
+    const config = await getAiConfig(userId);
 
-    if (!apiKey) {
+    if (!config.apiKey) {
       const summary = truncate(plainText, 150);
       return NextResponse.json({ summary });
     }
@@ -59,14 +58,14 @@ export async function POST(request: NextRequest) {
     try {
       const truncated = plainText.slice(0, 3000);
 
-      const res = await fetch(apiUrl, {
+      const res = await fetch(config.apiUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${apiKey}`,
+          Authorization: `Bearer ${config.apiKey}`,
         },
         body: JSON.stringify({
-          model,
+          model: config.model,
           messages: [
             {
               role: "system",

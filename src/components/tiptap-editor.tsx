@@ -56,8 +56,8 @@ const TiptapEditor = memo(function TiptapEditor({ content, onChange }: TiptapEdi
 export default TiptapEditor;
 
 // Type helper for tiptap commands not in base types (provided by StarterKit)
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function chain(editor: NonNullable<ReturnType<typeof useEditor>>) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return editor.chain() as any;
 }
 

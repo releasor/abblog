@@ -1,4 +1,4 @@
-import { memo, ReactNode, ButtonHTMLAttributes } from "react";
+import { ReactNode, ButtonHTMLAttributes } from "react";
 
 type Variant = "default" | "danger" | "success";
 
@@ -14,7 +14,7 @@ interface ActionButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>
   label: string;
 }
 
-export const ActionButton = memo(function ActionButton({
+export function ActionButton({
   variant = "default",
   icon,
   label,
@@ -29,4 +29,4 @@ export const ActionButton = memo(function ActionButton({
       {icon}
     </button>
   );
-});
+}

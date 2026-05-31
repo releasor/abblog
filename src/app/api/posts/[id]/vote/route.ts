@@ -79,9 +79,6 @@ export async function POST(
       select: { id: true, value: true },
     });
 
-    let vote;
-    let scoreDelta = 0;
-
     if (existing) {
       if (existing.value === value) {
         // Toggle off: delete vote and decrement score atomically
@@ -110,11 +107,16 @@ export async function POST(
         return NextResponse.json({ userVote: updatedVote.value, score: updatedPost.score });
       }
     } else {
-      let newVote;
+      let newVote, updatedPost;
       try {
-        newVote = await prisma.postVote.create({
-          data: { postId, userId, value },
-        });
+        [newVote, updatedPost] = await prisma.$transaction([
+          prisma.postVote.create({ data: { postId, userId, value } }),
+          prisma.post.update({
+            where: { id: postId },
+            data: { score: { increment: value } },
+            select: { score: true },
+          }),
+        ]);
       } catch (e: unknown) {
         if ((e as { code?: string }).code === "P2002") {
           const retryVote = await prisma.postVote.findUnique({
@@ -131,11 +133,6 @@ export async function POST(
         }
         throw e;
       }
-      const updatedPost = await prisma.post.update({
-        where: { id: postId },
-        data: { score: { increment: value } },
-        select: { score: true },
-      });
       if (value === 1) {
         await createActivity(userId, "LIKE_ADDED", postId);
       }
