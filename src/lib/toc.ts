@@ -1,4 +1,5 @@
 import { slugify } from "./slugify";
+import { stripHtml } from "./text";
 
 export interface TocHeading {
   level: 2 | 3;
@@ -13,7 +14,7 @@ export function extractHeadings(htmlContent: string): TocHeading[] {
 
   while ((match = regex.exec(htmlContent)) !== null) {
     const level = parseInt(match[1]) as 2 | 3;
-    const rawText = match[2].replace(/<[^>]*>/g, "").trim();
+    const rawText = stripHtml(match[2]);
     if (!rawText) continue;
 
     const id = slugify(rawText);
@@ -28,7 +29,7 @@ export function injectHeadingIds(htmlContent: string): string {
     /<h([23])([^>]*)>(.*?)<\/h[23]>/gi,
     (fullMatch, level, attrs, inner) => {
       if (/id\s*=/.test(attrs)) return fullMatch;
-      const rawText = inner.replace(/<[^>]*>/g, "").trim();
+      const rawText = stripHtml(inner);
       if (!rawText) return fullMatch;
       const id = slugify(rawText);
       return `<h${level}${attrs} id="${id}">${inner}</h${level}>`;
@@ -37,6 +38,6 @@ export function injectHeadingIds(htmlContent: string): string {
 }
 
 export function countWords(htmlContent: string): number {
-  const text = htmlContent.replace(/<[^>]*>/g, "");
+  const text = stripHtml(htmlContent);
   return text.split(/\s+/).filter(Boolean).length;
 }
