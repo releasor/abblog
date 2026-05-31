@@ -5,6 +5,7 @@ import { GET, POST, DELETE } from "../route";
 // Mock dependencies
 vi.mock("@/lib/prisma", () => ({
   prisma: {
+    $transaction: vi.fn((fns: unknown[]) => Promise.all(fns)),
     post: { findUnique: vi.fn(), update: vi.fn() },
     postVote: { findUnique: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn() },
   },

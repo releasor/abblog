@@ -84,24 +84,39 @@ export async function POST(
 
     if (existing) {
       if (existing.value === value) {
-        await prisma.postVote.delete({ where: { id: existing.id } });
-        scoreDelta = -value;
-        vote = null;
+        // Toggle off: delete vote and decrement score atomically
+        const [, updatedPost] = await prisma.$transaction([
+          prisma.postVote.delete({ where: { id: existing.id } }),
+          prisma.post.update({
+            where: { id: postId },
+            data: { score: { decrement: value } },
+            select: { score: true },
+          }),
+        ]);
+        return NextResponse.json({ userVote: null, score: updatedPost.score });
       } else {
-        vote = await prisma.postVote.update({
-          where: { id: existing.id },
-          data: { value },
-        });
-        scoreDelta = value * 2;
+        // Change vote: update vote and adjust score atomically
+        const [updatedVote, updatedPost] = await prisma.$transaction([
+          prisma.postVote.update({
+            where: { id: existing.id },
+            data: { value },
+          }),
+          prisma.post.update({
+            where: { id: postId },
+            data: { score: { increment: value * 2 } },
+            select: { score: true },
+          }),
+        ]);
+        return NextResponse.json({ userVote: updatedVote.value, score: updatedPost.score });
       }
     } else {
+      let newVote;
       try {
-        vote = await prisma.postVote.create({
+        newVote = await prisma.postVote.create({
           data: { postId, userId, value },
         });
       } catch (e: unknown) {
         if ((e as { code?: string }).code === "P2002") {
-          // Race condition: another request created the vote concurrently
           const retryVote = await prisma.postVote.findUnique({
             where: { postId_userId: { postId, userId } },
             select: { value: true },
@@ -116,19 +131,16 @@ export async function POST(
         }
         throw e;
       }
-      scoreDelta = value;
+      const updatedPost = await prisma.post.update({
+        where: { id: postId },
+        data: { score: { increment: value } },
+        select: { score: true },
+      });
       if (value === 1) {
         await createActivity(userId, "LIKE_ADDED", postId);
       }
+      return NextResponse.json({ userVote: newVote.value, score: updatedPost.score });
     }
-
-    const post = await prisma.post.update({
-      where: { id: postId },
-      data: { score: { increment: scoreDelta } },
-      select: { score: true },
-    });
-
-    return NextResponse.json({ userVote: vote?.value ?? null, score: post.score });
   } catch (e) {
     console.error("[Vote] Failed to vote:", e);
     return NextResponse.json({ error: "投票失败" }, { status: 500 });
@@ -155,7 +167,7 @@ export async function DELETE(
 
     if (!existing) return NextResponse.json({ error: "未找到投票记录" }, { status: 404 });
 
-    await Promise.all([
+    await prisma.$transaction([
       prisma.postVote.delete({ where: { id: existing.id } }),
       prisma.post.update({
         where: { id: postId },
