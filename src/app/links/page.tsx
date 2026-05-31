@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import Link from "next/link";
 
 export const revalidate = 86400;
 
@@ -110,9 +111,9 @@ export default function LinksPage() {
         </h2>
         <p className="text-zinc-600 dark:text-zinc-400 text-sm">
           如果你也有技术博客，欢迎通过{" "}
-          <a href="/guestbook" className="text-zinc-900 dark:text-zinc-100 underline underline-offset-4">
+          <Link href="/guestbook" className="text-zinc-900 dark:text-zinc-100 underline underline-offset-4">
             留言墙
-          </a>{" "}
+          </Link>{" "}
           申请交换链接。请提供：博客名称、简介和头像链接。
         </p>
       </div>
