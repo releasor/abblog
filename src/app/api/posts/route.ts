@@ -70,45 +70,44 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const session = await getServerSession(authOptions);
-  const userId = getAuthUserId(session);
-  if (!userId) {
-    return NextResponse.json({ error: "请先登录" }, { status: 401 });
-  }
-
-  const rl = checkRateLimit(`post:${userId}`, RATE_LIMITS.api);
-  if (!rl.allowed) {
-    return NextResponse.json(
-      { error: "操作太频繁，请稍后再试" },
-      { status: 429, headers: getRateLimitHeaders(rl) }
-    );
-  }
-
-  let body;
   try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ error: "请求格式无效" }, { status: 400 });
-  }
-  const { title, content, excerpt, coverImageUrl, categoryId, tags, status, isPinned, scheduledAt } = body;
+    const session = await getServerSession(authOptions);
+    const userId = getAuthUserId(session);
+    if (!userId) {
+      return NextResponse.json({ error: "请先登录" }, { status: 401 });
+    }
 
-  if (!title || !content) {
-    return NextResponse.json({ error: "标题和内容不能为空" }, { status: 400 });
-  }
-  if (typeof title !== "string" || title.length > 200) {
-    return NextResponse.json({ error: "标题不能超过200个字符" }, { status: 400 });
-  }
-  if (typeof content !== "string" || content.length > 500000) {
-    return NextResponse.json({ error: "内容过长" }, { status: 400 });
-  }
-  if (categoryId && isNaN(parseInt(categoryId))) {
-    return NextResponse.json({ error: "无效的分类ID" }, { status: 400 });
-  }
-  if (tags && (!Array.isArray(tags) || tags.some((t: string) => isNaN(parseInt(t))))) {
-    return NextResponse.json({ error: "无效的标签ID" }, { status: 400 });
-  }
+    const rl = checkRateLimit(`post:${userId}`, RATE_LIMITS.api);
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { error: "操作太频繁，请稍后再试" },
+        { status: 429, headers: getRateLimitHeaders(rl) }
+      );
+    }
 
-  try {
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: "请求格式无效" }, { status: 400 });
+    }
+    const { title, content, excerpt, coverImageUrl, categoryId, tags, status, isPinned, scheduledAt } = body;
+
+    if (!title || !content) {
+      return NextResponse.json({ error: "标题和内容不能为空" }, { status: 400 });
+    }
+    if (typeof title !== "string" || title.length > 200) {
+      return NextResponse.json({ error: "标题不能超过200个字符" }, { status: 400 });
+    }
+    if (typeof content !== "string" || content.length > 500000) {
+      return NextResponse.json({ error: "内容过长" }, { status: 400 });
+    }
+    if (categoryId && isNaN(parseInt(categoryId))) {
+      return NextResponse.json({ error: "无效的分类ID" }, { status: 400 });
+    }
+    if (tags && (!Array.isArray(tags) || tags.some((t: string) => isNaN(parseInt(t))))) {
+      return NextResponse.json({ error: "无效的标签ID" }, { status: 400 });
+    }
     const slug = body.slug || slugify(title);
     const existing = await prisma.post.findUnique({ where: { slug } });
     if (existing) {

@@ -5,39 +5,42 @@ import { getAiConfig } from "@/lib/ai-config";
 import { checkRateLimit, getRateLimitHeaders } from "@/lib/rate-limit";
 
 export async function POST(request: NextRequest) {
-  const session = await getServerSession(authOptions);
-  const userId = getAuthUserId(session);
-
-  if (!userId) {
-    return NextResponse.json({ error: "请先登录" }, { status: 401 });
-  }
-
-  const rl = checkRateLimit(`ai:${userId}`, { windowMs: 60_000, max: 10 });
-  if (!rl.allowed) {
-    return NextResponse.json({ error: "AI 请求过于频繁，请稍后再试" }, { status: 429, headers: getRateLimitHeaders(rl) });
-  }
-
-  let content: string;
   try {
-    const body = await request.json();
-    content = body.content;
-  } catch {
-    return NextResponse.json({ error: "请求格式无效" }, { status: 400 });
-  }
+    const session = await getServerSession(authOptions);
+    const userId = getAuthUserId(session);
 
-  if (!content) {
-    return NextResponse.json({ error: "缺少提示词内容" }, { status: 400 });
-  }
+    if (!userId) {
+      return NextResponse.json({ error: "请先登录" }, { status: 401 });
+    }
 
-  const config = await getAiConfig(userId);
+    const rl = checkRateLimit(`ai:${userId}`, { windowMs: 60_000, max: 10 });
+    if (!rl.allowed) {
+      return NextResponse.json({ error: "AI 请求过于频繁，请稍后再试" }, { status: 429, headers: getRateLimitHeaders(rl) });
+    }
 
-  if (!config.apiKey) {
-    return NextResponse.json({
-      optimized: "请先在「账号设置 → AI 设置」中配置 API Key。",
-    });
-  }
+    let content: string;
+    try {
+      const body = await request.json();
+      content = body.content;
+    } catch {
+      return NextResponse.json({ error: "请求格式无效" }, { status: 400 });
+    }
 
-  try {
+    if (!content || typeof content !== "string" || content.trim().length === 0) {
+      return NextResponse.json({ error: "缺少提示词内容" }, { status: 400 });
+    }
+    if (content.length > 10000) {
+      return NextResponse.json({ error: "提示词内容过长" }, { status: 400 });
+    }
+
+    const config = await getAiConfig(userId);
+
+    if (!config.apiKey) {
+      return NextResponse.json({
+        optimized: "请先在「账号设置 → AI 设置」中配置 API Key。",
+      });
+    }
+
     const res = await fetch(config.apiUrl, {
       method: "POST",
       headers: {

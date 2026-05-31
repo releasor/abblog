@@ -8,17 +8,16 @@ export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const session = await getServerSession(authOptions);
-  const userId = getAuthUserId(session);
-  if (!userId) {
-    return NextResponse.json({ isMember: false });
-  }
-
-  const { id } = await params;
-  let groupId: number;
-  try { groupId = requireId(id); } catch { return invalidIdResponse(); }
-
   try {
+    const session = await getServerSession(authOptions);
+    const userId = getAuthUserId(session);
+    if (!userId) {
+      return NextResponse.json({ isMember: false });
+    }
+
+    const { id } = await params;
+    let groupId: number;
+    try { groupId = requireId(id); } catch { return invalidIdResponse(); }
     const membership = await prisma.groupMember.findUnique({
       where: {
         groupId_userId: { groupId, userId },

@@ -5,15 +5,14 @@ import { readdir, stat } from "fs/promises";
 import path from "path";
 
 export async function GET() {
-  const session = await getServerSession(authOptions);
-  const userId = getAuthUserId(session);
-  if (!userId) {
-    return NextResponse.json({ error: "请先登录" }, { status: 401 });
-  }
-
-  const uploadsDir = path.join(process.cwd(), "public", "uploads");
-
   try {
+    const session = await getServerSession(authOptions);
+    const userId = getAuthUserId(session);
+    if (!userId) {
+      return NextResponse.json({ error: "请先登录" }, { status: 401 });
+    }
+
+    const uploadsDir = path.join(process.cwd(), "public", "uploads");
     const files = await readdir(uploadsDir);
     const mediaExts = [".jpg", ".jpeg", ".png", ".gif", ".webp", ".mp4", ".webm"];
 

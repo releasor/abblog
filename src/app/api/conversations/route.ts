@@ -3,16 +3,16 @@ import { getServerSession } from "next-auth";
 import { authOptions, getAuthUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { requireId, invalidIdResponse } from "@/lib/api-utils";
+import { checkRateLimit, RATE_LIMITS, getRateLimitHeaders } from "@/lib/rate-limit";
 
 export async function GET() {
-  const session = await getServerSession(authOptions);
-  const userId = getAuthUserId(session);
-
-  if (!userId) {
-    return NextResponse.json({ error: "请先登录" }, { status: 401 });
-  }
-
   try {
+    const session = await getServerSession(authOptions);
+    const userId = getAuthUserId(session);
+
+    if (!userId) {
+      return NextResponse.json({ error: "请先登录" }, { status: 401 });
+    }
     const memberships = await prisma.conversationMember.findMany({
       where: { userId },
       include: {
@@ -59,6 +59,11 @@ export async function POST(request: NextRequest) {
 
     if (!userId) {
       return NextResponse.json({ error: "请先登录" }, { status: 401 });
+    }
+
+    const rl = checkRateLimit(`conversation:${userId}`, RATE_LIMITS.api);
+    if (!rl.allowed) {
+      return NextResponse.json({ error: "操作太频繁，请稍后再试" }, { status: 429, headers: getRateLimitHeaders(rl) });
     }
 
     let targetUserId: string;

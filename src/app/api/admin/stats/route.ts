@@ -4,10 +4,9 @@ import { authOptions, isAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 export async function GET() {
-  const session = await getServerSession(authOptions);
-  if (!isAdmin(session)) return NextResponse.json({ error: "无权限" }, { status: 403 });
-
   try {
+    const session = await getServerSession(authOptions);
+    if (!isAdmin(session)) return NextResponse.json({ error: "无权限" }, { status: 403 });
     const [totalPosts, totalUsers, totalComments, totalViews, recentStats, popularPosts] = await Promise.all([
       prisma.post.count({ where: { status: "PUBLISHED" } }),
       prisma.user.count(),
@@ -24,7 +23,7 @@ export async function GET() {
 
     return NextResponse.json({
       summary: { totalPosts, totalUsers, totalComments, totalViews },
-      trend: recentStats.reverse(),
+      trend: recentStats.toReversed(),
       popularPosts,
     }, { headers: { "Cache-Control": "private, max-age=30, stale-while-revalidate=60" } });
   } catch (e) {
