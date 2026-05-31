@@ -1,4 +1,4 @@
-import { truncate } from "../text";
+import { truncate, stripHtml } from "../text";
 
 describe("truncate", () => {
   it("returns text unchanged if shorter than max", () => {
@@ -18,5 +18,27 @@ describe("truncate", () => {
 
   it("returns exact length text unchanged", () => {
     expect(truncate("hello", 5)).toBe("hello");
+  });
+});
+
+describe("stripHtml", () => {
+  it("strips HTML tags", () => {
+    expect(stripHtml("<p>hello</p>")).toBe("hello");
+  });
+
+  it("strips nested tags", () => {
+    expect(stripHtml("<div><strong>bold</strong> text</div>")).toBe("bold text");
+  });
+
+  it("normalizes whitespace", () => {
+    expect(stripHtml("<p>hello</p>  <p>world</p>")).toBe("hello world");
+  });
+
+  it("returns plain text unchanged", () => {
+    expect(stripHtml("hello world")).toBe("hello world");
+  });
+
+  it("handles empty string", () => {
+    expect(stripHtml("")).toBe("");
   });
 });
