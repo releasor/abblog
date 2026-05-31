@@ -4,10 +4,9 @@ import { authOptions, isAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 export async function GET() {
-  const session = await getServerSession(authOptions);
-  if (!isAdmin(session)) return NextResponse.json({ error: "无权限" }, { status: 403 });
-
   try {
+    const session = await getServerSession(authOptions);
+    if (!isAdmin(session)) return NextResponse.json({ error: "无权限" }, { status: 403 });
     const [posts, categories, tags, comments, users] = await Promise.all([
       prisma.post.findMany({
         include: { tags: { include: { tag: true } }, category: true },
