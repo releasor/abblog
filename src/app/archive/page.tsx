@@ -3,6 +3,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { formatMonthDay } from "@/lib/format-date";
 import { EmptyState } from "@/components/empty-state";
+import { absoluteUrl } from "@/lib/site-url";
 
 export const metadata: Metadata = {
   title: "文章归档",
@@ -23,6 +24,21 @@ export default async function ArchivePage() {
     },
   });
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: "文章归档",
+    description: "所有已发布文章的时间线归档",
+    url: absoluteUrl("/archive"),
+    numberOfItems: posts.length,
+    hasPart: posts.slice(0, 50).map((post) => ({
+      "@type": "Article",
+      name: post.title,
+      url: absoluteUrl(`/posts/${post.slug}`),
+      datePublished: post.publishedAt?.toISOString(),
+    })),
+  };
+
   const grouped: Record<number, Record<number, typeof posts>> = {};
   for (const post of posts) {
     if (!post.publishedAt) continue;
@@ -37,6 +53,10 @@ export default async function ArchivePage() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-12">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <header className="mb-12">
         <h1 className="text-4xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 mb-4">
           文章归档

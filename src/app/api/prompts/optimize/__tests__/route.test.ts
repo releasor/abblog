@@ -27,7 +27,6 @@ vi.mock("@/lib/ai-config", () => ({
   getAiConfig: vi.fn(),
 }));
 
-import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { getAuthUserId } from "@/lib/auth";
 import { checkRateLimit } from "@/lib/rate-limit";

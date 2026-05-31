@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { absoluteUrl } from "@/lib/site-url";
 
 export const revalidate = 86400;
 
@@ -62,8 +63,26 @@ const friends: FriendLink[] = [
 ];
 
 export default function LinksPage() {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: "友情链接",
+    description: "推荐的博客和网站",
+    url: absoluteUrl("/links"),
+    hasPart: friends.map((f) => ({
+      "@type": "WebSite",
+      name: f.name,
+      url: f.url,
+      description: f.description,
+    })),
+  };
+
   return (
     <div className="max-w-4xl mx-auto px-4 py-12">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <header className="mb-12">
         <h1 className="text-4xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 mb-4">
           友情链接

@@ -100,6 +100,7 @@ export const SearchInput = memo(function SearchInput() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="搜索文章..."
+            aria-label="搜索文章"
             className="w-48 sm:w-64 px-3 py-1.5 pr-8 text-sm border border-zinc-300 dark:border-zinc-700 rounded-md bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-lg focus:outline-none focus:ring-2 focus:ring-zinc-500"
           />
           <button

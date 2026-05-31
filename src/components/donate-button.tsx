@@ -108,6 +108,7 @@ export const DonateButton = memo(function DonateButton({ recipientId, recipientN
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   placeholder="留个言吧 (可选)"
+                  aria-label="留言（可选）"
                   rows={2}
                   className="w-full px-3 py-2 text-sm border border-zinc-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 mb-4 resize-none"
                 />

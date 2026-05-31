@@ -131,6 +131,7 @@ export const CommandPalette = memo(function CommandPalette({ isOpen, onClose }: 
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="输入命令..."
+            aria-label="搜索命令"
             className="flex-1 bg-transparent text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 outline-none"
             autoFocus
           />

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { PageHeader } from "@/components/page-header";
+import { absoluteUrl } from "@/lib/site-url";
 
 export const revalidate = 86400;
 
@@ -9,8 +10,20 @@ export const metadata: Metadata = {
 };
 
 export default function AboutPage() {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "AboutPage",
+    name: "关于",
+    description: "关于 billionaire 博客 — 专注于 AI 与数字生活的个人博客",
+    url: absoluteUrl("/about"),
+  };
+
   return (
     <div className="max-w-3xl mx-auto px-4 py-12">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <PageHeader title="关于" />
 
       <div className="prose prose-zinc dark:prose-invert max-w-none">
