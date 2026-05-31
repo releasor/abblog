@@ -51,24 +51,25 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  const session = await getServerSession(authOptions);
-  const userId = getAuthUserId(session);
-
-  if (!userId) {
-    return NextResponse.json({ error: "请先登录" }, { status: 401 });
-  }
-
-  let targetUserId: string;
+  let userId = 0;
+  let tid: number = 0;
   try {
-    const body = await request.json();
-    targetUserId = body.targetUserId;
-  } catch {
-    return NextResponse.json({ error: "请求格式无效" }, { status: 400 });
-  }
-  let tid: number;
-  try { tid = requireId(targetUserId); } catch { return invalidIdResponse(); }
+    const session = await getServerSession(authOptions);
+    userId = getAuthUserId(session) ?? 0;
 
-  try {
+    if (!userId) {
+      return NextResponse.json({ error: "请先登录" }, { status: 401 });
+    }
+
+    let targetUserId: string;
+    try {
+      const body = await request.json();
+      targetUserId = body.targetUserId;
+    } catch {
+      return NextResponse.json({ error: "请求格式无效" }, { status: 400 });
+    }
+    try { tid = requireId(targetUserId); } catch { return invalidIdResponse(); }
+
 
     if (userId === tid) {
       return NextResponse.json({ error: "不能给自己发私信" }, { status: 400 });
@@ -100,7 +101,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ id: conversation.id });
   } catch (e: unknown) {
     // Handle race condition: if another request created the same conversation concurrently
-    if ((e as { code?: string }).code === "P2002") {
+    if ((e as { code?: string }).code === "P2002" && userId) {
       const retryMemberships = await prisma.conversationMember.findMany({
         where: { userId: { in: [userId, tid] } },
         include: { conversation: { include: { members: true } } },

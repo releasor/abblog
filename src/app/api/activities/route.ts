@@ -3,14 +3,14 @@ import { prisma } from "@/lib/prisma";
 import { parsePagination, paginationMeta } from "@/lib/pagination";
 
 export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const { page, limit, skip } = parsePagination(searchParams, { limit: 20 });
-  const userId = searchParams.get("userId");
-
-  const userIdNum = userId ? parseInt(userId) : NaN;
-  const where = !isNaN(userIdNum) ? { userId: userIdNum } : {};
-
   try {
+    const { searchParams } = new URL(request.url);
+    const { page, limit, skip } = parsePagination(searchParams, { limit: 20 });
+    const userId = searchParams.get("userId");
+
+    const userIdNum = userId ? parseInt(userId) : NaN;
+    const where = !isNaN(userIdNum) ? { userId: userIdNum } : {};
+
     const [activities, total] = await Promise.all([
       prisma.activity.findMany({
         where,

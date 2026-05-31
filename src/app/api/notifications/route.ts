@@ -5,14 +5,14 @@ import { prisma } from "@/lib/prisma";
 import { requireId, invalidIdResponse } from "@/lib/api-utils";
 
 export async function GET() {
-  const session = await getServerSession(authOptions);
-  const userId = getAuthUserId(session);
-
-  if (!userId) {
-    return NextResponse.json({ error: "请先登录" }, { status: 401 });
-  }
-
   try {
+    const session = await getServerSession(authOptions);
+    const userId = getAuthUserId(session);
+
+    if (!userId) {
+      return NextResponse.json({ error: "请先登录" }, { status: 401 });
+    }
+
     const [notifications, unreadCount] = await Promise.all([
       prisma.notification.findMany({
         where: { userId },
@@ -32,14 +32,14 @@ export async function GET() {
 }
 
 export async function PATCH(request: NextRequest) {
-  const session = await getServerSession(authOptions);
-  const userId = getAuthUserId(session);
-
-  if (!userId) {
-    return NextResponse.json({ error: "请先登录" }, { status: 401 });
-  }
-
   try {
+    const session = await getServerSession(authOptions);
+    const userId = getAuthUserId(session);
+
+    if (!userId) {
+      return NextResponse.json({ error: "请先登录" }, { status: 401 });
+    }
+
     let id: string | undefined;
     try {
       const body = await request.json();

@@ -45,38 +45,38 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const session = await getServerSession(authOptions);
-  const userId = getAuthUserId(session);
-  if (!userId) {
-    return NextResponse.json({ error: "请先登录" }, { status: 401 });
-  }
-
-  const { id } = await params;
-  let postId: number;
-  try { postId = requireId(id); } catch { return invalidIdResponse(); }
-
-  let body;
   try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ error: "请求格式无效" }, { status: 400 });
-  }
-  const { title, content, excerpt, coverImageUrl, categoryId, tags, status, isPinned, scheduledAt } = body;
+    const session = await getServerSession(authOptions);
+    const userId = getAuthUserId(session);
+    if (!userId) {
+      return NextResponse.json({ error: "请先登录" }, { status: 401 });
+    }
 
-  if (title !== undefined && (typeof title !== "string" || title.length > 200)) {
-    return NextResponse.json({ error: "标题不能超过200个字符" }, { status: 400 });
-  }
-  if (content !== undefined && (typeof content !== "string" || content.length > 500000)) {
-    return NextResponse.json({ error: "内容过长" }, { status: 400 });
-  }
-  if (categoryId && isNaN(parseInt(categoryId))) {
-    return NextResponse.json({ error: "无效的分类ID" }, { status: 400 });
-  }
-  if (tags && (!Array.isArray(tags) || tags.some((t: string) => isNaN(parseInt(t))))) {
-    return NextResponse.json({ error: "无效的标签ID" }, { status: 400 });
-  }
+    const { id } = await params;
+    let postId: number;
+    try { postId = requireId(id); } catch { return invalidIdResponse(); }
 
-  try {
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: "请求格式无效" }, { status: 400 });
+    }
+    const { title, content, excerpt, coverImageUrl, categoryId, tags, status, isPinned, scheduledAt } = body;
+
+    if (title !== undefined && (typeof title !== "string" || title.length > 200)) {
+      return NextResponse.json({ error: "标题不能超过200个字符" }, { status: 400 });
+    }
+    if (content !== undefined && (typeof content !== "string" || content.length > 500000)) {
+      return NextResponse.json({ error: "内容过长" }, { status: 400 });
+    }
+    if (categoryId && isNaN(parseInt(categoryId))) {
+      return NextResponse.json({ error: "无效的分类ID" }, { status: 400 });
+    }
+    if (tags && (!Array.isArray(tags) || tags.some((t: string) => isNaN(parseInt(t))))) {
+      return NextResponse.json({ error: "无效的标签ID" }, { status: 400 });
+    }
+
     const existing = await prisma.post.findUnique({
       where: { id: postId },
       include: { collaborators: { where: { userId, role: "EDITOR" }, select: { id: true } } },
@@ -179,17 +179,17 @@ export async function DELETE(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const session = await getServerSession(authOptions);
-  const userId = getAuthUserId(session);
-  if (!userId) {
-    return NextResponse.json({ error: "请先登录" }, { status: 401 });
-  }
-
-  const { id } = await params;
-  let postId: number;
-  try { postId = requireId(id); } catch { return invalidIdResponse(); }
-
   try {
+    const session = await getServerSession(authOptions);
+    const userId = getAuthUserId(session);
+    if (!userId) {
+      return NextResponse.json({ error: "请先登录" }, { status: 401 });
+    }
+
+    const { id } = await params;
+    let postId: number;
+    try { postId = requireId(id); } catch { return invalidIdResponse(); }
+
     const existing = await prisma.post.findUnique({ where: { id: postId } });
     if (!existing) {
       return NextResponse.json({ error: "文章不存在" }, { status: 404 });
