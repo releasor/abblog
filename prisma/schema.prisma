@@ -82,9 +82,9 @@ model Post {
   createdAt    DateTime  @default(now()) @map("created_at")
   updatedAt    DateTime  @updatedAt @map("updated_at")
 
-  author        AdminUser  @relation(fields: [authorId], references: [id])
-  user          User?      @relation("UserPosts", fields: [userId], references: [id])
-  category      Category? @relation(fields: [categoryId], references: [id])
+  author        AdminUser  @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  user          User?      @relation("UserPosts", fields: [userId], references: [id], onDelete: SetNull)
+  category      Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   tags          PostTag[]
   comments      Comment[]
   likes         Like[]
@@ -154,7 +154,7 @@ model Comment {
   createdAt   DateTime      @default(now()) @map("created_at")
 
   post Post  @relation(fields: [postId], references: [id], onDelete: Cascade)
-  user User? @relation(fields: [userId], references: [id])
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([postId, status])
   @@map("comments")
@@ -173,7 +173,7 @@ model Message {
   content   String   @db.Text
   createdAt DateTime @default(now()) @map("created_at")
 
-  user User? @relation(fields: [userId], references: [id])
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([createdAt])
   @@map("messages")
@@ -186,7 +186,7 @@ model Like {
   createdAt DateTime @default(now()) @map("created_at")
 
   post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
-  user User @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([postId, userId])
   @@map("likes")
@@ -199,7 +199,7 @@ model ReadHistory {
   readAt    DateTime @default(now()) @map("read_at")
 
   post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
-  user User @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, readAt])
   @@map("read_history")
@@ -228,7 +228,7 @@ model Notification {
   isRead      Boolean           @default(false) @map("is_read")
   createdAt   DateTime          @default(now()) @map("created_at")
 
-  user User @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, isRead, createdAt])
   @@map("notifications")
@@ -325,7 +325,7 @@ model PostSeries {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
-  user  User         @relation(fields: [userId], references: [id])
+  user  User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   posts SeriesPost[]
 
   @@map("post_series")
@@ -395,7 +395,7 @@ model PostVote {
   createdAt DateTime @default(now()) @map("created_at")
 
   post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
-  user User @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([postId, userId])
   @@index([userId])
@@ -447,7 +447,7 @@ model Group {
   isPublic    Boolean  @default(true) @map("is_public")
   createdAt   DateTime @default(now()) @map("created_at")
 
-  owner   User         @relation(fields: [ownerId], references: [id])
+  owner   User         @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   members GroupMember[]
   posts   GroupPost[]
 
@@ -558,9 +558,9 @@ model Donation {
   status    DonationStatus @default(COMPLETED)
   createdAt DateTime @default(now()) @map("created_at")
 
-  donor     User     @relation("donor", fields: [donorId], references: [id])
-  recipient User     @relation("recipient", fields: [recipientId], references: [id])
-  post      Post?    @relation(fields: [postId], references: [id])
+  donor     User     @relation("donor", fields: [donorId], references: [id], onDelete: Cascade)
+  recipient User     @relation("recipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  post      Post?    @relation(fields: [postId], references: [id], onDelete: SetNull)
 
   @@index([donorId, createdAt])
   @@index([recipientId, createdAt])

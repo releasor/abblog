@@ -44,12 +44,12 @@ export default memo(function DiffChecker() {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">文本 1</label>
-          <textarea value={text1} onChange={(e) => setText1(e.target.value)} className="w-full h-48 p-3 font-mono text-sm border border-zinc-300 dark:border-zinc-700 rounded-lg bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500 resize-none" placeholder="输入第一段文本..." />
+          <label htmlFor="diff-text1" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">文本 1</label>
+          <textarea id="diff-text1" value={text1} onChange={(e) => setText1(e.target.value)} className="w-full h-48 p-3 font-mono text-sm border border-zinc-300 dark:border-zinc-700 rounded-lg bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500 resize-none" placeholder="输入第一段文本..." />
         </div>
         <div>
-          <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">文本 2</label>
-          <textarea value={text2} onChange={(e) => setText2(e.target.value)} className="w-full h-48 p-3 font-mono text-sm border border-zinc-300 dark:border-zinc-700 rounded-lg bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500 resize-none" placeholder="输入第二段文本..." />
+          <label htmlFor="diff-text2" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">文本 2</label>
+          <textarea id="diff-text2" value={text2} onChange={(e) => setText2(e.target.value)} className="w-full h-48 p-3 font-mono text-sm border border-zinc-300 dark:border-zinc-700 rounded-lg bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500 resize-none" placeholder="输入第二段文本..." />
         </div>
       </div>
       {diffResult.length > 0 && (

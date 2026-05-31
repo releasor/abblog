@@ -26,10 +26,11 @@ export default memo(function RegexTester() {
     <div className="space-y-4">
       <div className="flex gap-4">
         <div className="flex-1">
-          <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">正则表达式</label>
+          <label htmlFor="regex-pattern" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">正则表达式</label>
           <div className="flex gap-2">
             <span className="px-3 py-2 text-zinc-400 bg-zinc-100 dark:bg-zinc-800 rounded-lg">/</span>
             <input
+              id="regex-pattern"
               value={pattern}
               onChange={(e) => setPattern(e.target.value)}
               className="flex-1 px-3 py-2 font-mono text-sm border border-zinc-300 dark:border-zinc-700 rounded-lg bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500"
@@ -50,8 +51,9 @@ export default memo(function RegexTester() {
         </div>
       </div>
       <div>
-        <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">测试字符串</label>
+        <label htmlFor="regex-test-str" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">测试字符串</label>
         <textarea
+          id="regex-test-str"
           value={testStr}
           onChange={(e) => setTestStr(e.target.value)}
           className="w-full h-40 p-3 font-mono text-sm border border-zinc-300 dark:border-zinc-700 rounded-lg bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500 resize-none"

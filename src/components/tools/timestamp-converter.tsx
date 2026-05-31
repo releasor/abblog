@@ -64,6 +64,7 @@ export default memo(function TimestampConverter() {
           <h3 className="text-sm font-medium text-zinc-700 dark:text-zinc-300">时间戳 → 日期</h3>
           <div className="flex gap-2">
             <input
+              id="ts-input"
               value={inputTs}
               onChange={(e) => setInputTs(e.target.value)}
               placeholder="输入时间戳"
@@ -96,6 +97,7 @@ export default memo(function TimestampConverter() {
           <h3 className="text-sm font-medium text-zinc-700 dark:text-zinc-300">日期 → 时间戳</h3>
           <div className="flex gap-2">
             <input
+              id="date-input"
               type="datetime-local"
               value={inputDate}
               onChange={(e) => setInputDate(e.target.value)}

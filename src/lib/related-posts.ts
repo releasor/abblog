@@ -47,6 +47,8 @@ export async function getRelatedPosts(
         category: { select: { name: true, slug: true } },
         tags: { select: { tagId: true } },
       },
+      orderBy: { publishedAt: "desc" },
+      take: 50,
     });
 
     relatedByTag = postsWithSharedTags

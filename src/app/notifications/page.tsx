@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -33,7 +33,7 @@ export default function NotificationsPage() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  const fetchNotifications = async () => {
+  const fetchNotifications = useCallback(async () => {
     const result = await fetchApi<{ notifications: Notification[]; unreadCount: number }>("/api/notifications", {
       showErrorToast: false,
     });
@@ -42,7 +42,7 @@ export default function NotificationsPage() {
       setNotifications(result.data.notifications);
       setUnreadCount(result.data.unreadCount);
     }
-  };
+  }, []);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -52,7 +52,7 @@ export default function NotificationsPage() {
     if (status !== "authenticated") return;
 
     fetchNotifications();
-  }, [status, router]);
+  }, [status, router, fetchNotifications]);
 
   const markAsRead = async (id?: number) => {
     const result = await fetchApi("/api/notifications", {

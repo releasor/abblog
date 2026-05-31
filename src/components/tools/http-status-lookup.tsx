@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, memo } from "react";
+import { useState, useMemo, memo } from "react";
 import { useCopyWithId } from "@/hooks/use-copy";
 
 const CODES: { code: number; name: string; description: string; category: string }[] = [
@@ -34,16 +34,18 @@ export default memo(function HttpStatusLookup() {
 
   const copyCode = (code: number) => copy(String(code), code);
 
-  const filtered = query
+  const filtered = useMemo(() => query
     ? CODES.filter((c) => String(c.code).includes(query) || c.name.toLowerCase().includes(query.toLowerCase()) || c.description.includes(query))
-    : CODES;
+    : CODES, [query]);
 
-  const categories = [...new Set(filtered.map((c) => c.category))];
+  const categories = useMemo(() => [...new Set(filtered.map((c) => c.category))], [filtered]);
 
   return (
     <div className="space-y-4">
       <div>
+        <label htmlFor="http-search" className="sr-only">搜索状态码</label>
         <input
+          id="http-search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="搜索状态码或描述..."

@@ -27,8 +27,9 @@ export default memo(function MarkdownPreview() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div>
-        <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Markdown</label>
+        <label htmlFor="md-input" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Markdown</label>
         <textarea
+          id="md-input"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           className="w-full h-80 p-3 font-mono text-sm border border-zinc-300 dark:border-zinc-700 rounded-lg bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500 resize-none"

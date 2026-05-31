@@ -185,9 +185,16 @@ body {
   color: #3a3a3a;
 }
 
+@property --hero-radius {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+
 .hero-front {
   --hero-x: 50%;
   --hero-y: 50%;
+  --hero-radius: 0px;
   isolation: isolate;
   background: #ffffff;
 }
@@ -206,8 +213,8 @@ body {
   justify-content: center;
   gap: 0;
   background: #000000;
-  clip-path: circle(0px at var(--hero-x) var(--hero-y));
-  transition: clip-path 0.15s ease-out;
+  clip-path: circle(var(--hero-radius) at var(--hero-x) var(--hero-y));
+  transition: --hero-radius 0.3s ease-out;
   pointer-events: none;
 }
 
@@ -216,7 +223,7 @@ body {
 }
 
 .hero-front:hover .hero-reveal-layer {
-  clip-path: circle(120px at var(--hero-x) var(--hero-y));
+  --hero-radius: 120px;
 }
 
 .hero-content {
@@ -243,7 +250,8 @@ body {
   text-align: center;
   padding: 80px 24px;
   color: #ffffff;
-  clip-path: circle(0px at var(--hero-x) var(--hero-y));
+  clip-path: circle(var(--hero-radius) at var(--hero-x) var(--hero-y));
+  transition: --hero-radius 0.3s ease-out;
   pointer-events: none;
   display: flex;
   flex-direction: column;
@@ -252,7 +260,7 @@ body {
 }
 
 .hero-front:hover .hero-content-en {
-  clip-path: circle(120px at var(--hero-x) var(--hero-y));
+  --hero-radius: 120px;
 }
 
 .dark .hero-content-en {

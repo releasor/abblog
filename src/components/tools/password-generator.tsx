@@ -59,8 +59,8 @@ export default memo(function PasswordGenerator() {
 
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">长度: {length}</label>
-          <input type="range" min="4" max="64" value={length} onChange={(e) => setLength(+e.target.value)} className="w-full" />
+          <label htmlFor="pwd-length" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">长度: {length}</label>
+          <input id="pwd-length" type="range" min="4" max="64" value={length} onChange={(e) => setLength(+e.target.value)} className="w-full" />
         </div>
         <div className="flex flex-wrap gap-4">
           <label className="flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300">

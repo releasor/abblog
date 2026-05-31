@@ -22,28 +22,28 @@ export async function POST(request: NextRequest) {
     }
 
     let messages: unknown[], mode: string | undefined;
-  try {
-    const body = await request.json();
-    messages = body.messages;
-    mode = body.mode;
-  } catch {
-    return NextResponse.json({ error: "请求格式无效" }, { status: 400 });
-  }
+    try {
+      const body = await request.json();
+      messages = body.messages;
+      mode = body.mode;
+    } catch {
+      return NextResponse.json({ error: "请求格式无效" }, { status: 400 });
+    }
 
-  if (!messages || !Array.isArray(messages) || messages.length === 0) {
-    return NextResponse.json({ error: "缺少对话内容" }, { status: 400 });
-  }
+    if (!messages || !Array.isArray(messages) || messages.length === 0) {
+      return NextResponse.json({ error: "缺少对话内容" }, { status: 400 });
+    }
 
-  const config = await getAiConfig(userId);
+    const config = await getAiConfig(userId);
 
-  if (!config.apiKey) {
-    return NextResponse.json({
-      reply: "请先在「账号设置 → AI 设置」中配置 API Key。",
-    });
-  }
+    if (!config.apiKey) {
+      return NextResponse.json({
+        reply: "请先在「账号设置 → AI 设置」中配置 API Key。",
+      });
+    }
 
-  const systemPrompt = mode === "generate-spec"
-    ? `你是一个专业的 AI 提示词工程师。用户会和你讨论他们想要的 AI 提示词需求。
+    const systemPrompt = mode === "generate-spec"
+      ? `你是一个专业的 AI 提示词工程师。用户会和你讨论他们想要的 AI 提示词需求。
 
 当用户说"生成 spec"或类似的意图时，请根据整个对话内容生成一个结构化的提示词规格文档（Spec）。
 
@@ -71,35 +71,35 @@ export async function POST(request: NextRequest) {
 ---
 
 如果用户还没有明确需求，继续和用户对话，帮助他们澄清需求。用中文回复。`
-    : `你是一个友好的 AI 助手。用中文回复，保持简洁有帮助。`;
+      : `你是一个友好的 AI 助手。用中文回复，保持简洁有帮助。`;
 
-  try {
-    const res = await fetch(config.apiUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${config.apiKey}`,
-      },
-      body: JSON.stringify({
-        model: config.model,
-        messages: [
-          { role: "system", content: systemPrompt },
-          ...messages,
-        ],
-        max_tokens: 2000,
-        temperature: 0.7,
-      }),
-    });
+    try {
+      const res = await fetch(config.apiUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${config.apiKey}`,
+        },
+        body: JSON.stringify({
+          model: config.model,
+          messages: [
+            { role: "system", content: systemPrompt },
+            ...messages,
+          ],
+          max_tokens: 2000,
+          temperature: 0.7,
+        }),
+      });
 
-    if (!res.ok) {
-      const errText = await res.text().catch(() => "");
-      console.error("AI error:", errText);
-      return NextResponse.json({ reply: `AI 服务返回错误 (${res.status}): ${errText.slice(0, 200)}` });
-    }
+      if (!res.ok) {
+        const errText = await res.text().catch(() => "");
+        console.error("AI error:", errText);
+        return NextResponse.json({ reply: `AI 服务返回错误 (${res.status}): ${errText.slice(0, 200)}` });
+      }
 
-    const data = await res.json();
-    const reply = data.choices?.[0]?.message?.content || "无法生成回复";
-    return NextResponse.json({ reply });
+      const data = await res.json();
+      const reply = data.choices?.[0]?.message?.content || "无法生成回复";
+      return NextResponse.json({ reply });
     } catch (e) {
       console.error("AI fetch error:", e);
       return NextResponse.json({ reply: "请求失败，请检查AI设置后重试" });

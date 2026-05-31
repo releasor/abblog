@@ -55,15 +55,16 @@ export default memo(function CrontabGenerator() {
     <div className="space-y-6">
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
         {[
-          { label: "分钟", value: minute, set: setMinute, placeholder: "0-59" },
-          { label: "小时", value: hour, set: setHour, placeholder: "0-23" },
-          { label: "日", value: day, set: setDay, placeholder: "1-31" },
-          { label: "月", value: month, set: setMonth, placeholder: "1-12" },
-          { label: "星期", value: weekday, set: setWeekday, placeholder: "0-7" },
+          { id: "cron-minute", label: "分钟", value: minute, set: setMinute, placeholder: "0-59" },
+          { id: "cron-hour", label: "小时", value: hour, set: setHour, placeholder: "0-23" },
+          { id: "cron-day", label: "日", value: day, set: setDay, placeholder: "1-31" },
+          { id: "cron-month", label: "月", value: month, set: setMonth, placeholder: "1-12" },
+          { id: "cron-weekday", label: "星期", value: weekday, set: setWeekday, placeholder: "0-7" },
         ].map((field) => (
           <div key={field.label}>
-            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">{field.label}</label>
+            <label htmlFor={field.id} className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">{field.label}</label>
             <input
+              id={field.id}
               value={field.value}
               onChange={(e) => field.set(e.target.value)}
               placeholder={field.placeholder}

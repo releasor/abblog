@@ -36,8 +36,9 @@ export default memo(function CssUnitConverter() {
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
-          <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">像素值 (px)</label>
+          <label htmlFor="css-px" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">像素值 (px)</label>
           <input
+            id="css-px"
             value={px}
             onChange={(e) => setPx(e.target.value)}
             type="number"
@@ -45,8 +46,9 @@ export default memo(function CssUnitConverter() {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">根字体大小 (px)</label>
+          <label htmlFor="css-base" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">根字体大小 (px)</label>
           <input
+            id="css-base"
             value={baseSize}
             onChange={(e) => setBaseSize(e.target.value)}
             type="number"
@@ -54,8 +56,9 @@ export default memo(function CssUnitConverter() {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">视口宽度 (px)</label>
+          <label htmlFor="css-vw" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">视口宽度 (px)</label>
           <input
+            id="css-vw"
             value={viewportWidth}
             onChange={(e) => setViewportWidth(e.target.value)}
             type="number"

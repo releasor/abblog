@@ -8,7 +8,7 @@ export const HeroSection = memo(function HeroSection() {
   const [flipped, setFlipped] = useState(false);
   const frontRef = useRef<HTMLDivElement>(null);
 
-  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+  const updatePosition = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     const el = frontRef.current;
     if (!el) return;
     const rect = el.getBoundingClientRect();
@@ -23,7 +23,7 @@ export const HeroSection = memo(function HeroSection() {
     >
       <div className="hero-flipper">
         {/* Front */}
-        <div className="hero-front" ref={frontRef} onMouseMove={handleMouseMove}>
+        <div className="hero-front" ref={frontRef} onMouseEnter={updatePosition} onMouseMove={updatePosition}>
           <div className="hero-pattern" aria-hidden="true">
             {Array.from({ length: PATTERN_COUNT }, (_, i) => (
               <span key={i} className="hero-pattern-text">B I L L I O N A I R E</span>

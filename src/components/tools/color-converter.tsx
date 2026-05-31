@@ -70,15 +70,16 @@ export default memo(function ColorConverter() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
-          <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">HEX</label>
+          <label htmlFor="color-hex" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">HEX</label>
           <input
+            id="color-hex"
             value={hex}
             onChange={(e) => updateFromHex(e.target.value)}
             className="w-full px-3 py-2 font-mono text-sm border border-zinc-300 dark:border-zinc-700 rounded-lg bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">RGB</label>
+          <label htmlFor="color-r" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">RGB</label>
           <div className="flex gap-1">
             {(["r", "g", "b"] as const).map((ch) => (
               <input
@@ -92,7 +93,7 @@ export default memo(function ColorConverter() {
           </div>
         </div>
         <div>
-          <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">HSL</label>
+          <label htmlFor="color-h" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">HSL</label>
           <div className="flex gap-1">
             {(["h", "s", "l"] as const).map((ch) => (
               <input

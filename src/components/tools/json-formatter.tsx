@@ -47,8 +47,9 @@ export default memo(function JsonFormatter() {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">输入</label>
+          <label htmlFor="json-input" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">输入</label>
           <textarea
+            id="json-input"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             className="w-full h-80 p-3 font-mono text-sm border border-zinc-300 dark:border-zinc-700 rounded-lg bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500 resize-none"
@@ -56,8 +57,9 @@ export default memo(function JsonFormatter() {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">输出</label>
+          <label htmlFor="json-output" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">输出</label>
           <textarea
+            id="json-output"
             value={error || output}
             readOnly
             className={`w-full h-80 p-3 font-mono text-sm border rounded-lg resize-none focus:outline-none ${
