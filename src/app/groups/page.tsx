@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { GroupCard } from "@/components/group-card";
 import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
+import { absoluteUrl } from "@/lib/site-url";
 
 export const metadata: Metadata = {
   title: "圈子",
@@ -20,8 +21,25 @@ export default async function GroupsPage() {
     },
   });
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: "圈子",
+    description: "浏览所有圈子小组",
+    url: absoluteUrl("/groups"),
+    hasPart: groups.map((group) => ({
+      "@type": "Thing",
+      name: group.name,
+      url: absoluteUrl(`/groups/${group.slug}`),
+    })),
+  };
+
   return (
     <main className="container mx-auto px-4 py-8">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <PageHeader title="圈子" description="加入感兴趣的圈子，与志同道合的人交流" />
 
       {groups.length === 0 ? (

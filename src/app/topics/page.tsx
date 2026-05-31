@@ -4,6 +4,7 @@ import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 import { Flame, Clock } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
+import { absoluteUrl } from "@/lib/site-url";
 
 export const metadata: Metadata = {
   title: "话题广场",
@@ -24,8 +25,25 @@ export default async function TopicsPage() {
     }),
   ]);
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: "话题广场",
+    description: "浏览热门话题，发现精彩内容",
+    url: absoluteUrl("/topics"),
+    hasPart: hotTopics.map((topic) => ({
+      "@type": "Thing",
+      name: topic.name,
+      url: absoluteUrl(`/topics/${topic.slug}`),
+    })),
+  };
+
   return (
     <main className="container mx-auto px-4 py-8">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <PageHeader title="话题广场" description="浏览热门话题，发现精彩内容" />
 
       <section className="mb-12">

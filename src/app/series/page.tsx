@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { SeriesCard } from "@/components/series-card";
 import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
+import { absoluteUrl } from "@/lib/site-url";
 
 export const metadata: Metadata = {
   title: "系列文章",
@@ -20,8 +21,25 @@ export default async function SeriesPage() {
     },
   });
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: "系列文章",
+    description: "浏览所有系列文章",
+    url: absoluteUrl("/series"),
+    hasPart: series.map((s) => ({
+      "@type": "Thing",
+      name: s.name,
+      url: absoluteUrl(`/series/${s.slug}`),
+    })),
+  };
+
   return (
     <main className="container mx-auto px-4 py-8">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <PageHeader title="系列文章" description="浏览所有系列文章，系统地学习某个主题" />
 
       {series.length === 0 ? (

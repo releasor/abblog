@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { FileText, Users, MessageSquare, Eye, TrendingUp, ArrowUpRight } from "lucide-react";
 import { StatCard } from "@/components/admin/stat-card";
 import { SkeletonStat } from "@/components/skeleton";
@@ -121,7 +122,7 @@ export default function AdminDashboard() {
             </div>
           ) : (
             popularPosts.map((post, i) => (
-              <a
+              <Link
                 key={post.id}
                 href={`/posts/${post.slug}`}
                 className="flex items-center justify-between px-5 py-3 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors group"
@@ -143,7 +144,7 @@ export default function AdminDashboard() {
                   </span>
                   <ArrowUpRight className="w-3.5 h-3.5 text-zinc-300 dark:text-zinc-600 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
-              </a>
+              </Link>
             ))
           )}
         </div>
