@@ -1,9 +1,10 @@
 "use client";
 
+import { memo } from "react";
 import { useTheme } from "./theme-provider";
 import { Sun, Moon } from "lucide-react";
 
-export function DarkModeToggle() {
+export const DarkModeToggle = memo(function DarkModeToggle() {
   const { theme, toggleTheme } = useTheme();
 
   return (
@@ -19,4 +20,4 @@ export function DarkModeToggle() {
       )}
     </button>
   );
-}
+});

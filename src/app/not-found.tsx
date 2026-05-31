@@ -1,4 +1,10 @@
 import Link from "next/link";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "页面未找到",
+  robots: { index: false },
+};
 
 export default function NotFound() {
   return (

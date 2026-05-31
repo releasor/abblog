@@ -81,18 +81,19 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if conversation already exists between these two users
-    const existingMemberships = await prisma.conversationMember.findMany({
-      where: { userId: { in: [userId, tid] } },
-      include: { conversation: { include: { members: true } } },
-    });
-
-    const existingConv = existingMemberships.find((m) => {
-      const memberIds = m.conversation.members.map((mem) => mem.userId);
-      return memberIds.includes(userId) && memberIds.includes(tid) && memberIds.length === 2;
+    const existingConv = await prisma.conversation.findFirst({
+      where: {
+        AND: [
+          { members: { some: { userId } } },
+          { members: { some: { userId: tid } } },
+          { members: { every: { userId: { in: [userId, tid] } } } },
+        ],
+      },
+      select: { id: true },
     });
 
     if (existingConv) {
-      return NextResponse.json({ id: existingConv.conversation.id });
+      return NextResponse.json({ id: existingConv.id });
     }
 
     const conversation = await prisma.conversation.create({
@@ -107,15 +108,17 @@ export async function POST(request: NextRequest) {
   } catch (e: unknown) {
     // Handle race condition: if another request created the same conversation concurrently
     if ((e as { code?: string }).code === "P2002" && userId) {
-      const retryMemberships = await prisma.conversationMember.findMany({
-        where: { userId: { in: [userId, tid] } },
-        include: { conversation: { include: { members: true } } },
+      const retryConv = await prisma.conversation.findFirst({
+        where: {
+          AND: [
+            { members: { some: { userId } } },
+            { members: { some: { userId: tid } } },
+            { members: { every: { userId: { in: [userId, tid] } } } },
+          ],
+        },
+        select: { id: true },
       });
-      const retryConv = retryMemberships.find((m) => {
-        const memberIds = m.conversation.members.map((mem) => mem.userId);
-        return memberIds.includes(userId) && memberIds.includes(tid) && memberIds.length === 2;
-      });
-      if (retryConv) return NextResponse.json({ id: retryConv.conversation.id });
+      if (retryConv) return NextResponse.json({ id: retryConv.id });
     }
     console.error("[Conversations] Failed to create conversation:", e);
     return NextResponse.json({ error: "创建会话失败" }, { status: 500 });

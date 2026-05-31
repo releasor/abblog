@@ -4,6 +4,7 @@ import { authOptions, getAuthUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { parsePagination, paginationMeta } from "@/lib/pagination";
 import { requireId, invalidIdResponse } from "@/lib/api-utils";
+import { checkRateLimit, RATE_LIMITS, getRateLimitHeaders } from "@/lib/rate-limit";
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -57,12 +58,18 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const userId = getAuthUserId(session);
     if (!userId) return NextResponse.json({ error: "请先登录" }, { status: 401 });
 
+    const rl = checkRateLimit(`group-post:${userId}`, RATE_LIMITS.api);
+    if (!rl.allowed) {
+      return NextResponse.json({ error: "操作太频繁，请稍后再试" }, { status: 429, headers: getRateLimitHeaders(rl) });
+    }
+
     const { id } = await params;
     let groupId: number;
     try { groupId = requireId(id); } catch { return invalidIdResponse(); }
 
     const membership = await prisma.groupMember.findUnique({
       where: { groupId_userId: { groupId, userId } },
+      select: { id: true },
     });
     if (!membership) return NextResponse.json({ error: "请先加入圈子" }, { status: 403 });
 
@@ -79,6 +86,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     const existing = await prisma.groupPost.findUnique({
       where: { groupId_postId: { groupId, postId: postIdNum } },
+      select: { id: true },
     });
     if (existing) return NextResponse.json({ error: "文章已在圈子中" }, { status: 409 });
 

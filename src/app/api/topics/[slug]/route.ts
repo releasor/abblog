@@ -7,11 +7,17 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
 
     const topic = await prisma.topic.findUnique({
       where: { slug },
-      include: {
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        description: true,
+        coverImage: true,
+        postCount: true,
         posts: {
           take: 20,
           orderBy: { createdAt: "desc" },
-          include: {
+          select: {
             post: {
               select: { id: true, title: true, slug: true, excerpt: true, coverImageUrl: true, publishedAt: true },
             },

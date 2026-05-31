@@ -29,6 +29,7 @@ export async function GET(
     if (userId) {
       const vote = await prisma.postVote.findUnique({
         where: { postId_userId: { postId, userId } },
+        select: { value: true },
       });
       userVote = vote?.value ?? null;
     }
@@ -75,6 +76,7 @@ export async function POST(
 
     const existing = await prisma.postVote.findUnique({
       where: { postId_userId: { postId, userId } },
+      select: { id: true, value: true },
     });
 
     let vote;
@@ -102,6 +104,7 @@ export async function POST(
           // Race condition: another request created the vote concurrently
           const retryVote = await prisma.postVote.findUnique({
             where: { postId_userId: { postId, userId } },
+            select: { value: true },
           });
           if (retryVote) {
             const currentPost = await prisma.post.findUnique({
@@ -147,6 +150,7 @@ export async function DELETE(
 
     const existing = await prisma.postVote.findUnique({
       where: { postId_userId: { postId, userId } },
+      select: { id: true, value: true },
     });
 
     if (!existing) return NextResponse.json({ error: "未找到投票记录" }, { status: 404 });

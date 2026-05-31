@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, memo } from "react";
 import { useCopyToClipboard } from "@/hooks/use-copy";
 
-export default function PasswordGenerator() {
+export default memo(function PasswordGenerator() {
   const [length, setLength] = useState(16);
   const [useUpper, setUseUpper] = useState(true);
   const [useLower, setUseLower] = useState(true);
@@ -82,4 +82,4 @@ export default function PasswordGenerator() {
       </div>
     </div>
   );
-}
+});

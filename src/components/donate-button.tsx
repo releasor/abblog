@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef, memo } from "react";
 import { Heart, X } from "lucide-react";
 import { fetchApi } from "@/lib/fetch-api";
+import { useFocusTrap } from "@/hooks/use-focus-trap";
 
 const AMOUNTS = [100, 500, 1000, 2000, 5000];
 
@@ -19,6 +20,7 @@ export const DonateButton = memo(function DonateButton({ recipientId, recipientN
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const focusTrapRef = useFocusTrap(show);
 
   useEffect(() => () => clearTimeout(timerRef.current), []);
 
@@ -64,7 +66,7 @@ export const DonateButton = memo(function DonateButton({ recipientId, recipientN
       {show && (
         <div className="fixed inset-0 z-50 flex items-center justify-center" role="dialog" aria-modal="true" aria-label={`赞赏 ${recipientName}`}>
           <div className="fixed inset-0 bg-black/50" onClick={closeModal} />
-          <div className="relative bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl p-6 w-80">
+          <div ref={focusTrapRef} className="relative bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl p-6 w-80">
             <button
               onClick={closeModal}
               className="absolute top-3 right-3 p-1 text-zinc-400 hover:text-zinc-600"

@@ -24,14 +24,30 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const series = await prisma.postSeries.findUnique({
     where: { slug },
-    select: { name: true, description: true },
+    select: { name: true, description: true, slug: true },
   });
 
   if (!series) return { title: "系列未找到" };
 
+  const description = series.description || `${series.name} 系列文章 — billionaire`;
+  const url = absoluteUrl(`/series/${series.slug}`);
+
   return {
     title: series.name,
-    description: series.description || undefined,
+    description,
+    alternates: { canonical: url },
+    openGraph: {
+      title: series.name,
+      description,
+      url,
+      type: "website",
+      siteName: "billionaire",
+    },
+    twitter: {
+      card: "summary",
+      title: series.name,
+      description,
+    },
   };
 }
 

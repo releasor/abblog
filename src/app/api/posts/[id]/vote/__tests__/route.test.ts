@@ -1,23 +1,24 @@
+import { vi } from "vitest";
 import { NextRequest } from "next/server";
 import { GET, POST, DELETE } from "../route";
 
 // Mock dependencies
-jest.mock("@/lib/prisma", () => ({
+vi.mock("@/lib/prisma", () => ({
   prisma: {
-    post: { findUnique: jest.fn(), update: jest.fn() },
-    postVote: { findUnique: jest.fn(), create: jest.fn(), update: jest.fn(), delete: jest.fn() },
+    post: { findUnique: vi.fn(), update: vi.fn() },
+    postVote: { findUnique: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn() },
   },
 }));
-jest.mock("next-auth", () => ({ getServerSession: jest.fn() }));
-jest.mock("@/lib/auth", () => ({
+vi.mock("next-auth", () => ({ getServerSession: vi.fn() }));
+vi.mock("@/lib/auth", () => ({
   authOptions: {},
-  getAuthUserId: jest.fn(),
+  getAuthUserId: vi.fn(),
 }));
-jest.mock("@/lib/activity", () => ({ createActivity: jest.fn() }));
-jest.mock("@/lib/rate-limit", () => ({
-  checkRateLimit: jest.fn(() => ({ allowed: true, remaining: 10, resetAt: Date.now() + 60000 })),
+vi.mock("@/lib/activity", () => ({ createActivity: vi.fn() }));
+vi.mock("@/lib/rate-limit", () => ({
+  checkRateLimit: vi.fn(() => ({ allowed: true, remaining: 10, resetAt: Date.now() + 60000 })),
   RATE_LIMITS: { api: { windowMs: 60000, max: 10 } },
-  getRateLimitHeaders: jest.fn(() => ({})),
+  getRateLimitHeaders: vi.fn(() => ({})),
 }));
 
 import { prisma } from "@/lib/prisma";
@@ -25,8 +26,8 @@ import { getServerSession } from "next-auth";
 import { getAuthUserId } from "@/lib/auth";
 
 const mockPrisma = prisma as unknown as {
-  post: { findUnique: jest.Mock; update: jest.Mock };
-  postVote: { findUnique: jest.Mock; create: jest.Mock; update: jest.Mock; delete: jest.Mock };
+  post: { findUnique: ReturnType<typeof vi.fn>; update: ReturnType<typeof vi.fn> };
+  postVote: { findUnique: ReturnType<typeof vi.fn>; create: ReturnType<typeof vi.fn>; update: ReturnType<typeof vi.fn>; delete: ReturnType<typeof vi.fn> };
 };
 
 function makeRequest(url: string, init?: RequestInit) {
@@ -38,11 +39,11 @@ function makeParams(id: string) {
 }
 
 describe("GET /api/posts/[id]/vote", () => {
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(() => vi.clearAllMocks());
 
   it("returns score and null userVote when not authenticated", async () => {
-    (getServerSession as jest.Mock).mockResolvedValue(null);
-    (getAuthUserId as jest.Mock).mockReturnValue(null);
+    (getServerSession as ReturnType<typeof vi.fn>).mockResolvedValue(null);
+    (getAuthUserId as ReturnType<typeof vi.fn>).mockReturnValue(null);
     mockPrisma.post.findUnique.mockResolvedValue({ score: 10 });
 
     const res = await GET(makeRequest("http://localhost:3000/api/posts/1/vote"), makeParams("1"));
@@ -54,8 +55,8 @@ describe("GET /api/posts/[id]/vote", () => {
   });
 
   it("returns user vote when authenticated", async () => {
-    (getServerSession as jest.Mock).mockResolvedValue({ user: { id: "1" } });
-    (getAuthUserId as jest.Mock).mockReturnValue(1);
+    (getServerSession as ReturnType<typeof vi.fn>).mockResolvedValue({ user: { id: "1" } });
+    (getAuthUserId as ReturnType<typeof vi.fn>).mockReturnValue(1);
     mockPrisma.post.findUnique.mockResolvedValue({ score: 5 });
     mockPrisma.postVote.findUnique.mockResolvedValue({ value: 1 });
 
@@ -68,8 +69,8 @@ describe("GET /api/posts/[id]/vote", () => {
   });
 
   it("returns 404 for non-existent post", async () => {
-    (getServerSession as jest.Mock).mockResolvedValue(null);
-    (getAuthUserId as jest.Mock).mockReturnValue(null);
+    (getServerSession as ReturnType<typeof vi.fn>).mockResolvedValue(null);
+    (getAuthUserId as ReturnType<typeof vi.fn>).mockReturnValue(null);
     mockPrisma.post.findUnique.mockResolvedValue(null);
 
     const res = await GET(makeRequest("http://localhost:3000/api/posts/999/vote"), makeParams("999"));
@@ -83,11 +84,11 @@ describe("GET /api/posts/[id]/vote", () => {
 });
 
 describe("POST /api/posts/[id]/vote", () => {
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(() => vi.clearAllMocks());
 
   it("returns 401 when not authenticated", async () => {
-    (getServerSession as jest.Mock).mockResolvedValue(null);
-    (getAuthUserId as jest.Mock).mockReturnValue(null);
+    (getServerSession as ReturnType<typeof vi.fn>).mockResolvedValue(null);
+    (getAuthUserId as ReturnType<typeof vi.fn>).mockReturnValue(null);
 
     const res = await POST(
       makeRequest("http://localhost:3000/api/posts/1/vote", { method: "POST", body: JSON.stringify({ value: 1 }) }),
@@ -97,8 +98,8 @@ describe("POST /api/posts/[id]/vote", () => {
   });
 
   it("returns 400 for invalid vote value", async () => {
-    (getServerSession as jest.Mock).mockResolvedValue({ user: { id: "1" } });
-    (getAuthUserId as jest.Mock).mockReturnValue(1);
+    (getServerSession as ReturnType<typeof vi.fn>).mockResolvedValue({ user: { id: "1" } });
+    (getAuthUserId as ReturnType<typeof vi.fn>).mockReturnValue(1);
 
     const res = await POST(
       makeRequest("http://localhost:3000/api/posts/1/vote", { method: "POST", body: JSON.stringify({ value: 2 }) }),
@@ -108,8 +109,8 @@ describe("POST /api/posts/[id]/vote", () => {
   });
 
   it("creates upvote when no existing vote", async () => {
-    (getServerSession as jest.Mock).mockResolvedValue({ user: { id: "1" } });
-    (getAuthUserId as jest.Mock).mockReturnValue(1);
+    (getServerSession as ReturnType<typeof vi.fn>).mockResolvedValue({ user: { id: "1" } });
+    (getAuthUserId as ReturnType<typeof vi.fn>).mockReturnValue(1);
     mockPrisma.postVote.findUnique.mockResolvedValue(null);
     mockPrisma.postVote.create.mockResolvedValue({ id: 1, value: 1 });
     mockPrisma.post.update.mockResolvedValue({ score: 6 });
@@ -126,8 +127,8 @@ describe("POST /api/posts/[id]/vote", () => {
   });
 
   it("removes vote when same value voted again (toggle)", async () => {
-    (getServerSession as jest.Mock).mockResolvedValue({ user: { id: "1" } });
-    (getAuthUserId as jest.Mock).mockReturnValue(1);
+    (getServerSession as ReturnType<typeof vi.fn>).mockResolvedValue({ user: { id: "1" } });
+    (getAuthUserId as ReturnType<typeof vi.fn>).mockReturnValue(1);
     mockPrisma.postVote.findUnique.mockResolvedValue({ id: 1, value: 1 });
     mockPrisma.postVote.delete.mockResolvedValue({});
     mockPrisma.post.update.mockResolvedValue({ score: 4 });
@@ -144,8 +145,8 @@ describe("POST /api/posts/[id]/vote", () => {
   });
 
   it("switches vote when different value voted", async () => {
-    (getServerSession as jest.Mock).mockResolvedValue({ user: { id: "1" } });
-    (getAuthUserId as jest.Mock).mockReturnValue(1);
+    (getServerSession as ReturnType<typeof vi.fn>).mockResolvedValue({ user: { id: "1" } });
+    (getAuthUserId as ReturnType<typeof vi.fn>).mockReturnValue(1);
     mockPrisma.postVote.findUnique.mockResolvedValue({ id: 1, value: 1 });
     mockPrisma.postVote.update.mockResolvedValue({ id: 1, value: -1 });
     mockPrisma.post.update.mockResolvedValue({ score: 2 });
@@ -176,19 +177,19 @@ describe("POST /api/posts/[id]/vote", () => {
 });
 
 describe("DELETE /api/posts/[id]/vote", () => {
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(() => vi.clearAllMocks());
 
   it("returns 401 when not authenticated", async () => {
-    (getServerSession as jest.Mock).mockResolvedValue(null);
-    (getAuthUserId as jest.Mock).mockReturnValue(null);
+    (getServerSession as ReturnType<typeof vi.fn>).mockResolvedValue(null);
+    (getAuthUserId as ReturnType<typeof vi.fn>).mockReturnValue(null);
 
     const res = await DELETE(makeRequest("http://localhost:3000/api/posts/1/vote", { method: "DELETE" }), makeParams("1"));
     expect(res.status).toBe(401);
   });
 
   it("removes existing vote", async () => {
-    (getServerSession as jest.Mock).mockResolvedValue({ user: { id: "1" } });
-    (getAuthUserId as jest.Mock).mockReturnValue(1);
+    (getServerSession as ReturnType<typeof vi.fn>).mockResolvedValue({ user: { id: "1" } });
+    (getAuthUserId as ReturnType<typeof vi.fn>).mockReturnValue(1);
     mockPrisma.postVote.findUnique.mockResolvedValue({ id: 1, value: 1 });
     mockPrisma.postVote.delete.mockResolvedValue({});
     mockPrisma.post.update.mockResolvedValue({});
@@ -201,8 +202,8 @@ describe("DELETE /api/posts/[id]/vote", () => {
   });
 
   it("returns 404 when no existing vote", async () => {
-    (getServerSession as jest.Mock).mockResolvedValue({ user: { id: "1" } });
-    (getAuthUserId as jest.Mock).mockReturnValue(1);
+    (getServerSession as ReturnType<typeof vi.fn>).mockResolvedValue({ user: { id: "1" } });
+    (getAuthUserId as ReturnType<typeof vi.fn>).mockReturnValue(1);
     mockPrisma.postVote.findUnique.mockResolvedValue(null);
 
     const res = await DELETE(makeRequest("http://localhost:3000/api/posts/1/vote", { method: "DELETE" }), makeParams("1"));

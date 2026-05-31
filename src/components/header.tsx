@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect, useRef, useCallback, lazy, Suspense } from "react";
+import { useState, useEffect, useRef, useCallback, lazy, Suspense, memo } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { Bell, Menu, X } from "lucide-react";
 import { DarkModeToggle } from "./dark-mode-toggle";
@@ -11,14 +11,14 @@ import { fetchApi } from "@/lib/fetch-api";
 
 const CommandPalette = lazy(() => import("./command-palette").then((m) => ({ default: m.CommandPalette })));
 
-function NotificationBell() {
+const NotificationBell = memo(function NotificationBell() {
   const [count, setCount] = useState(0);
 
   useEffect(() => {
-    const fetchCount = () => {
-      fetchApi<{ unreadCount: number }>("/api/notifications", { showErrorToast: false })
-        .then((res) => { if (res.ok) setCount(res.data.unreadCount || 0); });
-    };
+    async function fetchCount() {
+      const res = await fetchApi<{ unreadCount: number }>("/api/notifications", { showErrorToast: false });
+      if (res.ok) setCount(res.data.unreadCount || 0);
+    }
     fetchCount();
     const interval = setInterval(fetchCount, 60000);
     return () => clearInterval(interval);
@@ -34,17 +34,20 @@ function NotificationBell() {
       )}
     </Link>
   );
-}
+});
 
-function UserMenu() {
+const UserMenu = memo(function UserMenu() {
   const { data: session } = useSession();
   const [open, setOpen] = useState(false);
   const [profile, setProfile] = useState<{ username: string | null; avatar: string | null }>({ username: null, avatar: null });
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    fetchApi<{ username: string | null; avatar: string | null }>("/api/user/profile", { showErrorToast: false })
-      .then((res) => { if (res.ok) setProfile({ username: res.data.username, avatar: res.data.avatar }); });
+    async function loadProfile() {
+      const res = await fetchApi<{ username: string | null; avatar: string | null }>("/api/user/profile", { showErrorToast: false });
+      if (res.ok) setProfile({ username: res.data.username, avatar: res.data.avatar });
+    }
+    loadProfile();
   }, []);
 
   useEffect(() => {
@@ -102,9 +105,9 @@ function UserMenu() {
       )}
     </div>
   );
-}
+});
 
-export function Header() {
+export const Header = memo(function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [cmdOpen, setCmdOpen] = useState(false);
   const { data: session } = useSession();
@@ -185,6 +188,7 @@ export function Header() {
             className="mobile-menu-btn"
             onClick={() => setMenuOpen(true)}
             aria-label="打开菜单"
+            aria-expanded={menuOpen}
           >
             <Menu className="w-5 h-5" />
           </button>
@@ -233,4 +237,4 @@ export function Header() {
       </Suspense>
     </>
   );
-}
+});

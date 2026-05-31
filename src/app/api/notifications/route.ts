@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions, getAuthUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { requireId, invalidIdResponse } from "@/lib/api-utils";
+import { checkRateLimit, RATE_LIMITS, getRateLimitHeaders } from "@/lib/rate-limit";
 
 export async function GET() {
   try {
@@ -18,6 +19,7 @@ export async function GET() {
         where: { userId },
         orderBy: { createdAt: "desc" },
         take: 50,
+        select: { id: true, type: true, message: true, link: true, isRead: true, createdAt: true },
       }),
       prisma.notification.count({
         where: { userId, isRead: false },
@@ -38,6 +40,11 @@ export async function PATCH(request: NextRequest) {
 
     if (!userId) {
       return NextResponse.json({ error: "请先登录" }, { status: 401 });
+    }
+
+    const rl = checkRateLimit(`notification:${userId}`, RATE_LIMITS.api);
+    if (!rl.allowed) {
+      return NextResponse.json({ error: "操作太频繁，请稍后再试" }, { status: 429, headers: getRateLimitHeaders(rl) });
     }
 
     let id: string | undefined;

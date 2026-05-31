@@ -27,17 +27,24 @@ export default function AdminDonationsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setLoading(true);
-    const params = new URLSearchParams({ page: page.toString(), limit: "20" });
-    if (tab !== "all") params.set("type", tab);
-    fetchApi<{ donations: Donation[]; pagination: { totalPages: number } }>(`/api/donations?${params}`, { showErrorToast: false })
-      .then((res) => {
-        if (res.ok) {
+    let cancelled = false;
+
+    async function loadDonations() {
+      setLoading(true);
+      try {
+        const params = new URLSearchParams({ page: page.toString(), limit: "20" });
+        if (tab !== "all") params.set("type", tab);
+        const res = await fetchApi<{ donations: Donation[]; pagination: { totalPages: number } }>(`/api/donations?${params}`, { showErrorToast: false });
+        if (!cancelled && res.ok) {
           setDonations(res.data.donations || []);
           setTotalPages(res.data.pagination?.totalPages || 1);
         }
-      })
-      .finally(() => setLoading(false));
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+    loadDonations();
+    return () => { cancelled = true; };
   }, [page, tab]);
 
   const statusConfig: Record<string, { label: string; dot: string; bg: string; text: string }> = {

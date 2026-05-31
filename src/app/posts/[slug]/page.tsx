@@ -37,6 +37,8 @@ export async function generateStaticParams() {
   const posts = await prisma.post.findMany({
     where: { status: "PUBLISHED" },
     select: { slug: true },
+    orderBy: { publishedAt: "desc" },
+    take: 1000,
   });
   return posts.map((post) => ({ slug: post.slug }));
 }

@@ -4,6 +4,7 @@ import { authOptions, isAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { parsePagination, paginationMeta } from "@/lib/pagination";
 import { requireId, invalidIdResponse } from "@/lib/api-utils";
+import { checkRateLimit, RATE_LIMITS, getRateLimitHeaders } from "@/lib/rate-limit";
 
 export async function GET(request: NextRequest) {
   try {
@@ -61,6 +62,11 @@ export async function PATCH(request: NextRequest) {
     const session = await getServerSession(authOptions);
     if (!isAdmin(session)) return NextResponse.json({ error: "无权限" }, { status: 403 });
 
+    const rl = checkRateLimit(`admin-users:${session?.user?.id || "admin"}`, RATE_LIMITS.api);
+    if (!rl.allowed) {
+      return NextResponse.json({ error: "操作太频繁，请稍后再试" }, { status: 429, headers: getRateLimitHeaders(rl) });
+    }
+
     let userId: string, action: string, value: string;
     try {
       const body = await request.json();
@@ -81,12 +87,15 @@ export async function PATCH(request: NextRequest) {
         }
         await prisma.user.update({ where: { id: userIdNum }, data: { role: value as "USER" | "EDITOR" | "ADMIN" } });
         break;
-      case "addPoints":
+      case "addPoints": {
+        const delta = parseInt(value);
+        if (isNaN(delta)) return NextResponse.json({ error: "积分值必须是数字" }, { status: 400 });
         await prisma.user.update({
           where: { id: userIdNum },
-          data: { points: { increment: parseInt(value) || 0 } },
+          data: { points: { increment: delta } },
         });
         break;
+      }
       default:
         return NextResponse.json({ error: "未知操作" }, { status: 400 });
     }

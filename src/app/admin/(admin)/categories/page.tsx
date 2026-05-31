@@ -26,7 +26,6 @@ export default function AdminCategoriesPage() {
   const [editName, setEditName] = useState("");
   const [editError, setEditError] = useState("");
   const [saving, setSaving] = useState(false);
-  const [deleteId, setDeleteId] = useState<number | null>(null);
 
   const fetchCategories = useCallback(async () => {
     setLoading(true);
@@ -79,17 +78,13 @@ export default function AdminCategoriesPage() {
     }
   };
 
-  const handleDelete = async (id: number) => {
-    setDeleteId(id);
+  const { targetId: deleteTargetId, requestDelete, confirm: confirmDelete, cancel: cancelDelete, isDeleting } = useConfirmDelete(async (id: number) => {
     const result = await fetchApi(`/api/categories/${id}`, {
       method: "DELETE",
       errorMessage: "删除失败",
     });
-    setDeleteId(null);
     if (result.ok) fetchCategories();
-  };
-
-  const { targetId: deleteTargetId, requestDelete, confirm: confirmDelete, cancel: cancelDelete } = useConfirmDelete(handleDelete);
+  });
 
   return (
     <div className="space-y-6">
@@ -223,7 +218,7 @@ export default function AdminCategoriesPage() {
                             icon={<Trash2 className="w-4 h-4" />}
                             label={`删除 ${category.name}`}
                             onClick={() => requestDelete(category.id)}
-                            disabled={deleteId === category.id}
+                            disabled={isDeleting}
                           />
                         </>
                       )}

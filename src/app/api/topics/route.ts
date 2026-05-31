@@ -4,6 +4,7 @@ import { authOptions, getAuthUserId, isAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/slugify";
 import { parsePagination, paginationMeta } from "@/lib/pagination";
+import { checkRateLimit, RATE_LIMITS, getRateLimitHeaders } from "@/lib/rate-limit";
 
 export async function GET(request: NextRequest) {
   try {
@@ -40,6 +41,11 @@ export async function POST(request: NextRequest) {
     const userId = getAuthUserId(session);
     if (!userId || !isAdmin(session)) {
       return NextResponse.json({ error: "无权限" }, { status: 403 });
+    }
+
+    const rl = checkRateLimit(`topic:${userId}`, RATE_LIMITS.api);
+    if (!rl.allowed) {
+      return NextResponse.json({ error: "操作太频繁，请稍后再试" }, { status: 429, headers: getRateLimitHeaders(rl) });
     }
 
     let name: string, description: string | undefined, coverImage: string | undefined;

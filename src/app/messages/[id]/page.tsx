@@ -21,6 +21,31 @@ interface ConversationInfo {
   otherUser: { id: number; name: string; username: string | null; avatar: string | null } | null;
 }
 
+function ChatSkeleton() {
+  return (
+    <div className="max-w-2xl mx-auto px-4 py-12">
+      <div className="flex items-center gap-3 mb-6">
+        <Skeleton className="h-4 w-16" />
+        <Skeleton className="h-6 w-32" />
+      </div>
+      <div className="space-y-4 mb-6">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className={`flex ${i % 2 === 0 ? "justify-start" : "justify-end"}`}>
+            <div className="flex items-end gap-2 max-w-[70%]">
+              {i % 2 === 0 && <Skeleton className="w-8 h-8 rounded-full flex-shrink-0" />}
+              <Skeleton className={`h-12 ${i % 2 === 0 ? "w-48" : "w-40"} rounded-2xl`} />
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="flex gap-2">
+        <Skeleton className="h-10 flex-1 rounded-full" />
+        <Skeleton className="h-10 w-16 rounded-full" />
+      </div>
+    </div>
+  );
+}
+
 export default function ChatPage() {
   const { data: session, status } = useSession();
   const params = useParams();
@@ -39,21 +64,21 @@ export default function ChatPage() {
     if (status === "unauthenticated") router.push("/login");
     if (status !== "authenticated") return;
 
-    // Fetch conversation info
-    fetchApi<{ id: number; otherUser: ConversationInfo["otherUser"] }[]>("/api/conversations", { showErrorToast: false })
-      .then((result) => {
-        if (result.ok) {
-          const conv = result.data.find((c) => c.id === parseInt(conversationId));
-          if (conv) setInfo({ otherUser: conv.otherUser });
-        }
-      });
+    async function load() {
+      const [convResult, msgResult] = await Promise.all([
+        fetchApi<{ id: number; otherUser: ConversationInfo["otherUser"] }[]>("/api/conversations", { showErrorToast: false }),
+        fetchApi<Message[]>(`/api/conversations/${conversationId}/messages`, { showErrorToast: false }),
+      ]);
 
-    // Fetch messages
-    fetchApi<Message[]>(`/api/conversations/${conversationId}/messages`, { showErrorToast: false })
-      .then((result) => {
-        setLoading(false);
-        if (result.ok) setMessages(result.data);
-      });
+      if (convResult.ok) {
+        const conv = convResult.data.find((c) => c.id === parseInt(conversationId));
+        if (conv) setInfo({ otherUser: conv.otherUser });
+      }
+
+      setLoading(false);
+      if (msgResult.ok) setMessages(msgResult.data);
+    }
+    load();
   }, [status, conversationId, router]);
 
   useEffect(() => {
@@ -76,28 +101,7 @@ export default function ChatPage() {
   };
 
   if (status !== "authenticated" || loading) {
-    return (
-      <div className="max-w-2xl mx-auto px-4 py-12">
-        <div className="flex items-center gap-3 mb-6">
-          <Skeleton className="h-4 w-16" />
-          <Skeleton className="h-6 w-32" />
-        </div>
-        <div className="space-y-4 mb-6">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className={`flex ${i % 2 === 0 ? "justify-start" : "justify-end"}`}>
-              <div className="flex items-end gap-2 max-w-[70%]">
-                {i % 2 === 0 && <Skeleton className="w-8 h-8 rounded-full flex-shrink-0" />}
-                <Skeleton className={`h-12 ${i % 2 === 0 ? "w-48" : "w-40"} rounded-2xl`} />
-              </div>
-            </div>
-          ))}
-        </div>
-        <div className="flex gap-2">
-          <Skeleton className="h-10 flex-1 rounded-full" />
-          <Skeleton className="h-10 w-16 rounded-full" />
-        </div>
-      </div>
-    );
+    return <ChatSkeleton />;
   }
 
   return (

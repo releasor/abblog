@@ -1,24 +1,25 @@
+import { vi } from "vitest";
 import { NextRequest } from "next/server";
 import { GET, POST } from "../route";
 
 // Mock dependencies
-jest.mock("@/lib/prisma", () => ({
+vi.mock("@/lib/prisma", () => ({
   prisma: {
-    comment: { findMany: jest.fn(), create: jest.fn() },
-    post: { findUnique: jest.fn() },
-    user: { findUnique: jest.fn() },
+    comment: { findMany: vi.fn(), create: vi.fn() },
+    post: { findUnique: vi.fn() },
+    user: { findUnique: vi.fn() },
   },
 }));
-jest.mock("next-auth", () => ({ getServerSession: jest.fn() }));
-jest.mock("@/lib/auth", () => ({
+vi.mock("next-auth", () => ({ getServerSession: vi.fn() }));
+vi.mock("@/lib/auth", () => ({
   authOptions: {},
-  getAuthUserId: jest.fn(),
+  getAuthUserId: vi.fn(),
 }));
-jest.mock("@/lib/activity", () => ({ createActivity: jest.fn() }));
-jest.mock("@/lib/rate-limit", () => ({
-  checkRateLimit: jest.fn(() => ({ allowed: true, remaining: 5, resetAt: Date.now() + 60000 })),
+vi.mock("@/lib/activity", () => ({ createActivity: vi.fn() }));
+vi.mock("@/lib/rate-limit", () => ({
+  checkRateLimit: vi.fn(() => ({ allowed: true, remaining: 5, resetAt: Date.now() + 60000 })),
   RATE_LIMITS: { comment: { windowMs: 60000, max: 5 } },
-  getRateLimitHeaders: jest.fn(() => ({})),
+  getRateLimitHeaders: vi.fn(() => ({})),
 }));
 
 import { prisma } from "@/lib/prisma";
@@ -26,9 +27,9 @@ import { getServerSession } from "next-auth";
 import { getAuthUserId } from "@/lib/auth";
 
 const mockPrisma = prisma as unknown as {
-  comment: { findMany: jest.Mock; create: jest.Mock };
-  post: { findUnique: jest.Mock };
-  user: { findUnique: jest.Mock };
+  comment: { findMany: ReturnType<typeof vi.fn>; create: ReturnType<typeof vi.fn> };
+  post: { findUnique: ReturnType<typeof vi.fn> };
+  user: { findUnique: ReturnType<typeof vi.fn> };
 };
 
 function makeRequest(url: string, init?: RequestInit) {
@@ -40,7 +41,7 @@ function makeParams(id: string) {
 }
 
 describe("GET /api/posts/[id]/comments", () => {
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(() => vi.clearAllMocks());
 
   it("returns approved comments", async () => {
     mockPrisma.comment.findMany.mockResolvedValue([
@@ -68,11 +69,11 @@ describe("GET /api/posts/[id]/comments", () => {
 });
 
 describe("POST /api/posts/[id]/comments", () => {
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(() => vi.clearAllMocks());
 
   it("creates comment when authenticated", async () => {
-    (getServerSession as jest.Mock).mockResolvedValue({ user: { id: "1" } });
-    (getAuthUserId as jest.Mock).mockReturnValue(1);
+    (getServerSession as ReturnType<typeof vi.fn>).mockResolvedValue({ user: { id: "1" } });
+    (getAuthUserId as ReturnType<typeof vi.fn>).mockReturnValue(1);
     mockPrisma.post.findUnique.mockResolvedValue({ id: 1, status: "PUBLISHED" });
     mockPrisma.user.findUnique.mockResolvedValue({ id: 1, name: "User", email: "user@test.com" });
     mockPrisma.comment.create.mockResolvedValue({
@@ -94,8 +95,8 @@ describe("POST /api/posts/[id]/comments", () => {
   });
 
   it("returns 401 when not authenticated", async () => {
-    (getServerSession as jest.Mock).mockResolvedValue(null);
-    (getAuthUserId as jest.Mock).mockReturnValue(null);
+    (getServerSession as ReturnType<typeof vi.fn>).mockResolvedValue(null);
+    (getAuthUserId as ReturnType<typeof vi.fn>).mockReturnValue(null);
 
     const res = await POST(
       makeRequest("http://localhost:3000/api/posts/1/comments", {
@@ -108,8 +109,8 @@ describe("POST /api/posts/[id]/comments", () => {
   });
 
   it("returns 400 for empty content", async () => {
-    (getServerSession as jest.Mock).mockResolvedValue({ user: { id: "1" } });
-    (getAuthUserId as jest.Mock).mockReturnValue(1);
+    (getServerSession as ReturnType<typeof vi.fn>).mockResolvedValue({ user: { id: "1" } });
+    (getAuthUserId as ReturnType<typeof vi.fn>).mockReturnValue(1);
 
     const res = await POST(
       makeRequest("http://localhost:3000/api/posts/1/comments", {
@@ -122,8 +123,8 @@ describe("POST /api/posts/[id]/comments", () => {
   });
 
   it("returns 400 for content over 1000 chars", async () => {
-    (getServerSession as jest.Mock).mockResolvedValue({ user: { id: "1" } });
-    (getAuthUserId as jest.Mock).mockReturnValue(1);
+    (getServerSession as ReturnType<typeof vi.fn>).mockResolvedValue({ user: { id: "1" } });
+    (getAuthUserId as ReturnType<typeof vi.fn>).mockReturnValue(1);
 
     const res = await POST(
       makeRequest("http://localhost:3000/api/posts/1/comments", {
@@ -136,8 +137,8 @@ describe("POST /api/posts/[id]/comments", () => {
   });
 
   it("returns 404 for non-existent post", async () => {
-    (getServerSession as jest.Mock).mockResolvedValue({ user: { id: "1" } });
-    (getAuthUserId as jest.Mock).mockReturnValue(1);
+    (getServerSession as ReturnType<typeof vi.fn>).mockResolvedValue({ user: { id: "1" } });
+    (getAuthUserId as ReturnType<typeof vi.fn>).mockReturnValue(1);
     mockPrisma.post.findUnique.mockResolvedValue(null);
 
     const res = await POST(

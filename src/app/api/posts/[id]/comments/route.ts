@@ -82,7 +82,7 @@ export async function POST(
       return NextResponse.json({ error: "文章不存在" }, { status: 404 });
     }
 
-    const user = await prisma.user.findUnique({ where: { id: userIdNum } });
+    const user = await prisma.user.findUnique({ where: { id: userIdNum }, select: { id: true, name: true, email: true } });
     if (!user) {
       return NextResponse.json({ error: "用户不存在" }, { status: 404 });
     }

@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check slug uniqueness
-    const existing = await prisma.post.findUnique({ where: { slug } });
+    const existing = await prisma.post.findUnique({ where: { slug }, select: { id: true } });
     if (existing) {
       return NextResponse.json({ error: "slug 已存在" }, { status: 400 });
     }

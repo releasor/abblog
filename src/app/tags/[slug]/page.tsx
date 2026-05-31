@@ -21,11 +21,23 @@ interface PageProps {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const tag = await prisma.tag.findUnique({ where: { slug }, select: { name: true } });
+  const tag = await prisma.tag.findUnique({ where: { slug }, select: { name: true, slug: true } });
   if (!tag) return { title: "标签未找到" };
+
+  const description = `浏览所有标记为 #${tag.name} 的文章`;
+  const url = absoluteUrl(`/tags/${tag.slug}`);
+
   return {
     title: `#${tag.name} - 标签`,
-    description: `浏览所有标记为 #${tag.name} 的文章`,
+    description,
+    alternates: { canonical: url },
+    openGraph: {
+      title: `#${tag.name} - 标签`,
+      description,
+      url,
+      type: "website",
+      siteName: "billionaire",
+    },
   };
 }
 

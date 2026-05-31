@@ -34,10 +34,13 @@ export const BookmarkPicker = memo(function BookmarkPicker({ postId, initialBook
   }, [showPicker, closePicker]);
 
   useEffect(() => {
-    if (showPicker) {
-      fetchApi<{ collections: Collection[] }>("/api/bookmarks/collections", { errorMessage: "加载收藏夹失败" })
-        .then((result) => { if (result.ok) setCollections(result.data.collections || []); });
+    if (!showPicker) return;
+
+    async function loadCollections() {
+      const result = await fetchApi<{ collections: Collection[] }>("/api/bookmarks/collections", { errorMessage: "加载收藏夹失败" });
+      if (result.ok) setCollections(result.data.collections || []);
     }
+    loadCollections();
   }, [showPicker]);
 
   async function handleQuickBookmark() {
@@ -83,6 +86,7 @@ export const BookmarkPicker = memo(function BookmarkPicker({ postId, initialBook
         </button>
         <button
           onClick={() => setShowPicker(!showPicker)}
+          aria-expanded={showPicker}
           className="p-2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
           aria-label="选择收藏夹"
         >

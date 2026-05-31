@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, memo } from "react";
 
-export default function DiffChecker() {
+export default memo(function DiffChecker() {
   const [text1, setText1] = useState("");
   const [text2, setText2] = useState("");
   const [diffResult, setDiffResult] = useState<{ line: string; type: "same" | "added" | "removed" }[]>([]);
@@ -67,4 +67,4 @@ export default function DiffChecker() {
       )}
     </div>
   );
-}
+});

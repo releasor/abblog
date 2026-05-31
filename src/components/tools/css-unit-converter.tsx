@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, memo } from "react";
 import { useCopyWithId } from "@/hooks/use-copy";
 
 const COMMON_SIZES = [12, 14, 16, 18, 20, 24, 32, 48, 64];
 
-export default function CssUnitConverter() {
+export default memo(function CssUnitConverter() {
   const [px, setPx] = useState("16");
   const [baseSize, setBaseSize] = useState("16");
   const [viewportWidth, setViewportWidth] = useState("1920");
@@ -98,4 +98,4 @@ export default function CssUnitConverter() {
       </div>
     </div>
   );
-}
+});

@@ -4,6 +4,7 @@ import { authOptions, getAuthUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/slugify";
 import { requireId, invalidIdResponse } from "@/lib/api-utils";
+import { checkRateLimit, RATE_LIMITS, getRateLimitHeaders } from "@/lib/rate-limit";
 
 export async function GET(
   _request: NextRequest,
@@ -43,6 +44,11 @@ export async function PUT(
       return NextResponse.json({ error: "请先登录" }, { status: 401 });
     }
 
+    const rl = checkRateLimit(`tag-edit:${userId}`, RATE_LIMITS.api);
+    if (!rl.allowed) {
+      return NextResponse.json({ error: "操作太频繁，请稍后再试" }, { status: 429, headers: getRateLimitHeaders(rl) });
+    }
+
     const { id } = await params;
     let tagId: number;
     try { tagId = requireId(id); } catch { return invalidIdResponse(); }
@@ -65,7 +71,7 @@ export async function PUT(
     const trimmedName = name.trim();
     const slug = slugify(trimmedName);
 
-    const existing = await prisma.tag.findUnique({ where: { id: tagId } });
+    const existing = await prisma.tag.findUnique({ where: { id: tagId }, select: { slug: true, name: true } });
     if (!existing) {
       return NextResponse.json({ error: "标签不存在" }, { status: 404 });
     }
@@ -76,6 +82,7 @@ export async function PUT(
           id: { not: tagId },
           OR: [{ name: trimmedName }, { slug }],
         },
+        select: { id: true },
       });
       if (conflict) {
         return NextResponse.json(
@@ -113,7 +120,7 @@ export async function DELETE(
     let tagId: number;
     try { tagId = requireId(id); } catch { return invalidIdResponse(); }
 
-    const existing = await prisma.tag.findUnique({ where: { id: tagId } });
+    const existing = await prisma.tag.findUnique({ where: { id: tagId }, select: { id: true } });
     if (!existing) {
       return NextResponse.json({ error: "标签不存在" }, { status: 404 });
     }

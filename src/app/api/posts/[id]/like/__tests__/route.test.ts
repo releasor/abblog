@@ -1,22 +1,23 @@
+import { vi } from "vitest";
 import { NextRequest } from "next/server";
 import { GET, POST } from "../route";
 
 // Mock dependencies
-jest.mock("@/lib/prisma", () => ({
+vi.mock("@/lib/prisma", () => ({
   prisma: {
-    like: { count: jest.fn(), findUnique: jest.fn(), create: jest.fn(), delete: jest.fn() },
+    like: { count: vi.fn(), findUnique: vi.fn(), create: vi.fn(), delete: vi.fn() },
   },
 }));
-jest.mock("next-auth", () => ({ getServerSession: jest.fn() }));
-jest.mock("@/lib/auth", () => ({
+vi.mock("next-auth", () => ({ getServerSession: vi.fn() }));
+vi.mock("@/lib/auth", () => ({
   authOptions: {},
-  getAuthUserId: jest.fn(),
+  getAuthUserId: vi.fn(),
 }));
-jest.mock("@/lib/activity", () => ({ createActivity: jest.fn() }));
-jest.mock("@/lib/rate-limit", () => ({
-  checkRateLimit: jest.fn(() => ({ allowed: true, remaining: 10, resetAt: Date.now() + 60000 })),
+vi.mock("@/lib/activity", () => ({ createActivity: vi.fn() }));
+vi.mock("@/lib/rate-limit", () => ({
+  checkRateLimit: vi.fn(() => ({ allowed: true, remaining: 10, resetAt: Date.now() + 60000 })),
   RATE_LIMITS: { api: { windowMs: 60000, max: 10 } },
-  getRateLimitHeaders: jest.fn(() => ({})),
+  getRateLimitHeaders: vi.fn(() => ({})),
 }));
 
 import { prisma } from "@/lib/prisma";
@@ -24,7 +25,7 @@ import { getServerSession } from "next-auth";
 import { getAuthUserId } from "@/lib/auth";
 
 const mockPrisma = prisma as unknown as {
-  like: { count: jest.Mock; findUnique: jest.Mock; create: jest.Mock; delete: jest.Mock };
+  like: { count: ReturnType<typeof vi.fn>; findUnique: ReturnType<typeof vi.fn>; create: ReturnType<typeof vi.fn>; delete: ReturnType<typeof vi.fn> };
 };
 
 function makeRequest(url: string, init?: RequestInit) {
@@ -36,11 +37,11 @@ function makeParams(id: string) {
 }
 
 describe("GET /api/posts/[id]/like", () => {
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(() => vi.clearAllMocks());
 
   it("returns like count when not authenticated", async () => {
-    (getServerSession as jest.Mock).mockResolvedValue(null);
-    (getAuthUserId as jest.Mock).mockReturnValue(null);
+    (getServerSession as ReturnType<typeof vi.fn>).mockResolvedValue(null);
+    (getAuthUserId as ReturnType<typeof vi.fn>).mockReturnValue(null);
     mockPrisma.like.count.mockResolvedValue(5);
 
     const res = await GET(makeRequest("http://localhost:3000/api/posts/1/like"), makeParams("1"));
@@ -52,8 +53,8 @@ describe("GET /api/posts/[id]/like", () => {
   });
 
   it("returns like status when authenticated", async () => {
-    (getServerSession as jest.Mock).mockResolvedValue({ user: { id: "1" } });
-    (getAuthUserId as jest.Mock).mockReturnValue(1);
+    (getServerSession as ReturnType<typeof vi.fn>).mockResolvedValue({ user: { id: "1" } });
+    (getAuthUserId as ReturnType<typeof vi.fn>).mockReturnValue(1);
     mockPrisma.like.count.mockResolvedValue(3);
     mockPrisma.like.findUnique.mockResolvedValue({ id: 1, postId: 1, userId: 1 });
 
@@ -71,8 +72,8 @@ describe("GET /api/posts/[id]/like", () => {
   });
 
   it("returns 500 on database error", async () => {
-    (getServerSession as jest.Mock).mockResolvedValue(null);
-    (getAuthUserId as jest.Mock).mockReturnValue(null);
+    (getServerSession as ReturnType<typeof vi.fn>).mockResolvedValue(null);
+    (getAuthUserId as ReturnType<typeof vi.fn>).mockReturnValue(null);
     mockPrisma.like.count.mockRejectedValue(new Error("DB error"));
 
     const res = await GET(makeRequest("http://localhost:3000/api/posts/1/like"), makeParams("1"));
@@ -81,19 +82,19 @@ describe("GET /api/posts/[id]/like", () => {
 });
 
 describe("POST /api/posts/[id]/like", () => {
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(() => vi.clearAllMocks());
 
   it("returns 401 when not authenticated", async () => {
-    (getServerSession as jest.Mock).mockResolvedValue(null);
-    (getAuthUserId as jest.Mock).mockReturnValue(null);
+    (getServerSession as ReturnType<typeof vi.fn>).mockResolvedValue(null);
+    (getAuthUserId as ReturnType<typeof vi.fn>).mockReturnValue(null);
 
     const res = await POST(makeRequest("http://localhost:3000/api/posts/1/like", { method: "POST" }), makeParams("1"));
     expect(res.status).toBe(401);
   });
 
   it("creates like when not already liked", async () => {
-    (getServerSession as jest.Mock).mockResolvedValue({ user: { id: "1" } });
-    (getAuthUserId as jest.Mock).mockReturnValue(1);
+    (getServerSession as ReturnType<typeof vi.fn>).mockResolvedValue({ user: { id: "1" } });
+    (getAuthUserId as ReturnType<typeof vi.fn>).mockReturnValue(1);
     mockPrisma.like.findUnique.mockResolvedValue(null);
     mockPrisma.like.create.mockResolvedValue({ id: 1, postId: 1, userId: 1 });
     mockPrisma.like.count.mockResolvedValue(4);
@@ -108,8 +109,8 @@ describe("POST /api/posts/[id]/like", () => {
   });
 
   it("removes like when already liked", async () => {
-    (getServerSession as jest.Mock).mockResolvedValue({ user: { id: "1" } });
-    (getAuthUserId as jest.Mock).mockReturnValue(1);
+    (getServerSession as ReturnType<typeof vi.fn>).mockResolvedValue({ user: { id: "1" } });
+    (getAuthUserId as ReturnType<typeof vi.fn>).mockReturnValue(1);
     mockPrisma.like.findUnique.mockResolvedValue({ id: 1, postId: 1, userId: 1 });
     mockPrisma.like.delete.mockResolvedValue({});
     mockPrisma.like.count.mockResolvedValue(2);
@@ -124,8 +125,8 @@ describe("POST /api/posts/[id]/like", () => {
   });
 
   it("handles P2002 race condition gracefully", async () => {
-    (getServerSession as jest.Mock).mockResolvedValue({ user: { id: "1" } });
-    (getAuthUserId as jest.Mock).mockReturnValue(1);
+    (getServerSession as ReturnType<typeof vi.fn>).mockResolvedValue({ user: { id: "1" } });
+    (getAuthUserId as ReturnType<typeof vi.fn>).mockReturnValue(1);
     mockPrisma.like.findUnique.mockResolvedValue(null);
     mockPrisma.like.create.mockRejectedValue({ code: "P2002" });
     mockPrisma.like.count.mockResolvedValue(5);

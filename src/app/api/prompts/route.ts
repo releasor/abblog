@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions, getAuthUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { checkRateLimit, RATE_LIMITS, getRateLimitHeaders } from "@/lib/rate-limit";
 
 export async function GET(request: NextRequest) {
   try {
@@ -49,6 +50,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "请先登录" }, { status: 401 });
     }
 
+    const rl = checkRateLimit(`prompt:${userId}`, RATE_LIMITS.api);
+    if (!rl.allowed) {
+      return NextResponse.json({ error: "操作太频繁，请稍后再试" }, { status: 429, headers: getRateLimitHeaders(rl) });
+    }
+
     let body;
     try {
       body = await request.json();
@@ -57,16 +63,25 @@ export async function POST(request: NextRequest) {
     }
     const { title, content, category, tags, variables } = body;
 
-    if (!title || !content) {
-      return NextResponse.json({ error: "标题和内容不能为空" }, { status: 400 });
+    if (!title || typeof title !== "string" || title.trim().length === 0) {
+      return NextResponse.json({ error: "标题不能为空" }, { status: 400 });
+    }
+    if (title.trim().length > 200) {
+      return NextResponse.json({ error: "标题不能超过200个字符" }, { status: 400 });
+    }
+    if (!content || typeof content !== "string" || content.trim().length === 0) {
+      return NextResponse.json({ error: "内容不能为空" }, { status: 400 });
+    }
+    if (content.length > 50000) {
+      return NextResponse.json({ error: "内容过长" }, { status: 400 });
     }
 
     const prompt = await prisma.prompt.create({
       data: {
         userId,
-        title,
-        content,
-        category: category || "通用",
+        title: title.trim(),
+        content: content.trim(),
+        category: typeof category === "string" ? category.trim().slice(0, 50) || "通用" : "通用",
         tags: tags ? JSON.stringify(tags) : null,
         variables: variables ? JSON.stringify(variables) : null,
       },

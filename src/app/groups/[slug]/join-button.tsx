@@ -14,10 +14,13 @@ export function JoinGroupButton({ groupId }: JoinGroupButtonProps) {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (session) {
-      fetchApi<{ isMember: boolean }>(`/api/groups/${groupId}/membership`, { showErrorToast: false })
-        .then((result) => { if (result.ok) setIsMember(result.data.isMember); });
+    if (!session) return;
+
+    async function checkMembership() {
+      const result = await fetchApi<{ isMember: boolean }>(`/api/groups/${groupId}/membership`, { showErrorToast: false });
+      if (result.ok) setIsMember(result.data.isMember);
     }
+    checkMembership();
   }, [session, groupId]);
 
   async function handleJoin() {

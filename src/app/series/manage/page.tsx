@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -20,7 +20,7 @@ interface Series {
   posts: { id: number; title: string; slug: string; order: number }[];
 }
 
-export default function SeriesManagePage() {
+export default memo(function SeriesManagePage() {
   const { status } = useSession();
   const router = useRouter();
   const [series, setSeries] = useState<Series[]>([]);
@@ -38,11 +38,12 @@ export default function SeriesManagePage() {
     }
     if (status !== "authenticated") return;
 
-    fetchApi<{ series: Series[] }>("/api/series?mine=true&limit=50", { showErrorToast: false })
-      .then((result) => {
-        setLoading(false);
-        if (result.ok) setSeries(result.data.series || []);
-      });
+    async function loadSeries() {
+      const result = await fetchApi<{ series: Series[] }>("/api/series?mine=true&limit=50", { showErrorToast: false });
+      setLoading(false);
+      if (result.ok) setSeries(result.data.series || []);
+    }
+    loadSeries();
   }, [status, router]);
 
   const handleCreate = async () => {
@@ -128,6 +129,7 @@ export default function SeriesManagePage() {
             setShowCreate(true);
             setForm({ name: "", description: "", coverImage: "" });
           }}
+          aria-expanded={showCreate}
           className="flex items-center gap-2 px-4 py-2 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-lg font-medium hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors"
         >
           <Plus className="w-4 h-4" />
@@ -322,4 +324,4 @@ export default function SeriesManagePage() {
       />
     </div>
   );
-}
+});

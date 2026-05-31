@@ -17,7 +17,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
 
     const post = await prisma.post.findUnique({
       where: { id: postId },
-      select: { title: true, content: true, excerpt: true, slug: true, coverImageUrl: true, tags: { include: { tag: true } } },
+      select: { title: true, content: true, excerpt: true, slug: true, coverImageUrl: true, tags: { select: { tag: { select: { name: true } } } } },
     });
     if (!post) return NextResponse.json({ error: "文章不存在" }, { status: 404 });
 

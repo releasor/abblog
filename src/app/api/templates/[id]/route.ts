@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions, getAuthUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { requireId, invalidIdResponse } from "@/lib/api-utils";
+import { checkRateLimit, RATE_LIMITS, getRateLimitHeaders } from "@/lib/rate-limit";
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -25,11 +26,16 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     const userId = getAuthUserId(session);
     if (!userId) return NextResponse.json({ error: "请先登录" }, { status: 401 });
 
+    const rl = checkRateLimit(`template-edit:${userId}`, RATE_LIMITS.api);
+    if (!rl.allowed) {
+      return NextResponse.json({ error: "操作太频繁，请稍后再试" }, { status: 429, headers: getRateLimitHeaders(rl) });
+    }
+
     const { id } = await params;
     let templateId: number;
     try { templateId = requireId(id); } catch { return invalidIdResponse(); }
 
-    const existing = await prisma.postTemplate.findUnique({ where: { id: templateId } });
+    const existing = await prisma.postTemplate.findUnique({ where: { id: templateId }, select: { userId: true, category: true } });
     if (!existing || existing.userId !== userId) {
       return NextResponse.json({ error: "无权限" }, { status: 403 });
     }
@@ -40,13 +46,28 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     } catch {
       return NextResponse.json({ error: "请求格式无效" }, { status: 400 });
     }
+    const { name, description, content, category } = data;
+
+    if (name !== undefined && (typeof name !== "string" || name.trim().length === 0)) {
+      return NextResponse.json({ error: "模板名称不能为空" }, { status: 400 });
+    }
+    if (name !== undefined && name.trim().length > 100) {
+      return NextResponse.json({ error: "模板名称不能超过100个字符" }, { status: 400 });
+    }
+    if (content !== undefined && (typeof content !== "string" || content.trim().length === 0)) {
+      return NextResponse.json({ error: "模板内容不能为空" }, { status: 400 });
+    }
+    if (content !== undefined && content.length > 50000) {
+      return NextResponse.json({ error: "模板内容过长" }, { status: 400 });
+    }
+
     const template = await prisma.postTemplate.update({
       where: { id: templateId },
       data: {
-        name: data.name ?? existing.name,
-        description: data.description ?? existing.description,
-        content: data.content ?? existing.content,
-        category: data.category ?? existing.category,
+        ...(name !== undefined && { name: name.trim() }),
+        ...(description !== undefined && { description: description?.trim().slice(0, 500) || null }),
+        ...(content !== undefined && { content: content.trim() }),
+        ...(category !== undefined && { category: typeof category === "string" ? category.trim().slice(0, 50) : existing.category }),
       },
     });
 
@@ -67,7 +88,7 @@ export async function DELETE(_request: NextRequest, { params }: { params: Promis
     let templateId: number;
     try { templateId = requireId(id); } catch { return invalidIdResponse(); }
 
-    const existing = await prisma.postTemplate.findUnique({ where: { id: templateId } });
+    const existing = await prisma.postTemplate.findUnique({ where: { id: templateId }, select: { userId: true } });
     if (!existing || existing.userId !== userId) {
       return NextResponse.json({ error: "无权限" }, { status: 403 });
     }

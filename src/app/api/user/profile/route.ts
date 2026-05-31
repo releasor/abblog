@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions, getAuthUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { checkRateLimit, RATE_LIMITS, getRateLimitHeaders } from "@/lib/rate-limit";
 
 export async function GET() {
   try {
@@ -56,6 +57,11 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: "请先登录" }, { status: 401 });
     }
 
+    const rl = checkRateLimit(`profile:${userId}`, RATE_LIMITS.api);
+    if (!rl.allowed) {
+      return NextResponse.json({ error: "操作太频繁，请稍后再试" }, { status: 429, headers: getRateLimitHeaders(rl) });
+    }
+
     let body;
     try {
       body = await request.json();
@@ -74,9 +80,13 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: "网站地址过长" }, { status: 400 });
     }
 
-    if (username) {
+    if (username !== undefined && username !== null) {
+      if (username === "") {
+        return NextResponse.json({ error: "用户名不能为空" }, { status: 400 });
+      }
       const existing = await prisma.user.findFirst({
         where: { username, id: { not: userId } },
+        select: { id: true },
       });
       if (existing) {
         return NextResponse.json({ error: "用户名已被占用" }, { status: 400 });

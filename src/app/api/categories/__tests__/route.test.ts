@@ -1,25 +1,26 @@
+import { vi } from "vitest";
 import { NextRequest } from "next/server";
 import { GET, POST } from "../route";
 
 // Mock Prisma
-jest.mock("@/lib/prisma", () => ({
+vi.mock("@/lib/prisma", () => ({
   prisma: {
     category: {
-      findMany: jest.fn(),
-      findFirst: jest.fn(),
-      create: jest.fn(),
+      findMany: vi.fn(),
+      findFirst: vi.fn(),
+      create: vi.fn(),
     },
   },
 }));
 
 // Mock auth
-jest.mock("next-auth", () => ({
-  getServerSession: jest.fn(),
+vi.mock("next-auth", () => ({
+  getServerSession: vi.fn(),
 }));
 
-jest.mock("@/lib/auth", () => ({
+vi.mock("@/lib/auth", () => ({
   authOptions: {},
-  getAuthUserId: jest.fn(),
+  getAuthUserId: vi.fn(),
 }));
 
 import { prisma } from "@/lib/prisma";
@@ -28,14 +29,14 @@ import { getAuthUserId } from "@/lib/auth";
 
 const mockPrisma = prisma as unknown as {
   category: {
-    findMany: jest.Mock;
-    findFirst: jest.Mock;
-    create: jest.Mock;
+    findMany: ReturnType<typeof vi.fn>;
+    findFirst: ReturnType<typeof vi.fn>;
+    create: ReturnType<typeof vi.fn>;
   };
 };
 
-const mockGetServerSession = getServerSession as jest.MockedFunction<typeof getServerSession>;
-const mockGetAuthUserId = getAuthUserId as jest.MockedFunction<typeof getAuthUserId>;
+const mockGetServerSession = getServerSession as ReturnType<typeof vi.fn>;
+const mockGetAuthUserId = getAuthUserId as ReturnType<typeof vi.fn>;
 
 function makeRequest(url: string, options?: { method?: string; body?: string }) {
   return new NextRequest(new URL(url, "http://localhost:3000"), options);
@@ -43,7 +44,7 @@ function makeRequest(url: string, options?: { method?: string; body?: string }) 
 
 describe("GET /api/categories", () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it("returns categories with post counts", async () => {
@@ -74,7 +75,7 @@ describe("GET /api/categories", () => {
 
 describe("POST /api/categories", () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it("returns 401 when not authenticated", async () => {

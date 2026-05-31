@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { prisma } from "@/lib/prisma";
+import { absoluteUrl } from "@/lib/site-url";
 import { EmptyState } from "@/components/empty-state";
 import { formatDate } from "@/lib/format-date";
 import { Users, FileText } from "lucide-react";
@@ -26,14 +27,26 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const group = await prisma.group.findUnique({
     where: { slug },
-    select: { name: true, description: true },
+    select: { name: true, description: true, slug: true, coverImage: true },
   });
 
   if (!group) return { title: "圈子不存在" };
 
+  const description = group.description || `加入${group.name}圈子，与志同道合的人交流`;
+  const url = absoluteUrl(`/groups/${group.slug}`);
+
   return {
     title: `${group.name} - 圈子`,
-    description: group.description || `加入${group.name}圈子，与志同道合的人交流`,
+    description,
+    alternates: { canonical: url },
+    openGraph: {
+      title: `${group.name} - 圈子`,
+      description,
+      url,
+      type: "website",
+      siteName: "billionaire",
+      images: group.coverImage ? [{ url: group.coverImage, alt: group.name }] : [],
+    },
   };
 }
 

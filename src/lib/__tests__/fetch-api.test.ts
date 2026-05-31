@@ -1,18 +1,20 @@
+import { vi } from "vitest";
 import { fetchApi } from "../fetch-api";
+import { showToast } from "@/components/toast";
 
 // Mock showToast
-jest.mock("@/components/toast", () => ({
-  showToast: jest.fn(),
+vi.mock("@/components/toast", () => ({
+  showToast: vi.fn(),
 }));
 
-const mockShowToast = jest.requireMock("@/components/toast").showToast;
+const mockShowToast = showToast as ReturnType<typeof vi.fn>;
 
 // Mock fetch
-const mockFetch = jest.fn();
+const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
 beforeEach(() => {
-  jest.clearAllMocks();
+  vi.clearAllMocks();
 });
 
 describe("fetchApi", () => {

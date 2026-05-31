@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useMemo } from "react";
+import { useEffect, useRef, useMemo, memo } from "react";
 import hljs from "highlight.js/lib/core";
 import { sanitizeHtml } from "@/lib/sanitize";
 import javascript from "highlight.js/lib/languages/javascript";
@@ -27,7 +27,7 @@ interface PostContentProps {
   content: string;
 }
 
-export function PostContent({ content }: PostContentProps) {
+export const PostContent = memo(function PostContent({ content }: PostContentProps) {
   const ref = useRef<HTMLDivElement>(null);
   const sanitizedContent = useMemo(() => sanitizeHtml(content), [content]);
 
@@ -46,4 +46,4 @@ export function PostContent({ content }: PostContentProps) {
       dangerouslySetInnerHTML={{ __html: sanitizedContent }}
     />
   );
-}
+});

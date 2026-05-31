@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions, isAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { parsePagination, paginationMeta } from "@/lib/pagination";
+import { checkRateLimit, RATE_LIMITS, getRateLimitHeaders } from "@/lib/rate-limit";
 
 export async function GET(request: NextRequest) {
   try {
@@ -24,7 +25,12 @@ export async function GET(request: NextRequest) {
         orderBy: { createdAt: "desc" },
         skip,
         take: limit,
-        include: {
+        select: {
+          id: true,
+          authorName: true,
+          content: true,
+          status: true,
+          createdAt: true,
           post: { select: { id: true, title: true, slug: true } },
           user: { select: { id: true, name: true } },
         },
@@ -47,6 +53,11 @@ export async function PATCH(request: NextRequest) {
     const session = await getServerSession(authOptions);
     if (!isAdmin(session)) return NextResponse.json({ error: "无权限" }, { status: 403 });
 
+    const rl = checkRateLimit(`admin-comments:${session?.user?.id || "admin"}`, RATE_LIMITS.api);
+    if (!rl.allowed) {
+      return NextResponse.json({ error: "操作太频繁，请稍后再试" }, { status: 429, headers: getRateLimitHeaders(rl) });
+    }
+
     let ids: string[], status: string;
     try {
       const body = await request.json();
@@ -55,8 +66,12 @@ export async function PATCH(request: NextRequest) {
     } catch {
       return NextResponse.json({ error: "请求格式无效" }, { status: 400 });
     }
-    if (!Array.isArray(ids) || ids.length === 0 || !["APPROVED", "REJECTED"].includes(status)) {
+    if (!Array.isArray(ids) || ids.length === 0) {
       return NextResponse.json({ error: "参数无效" }, { status: 400 });
+    }
+    const validStatus = status === "APPROVED" || status === "REJECTED" ? status : null;
+    if (!validStatus) {
+      return NextResponse.json({ error: "无效的状态值" }, { status: 400 });
     }
     const validIds = ids.map((id) => parseInt(id)).filter((id) => !isNaN(id));
     if (validIds.length === 0) {
@@ -65,7 +80,7 @@ export async function PATCH(request: NextRequest) {
 
     await prisma.comment.updateMany({
       where: { id: { in: validIds } },
-      data: { status: status as "APPROVED" | "REJECTED" },
+      data: { status: validStatus },
     });
 
     return NextResponse.json({ success: true, updated: validIds.length });

@@ -119,7 +119,7 @@ export const CommandPalette = memo(function CommandPalette({ isOpen, onClose }: 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center pt-[15vh] md:pt-[20vh]">
+    <div className="fixed inset-0 z-50 flex items-start justify-center pt-[15vh] md:pt-[20vh]" role="dialog" aria-modal="true" aria-label="命令面板">
       <div className="fixed inset-0 bg-black/50" onClick={onClose} />
       <div className="relative w-full max-w-md bg-white dark:bg-zinc-900 rounded-xl shadow-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
         <div className="flex items-center gap-3 px-4 py-3 border-b border-zinc-200 dark:border-zinc-800">

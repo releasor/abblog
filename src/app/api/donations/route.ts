@@ -29,11 +29,8 @@ export async function GET(request: NextRequest) {
       } else {
         where = { OR: [{ donorId: userId }, { recipientId: userId }] };
       }
-    } else if (type === "sent") {
-      where = {};
-    } else if (type === "received") {
-      where = {};
     }
+    // Admin with no type filter: where stays {} (all donations)
 
     const [donations, total] = await Promise.all([
       prisma.donation.findMany({

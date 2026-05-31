@@ -71,17 +71,13 @@ export default function AdminCommentsPage() {
     if (result.ok) fetchComments();
   };
 
-  const deleteComment = async (id: number) => {
-    setActionId(id);
+  const { targetId: deleteTargetId, requestDelete, confirm: confirmDelete, cancel: cancelDelete, isDeleting } = useConfirmDelete(async (id: number) => {
     const result = await fetchApi(`/api/comments/${id}`, {
       method: "DELETE",
       errorMessage: "删除失败",
     });
-    setActionId(null);
     if (result.ok) fetchComments();
-  };
-
-  const { targetId: deleteTargetId, requestDelete, confirm: confirmDelete, cancel: cancelDelete } = useConfirmDelete(deleteComment);
+  });
 
   const statusConfig: Record<string, { label: string; dot: string; bg: string; text: string }> = {
     PENDING: {
@@ -186,7 +182,7 @@ export default function AdminCommentsPage() {
                       icon={<Trash2 className="w-4 h-4" />}
                       label="删除评论"
                       onClick={() => requestDelete(comment.id)}
-                      disabled={actionId === comment.id}
+                      disabled={isDeleting}
                     />
                   </div>
                 </div>

@@ -139,6 +139,7 @@ model PostTag {
   tag  Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
 
   @@id([postId, tagId])
+  @@index([tagId])
   @@map("post_tags")
 }
 
@@ -251,6 +252,7 @@ model Follow {
   following User @relation("following", fields: [followingId], references: [id], onDelete: Cascade)
 
   @@unique([followerId, followingId])
+  @@index([followingId])
   @@map("follows")
 }
 
@@ -275,6 +277,7 @@ model ConversationMember {
   user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([conversationId, userId])
+  @@index([userId])
   @@map("conversation_members")
 }
 
@@ -395,6 +398,7 @@ model PostVote {
   user User @relation(fields: [userId], references: [id])
 
   @@unique([postId, userId])
+  @@index([userId])
   @@map("post_votes")
 }
 

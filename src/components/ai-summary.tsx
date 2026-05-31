@@ -9,13 +9,19 @@ export const AiSummary = memo(function AiSummary({ postId }: { postId: number })
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchApi<{ summary?: string }>("/api/ai/summarize", {
-      method: "POST",
-      body: JSON.stringify({ postId }),
-      showErrorToast: false,
-    })
-      .then((res) => { if (res.ok && res.data.summary) setSummary(res.data.summary); })
-      .finally(() => setLoading(false));
+    async function loadSummary() {
+      try {
+        const res = await fetchApi<{ summary?: string }>("/api/ai/summarize", {
+          method: "POST",
+          body: JSON.stringify({ postId }),
+          showErrorToast: false,
+        });
+        if (res.ok && res.data.summary) setSummary(res.data.summary);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadSummary();
   }, [postId]);
 
   if (loading) {

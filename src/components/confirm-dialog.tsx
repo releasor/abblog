@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useRef, memo } from "react";
+import { useEffect, memo } from "react";
 import { AlertTriangle } from "lucide-react";
+import { useFocusTrap } from "@/hooks/use-focus-trap";
 
 interface ConfirmDialogProps {
   open: boolean;
@@ -24,13 +25,7 @@ export const ConfirmDialog = memo(function ConfirmDialog({
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
-  const cancelRef = useRef<HTMLButtonElement>(null);
-
-  useEffect(() => {
-    if (open) {
-      cancelRef.current?.focus();
-    }
-  }, [open]);
+  const focusTrapRef = useFocusTrap(open);
 
   useEffect(() => {
     if (!open) return;
@@ -46,7 +41,7 @@ export const ConfirmDialog = memo(function ConfirmDialog({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="fixed inset-0 bg-black/50" onClick={onCancel} />
-      <div className="relative bg-white dark:bg-zinc-900 rounded-xl shadow-xl max-w-sm w-full mx-4 p-6" role="dialog" aria-modal="true" aria-labelledby="confirm-dialog-title">
+      <div ref={focusTrapRef} className="relative bg-white dark:bg-zinc-900 rounded-xl shadow-xl max-w-sm w-full mx-4 p-6" role="dialog" aria-modal="true" aria-labelledby="confirm-dialog-title">
         <div className="flex items-start gap-4 mb-4">
           {variant === "danger" && (
             <div className="flex-shrink-0 w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
@@ -64,7 +59,6 @@ export const ConfirmDialog = memo(function ConfirmDialog({
         </div>
         <div className="flex justify-end gap-3">
           <button
-            ref={cancelRef}
             onClick={onCancel}
             className="px-4 py-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
           >

@@ -37,9 +37,11 @@ export const TemplatePicker = memo(function TemplatePicker({ onSelect }: Templat
   }, [show, closePicker]);
 
   useEffect(() => {
-    fetchApi<Template[]>("/api/templates").then((res) => {
+    async function loadTemplates() {
+      const res = await fetchApi<Template[]>("/api/templates");
       if (res.ok) setTemplates(Array.isArray(res.data) ? res.data : []);
-    });
+    }
+    loadTemplates();
   }, []);
 
   const handleCreate = async () => {
@@ -68,6 +70,7 @@ export const TemplatePicker = memo(function TemplatePicker({ onSelect }: Templat
     <div className="relative">
       <button
         onClick={() => setShow(!show)}
+        aria-expanded={show}
         className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-colors"
       >
         <FileText className="w-4 h-4" />
@@ -80,6 +83,7 @@ export const TemplatePicker = memo(function TemplatePicker({ onSelect }: Templat
             <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">文章模板</span>
             <button
               onClick={() => setShowCreate(!showCreate)}
+              aria-expanded={showCreate}
               className="text-xs text-indigo-500 hover:text-indigo-600 flex items-center gap-1"
             >
               <Plus className="w-3 h-3" />

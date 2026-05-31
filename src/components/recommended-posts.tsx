@@ -21,8 +21,11 @@ export const RecommendedPosts = memo(function RecommendedPosts({ postId }: { pos
   const [posts, setPosts] = useState<RecommendedPost[]>([]);
 
   useEffect(() => {
-    fetchApi<RecommendedPost[]>(`/api/posts/recommend?postId=${postId}&limit=4`, { showErrorToast: false })
-      .then((res) => { if (res.ok) setPosts(res.data); });
+    async function loadRecommended() {
+      const res = await fetchApi<RecommendedPost[]>(`/api/posts/recommend?postId=${postId}&limit=4`, { showErrorToast: false });
+      if (res.ok) setPosts(res.data);
+    }
+    loadRecommended();
   }, [postId]);
 
   if (posts.length === 0) return null;

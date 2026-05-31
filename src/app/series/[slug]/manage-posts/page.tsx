@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
@@ -21,7 +21,7 @@ interface UserPost {
   slug: string;
 }
 
-export default function ManageSeriesPostsPage() {
+export default memo(function ManageSeriesPostsPage() {
   const { status } = useSession();
   const router = useRouter();
   const params = useParams();
@@ -42,14 +42,15 @@ export default function ManageSeriesPostsPage() {
     }
     if (status !== "authenticated") return;
 
-    fetchApi<{ id: number; name: string; slug: string; posts: SeriesPost[] }>(`/api/series/${slug}`, { showErrorToast: false })
-      .then((result) => {
-        setLoading(false);
-        if (result.ok) {
-          setSeries({ id: result.data.id, name: result.data.name, slug: result.data.slug });
-          setPosts(result.data.posts || []);
-        }
-      });
+    async function loadSeries() {
+      const result = await fetchApi<{ id: number; name: string; slug: string; posts: SeriesPost[] }>(`/api/series/${slug}`, { showErrorToast: false });
+      setLoading(false);
+      if (result.ok) {
+        setSeries({ id: result.data.id, name: result.data.name, slug: result.data.slug });
+        setPosts(result.data.posts || []);
+      }
+    }
+    loadSeries();
   }, [status, slug, router]);
 
   const fetchUserPosts = async () => {
@@ -158,6 +159,7 @@ export default function ManageSeriesPostsPage() {
             setShowAdd(!showAdd);
             if (!showAdd && userPosts.length === 0) fetchUserPosts();
           }}
+          aria-expanded={showAdd}
           className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
         >
           <Plus className="w-3.5 h-3.5" />
@@ -253,4 +255,4 @@ export default function ManageSeriesPostsPage() {
       )}
     </div>
   );
-}
+});

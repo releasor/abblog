@@ -10,7 +10,11 @@ export async function GET() {
     const messages = await prisma.message.findMany({
       orderBy: { createdAt: "desc" },
       take: 100,
-      include: {
+      select: {
+        id: true,
+        name: true,
+        content: true,
+        createdAt: true,
         user: { select: { name: true } },
       },
     });

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, memo } from "react";
 import { useCopyToClipboard } from "@/hooks/use-copy";
 
 const PRESETS = [
@@ -14,7 +14,7 @@ const PRESETS = [
   { label: "工作日上午9点", value: "0 9 * * 1-5" },
 ];
 
-export default function CrontabGenerator() {
+export default memo(function CrontabGenerator() {
   const [minute, setMinute] = useState("*");
   const [hour, setHour] = useState("*");
   const [day, setDay] = useState("*");
@@ -102,4 +102,4 @@ export default function CrontabGenerator() {
       </div>
     </div>
   );
-}
+});

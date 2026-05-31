@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions, getAuthUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { requireId, invalidIdResponse } from "@/lib/api-utils";
+import { checkRateLimit, RATE_LIMITS, getRateLimitHeaders } from "@/lib/rate-limit";
 
 export async function GET(
   _request: NextRequest,
@@ -47,12 +48,18 @@ export async function PATCH(
       return NextResponse.json({ error: "请先登录" }, { status: 401 });
     }
 
+    const rl = checkRateLimit(`prompt-edit:${userId}`, RATE_LIMITS.api);
+    if (!rl.allowed) {
+      return NextResponse.json({ error: "操作太频繁，请稍后再试" }, { status: 429, headers: getRateLimitHeaders(rl) });
+    }
+
     const { id } = await params;
     let promptId: number;
     try { promptId = requireId(id); } catch { return invalidIdResponse(); }
 
     const existing = await prisma.prompt.findFirst({
       where: { id: promptId, userId },
+      select: { category: true },
     });
 
     if (!existing) {
@@ -67,15 +74,28 @@ export async function PATCH(
     }
     const { title, content, category, tags, variables, isPinned } = body;
 
+    if (title !== undefined && (typeof title !== "string" || title.trim().length === 0)) {
+      return NextResponse.json({ error: "标题不能为空" }, { status: 400 });
+    }
+    if (title !== undefined && title.trim().length > 200) {
+      return NextResponse.json({ error: "标题不能超过200个字符" }, { status: 400 });
+    }
+    if (content !== undefined && (typeof content !== "string" || content.trim().length === 0)) {
+      return NextResponse.json({ error: "内容不能为空" }, { status: 400 });
+    }
+    if (content !== undefined && content.length > 50000) {
+      return NextResponse.json({ error: "内容过长" }, { status: 400 });
+    }
+
     const prompt = await prisma.prompt.update({
       where: { id: promptId },
       data: {
-        ...(title !== undefined && { title }),
-        ...(content !== undefined && { content }),
-        ...(category !== undefined && { category }),
+        ...(title !== undefined && { title: title.trim() }),
+        ...(content !== undefined && { content: content.trim() }),
+        ...(category !== undefined && { category: typeof category === "string" ? category.trim().slice(0, 50) : existing.category }),
         ...(tags !== undefined && { tags: tags ? JSON.stringify(tags) : null }),
         ...(variables !== undefined && { variables: variables ? JSON.stringify(variables) : null }),
-        ...(isPinned !== undefined && { isPinned }),
+        ...(isPinned !== undefined && { isPinned: Boolean(isPinned) }),
       },
     });
 
@@ -104,6 +124,7 @@ export async function DELETE(
 
     const existing = await prisma.prompt.findFirst({
       where: { id: promptId, userId },
+      select: { id: true },
     });
 
     if (!existing) {

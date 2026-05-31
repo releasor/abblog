@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, memo } from "react";
 import { useCopyToClipboard } from "@/hooks/use-copy";
 import { getErrorMessage } from "@/lib/api-utils";
 
-export default function JsonFormatter() {
+export default memo(function JsonFormatter() {
   const [input, setInput] = useState("");
   const [output, setOutput] = useState("");
   const [error, setError] = useState("");
@@ -70,4 +70,4 @@ export default function JsonFormatter() {
       </div>
     </div>
   );
-}
+});

@@ -45,11 +45,12 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchApi<DashboardData>("/api/admin/stats", { errorMessage: "加载统计数据失败" })
-      .then((result) => {
-        setLoading(false);
-        if (result.ok) setData(result.data);
-      });
+    async function loadStats() {
+      const result = await fetchApi<DashboardData>("/api/admin/stats", { errorMessage: "加载统计数据失败" });
+      setLoading(false);
+      if (result.ok) setData(result.data);
+    }
+    loadStats();
   }, []);
 
   if (loading) {

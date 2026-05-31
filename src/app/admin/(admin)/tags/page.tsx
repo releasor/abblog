@@ -24,7 +24,6 @@ export default function AdminTagsPage() {
   const [editId, setEditId] = useState<number | null>(null);
   const [editName, setEditName] = useState("");
   const [saving, setSaving] = useState(false);
-  const [deleteId, setDeleteId] = useState<number | null>(null);
 
   const fetchTags = useCallback(async () => {
     setLoading(true);
@@ -74,17 +73,13 @@ export default function AdminTagsPage() {
     }
   };
 
-  const handleDelete = async (id: number) => {
-    setDeleteId(id);
+  const { targetId: deleteTargetId, requestDelete, confirm: confirmDelete, cancel: cancelDelete, isDeleting } = useConfirmDelete(async (id: number) => {
     const result = await fetchApi(`/api/tags/${id}`, {
       method: "DELETE",
       errorMessage: "删除失败",
     });
-    setDeleteId(null);
     if (result.ok) fetchTags();
-  };
-
-  const { targetId: deleteTargetId, requestDelete, confirm: confirmDelete, cancel: cancelDelete } = useConfirmDelete(handleDelete);
+  });
 
   return (
     <div className="space-y-6">
@@ -189,7 +184,7 @@ export default function AdminTagsPage() {
                     </button>
                     <button
                       onClick={() => requestDelete(tag.id)}
-                      disabled={deleteId === tag.id}
+                      disabled={isDeleting}
                       className="p-2 rounded text-zinc-400 hover:text-red-500"
                       aria-label={`删除 ${tag.name}`}
                     >

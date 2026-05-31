@@ -1,3 +1,4 @@
+import { memo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Users } from "lucide-react";
@@ -14,7 +15,7 @@ interface GroupCardProps {
   };
 }
 
-export function GroupCard({ group }: GroupCardProps) {
+export const GroupCard = memo(function GroupCard({ group }: GroupCardProps) {
   return (
     <Link
       href={`/groups/${group.slug}`}
@@ -55,4 +56,4 @@ export function GroupCard({ group }: GroupCardProps) {
       </div>
     </Link>
   );
-}
+});

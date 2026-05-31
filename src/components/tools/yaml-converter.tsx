@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, memo } from "react";
 import { useCopyToClipboard } from "@/hooks/use-copy";
 import { getErrorMessage } from "@/lib/api-utils";
 
-export default function YamlConverter() {
+export default memo(function YamlConverter() {
   const [input, setInput] = useState("");
   const [output, setOutput] = useState("");
   const [mode, setMode] = useState<"json2yaml" | "yaml2json">("json2yaml");
@@ -140,4 +140,4 @@ export default function YamlConverter() {
       </div>
     </div>
   );
-}
+});

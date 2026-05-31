@@ -3,7 +3,7 @@ let lastCleanup = Date.now();
 
 function cleanupExpired() {
   const now = Date.now();
-  if (now - lastCleanup < 5 * 60_1000) return;
+  if (now - lastCleanup < 5 * 60_000) return;
   lastCleanup = now;
   for (const [key, val] of store) {
     if (now > val.resetAt) store.delete(key);
@@ -21,6 +21,7 @@ export const RATE_LIMITS = {
   upload: { windowMs: 60_000, max: 10 },      // 10 uploads/min
   comment: { windowMs: 60_000, max: 5 },      // 5 comments/min
   search: { windowMs: 60_000, max: 30 },      // 30 searches/min
+  ai: { windowMs: 60_000, max: 10 },          // 10 AI requests/min
 } as const;
 
 export function checkRateLimit(

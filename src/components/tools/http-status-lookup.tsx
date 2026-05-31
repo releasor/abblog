@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, memo } from "react";
 import { useCopyWithId } from "@/hooks/use-copy";
 
 const CODES: { code: number; name: string; description: string; category: string }[] = [
@@ -28,7 +28,7 @@ const CODES: { code: number; name: string; description: string; category: string
   { code: 504, name: "Gateway Timeout", description: "网关超时", category: "5xx 服务端错误" },
 ];
 
-export default function HttpStatusLookup() {
+export default memo(function HttpStatusLookup() {
   const [query, setQuery] = useState("");
   const { copiedId, copy } = useCopyWithId<number>();
 
@@ -68,4 +68,4 @@ export default function HttpStatusLookup() {
       </div>
     </div>
   );
-}
+});

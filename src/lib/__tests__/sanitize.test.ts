@@ -1,10 +1,13 @@
-jest.mock("isomorphic-dompurify", () => ({
-  sanitize: (html: string) => {
-    // Simple mock that strips script tags and event handlers
-    return html
-      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
-      .replace(/\son\w+="[^"]*"/gi, "")
-      .replace(/\son\w+='[^']*'/gi, "");
+import { vi } from "vitest";
+vi.mock("isomorphic-dompurify", () => ({
+  default: {
+    sanitize: (html: string) => {
+      // Simple mock that strips script tags and event handlers
+      return html
+        .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
+        .replace(/\son\w+="[^"]*"/gi, "")
+        .replace(/\son\w+='[^']*'/gi, "");
+    },
   },
 }));
 

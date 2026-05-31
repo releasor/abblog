@@ -58,6 +58,7 @@ export async function GET(
 
     const stats = await prisma.shareStat.findMany({
       where: { postId },
+      select: { platform: true, count: true },
     });
 
     const result: Record<string, number> = {};

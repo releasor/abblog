@@ -18,7 +18,7 @@ const CrontabGenerator = lazy(() => import("@/components/tools/crontab-generator
 const HttpStatusLookup = lazy(() => import("@/components/tools/http-status-lookup"));
 const CssUnitConverter = lazy(() => import("@/components/tools/css-unit-converter"));
 
-const TOOL_COMPONENTS: Record<Tool, React.LazyExoticComponent<() => React.JSX.Element>> = {
+const TOOL_COMPONENTS: Record<Tool, React.LazyExoticComponent<React.ComponentType<object>>> = {
   json: JsonFormatter,
   regex: RegexTester,
   color: ColorConverter,

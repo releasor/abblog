@@ -17,8 +17,11 @@ export const FollowButton = memo(function FollowButton({ username, onFollowChang
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    fetchApi<{ isFollowing: boolean }>(`/api/users/${username}/follow`, { showErrorToast: false })
-      .then((result) => { if (result.ok) setIsFollowing(result.data.isFollowing); });
+    async function checkFollow() {
+      const result = await fetchApi<{ isFollowing: boolean }>(`/api/users/${username}/follow`, { showErrorToast: false });
+      if (result.ok) setIsFollowing(result.data.isFollowing);
+    }
+    checkFollow();
   }, [username]);
 
   const toggle = async () => {

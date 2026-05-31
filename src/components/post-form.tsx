@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, memo } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import ImageUpload from "./image-upload";
@@ -46,7 +46,7 @@ interface PostFormProps {
   };
 }
 
-export default function PostForm({ mode, apiEndpoint, redirectPath, initialData }: PostFormProps) {
+export default memo(function PostForm({ mode, apiEndpoint, redirectPath, initialData }: PostFormProps) {
   const router = useRouter();
   const draftKey = mode === "create" ? "new-post" : `post-${initialData?.id}`;
 
@@ -79,13 +79,15 @@ export default function PostForm({ mode, apiEndpoint, redirectPath, initialData 
   );
 
   useEffect(() => {
-    Promise.all([
-      fetchApi<Category[]>("/api/categories"),
-      fetchApi<Tag[]>("/api/tags"),
-    ]).then(([cats, tgs]) => {
+    async function loadFormData() {
+      const [cats, tgs] = await Promise.all([
+        fetchApi<Category[]>("/api/categories"),
+        fetchApi<Tag[]>("/api/tags"),
+      ]);
       if (cats.ok) setCategories(cats.data);
       if (tgs.ok) setTags(tgs.data);
-    });
+    }
+    loadFormData();
   }, []);
 
 
@@ -380,4 +382,4 @@ export default function PostForm({ mode, apiEndpoint, redirectPath, initialData 
       </div>
     </form>
   );
-}
+});

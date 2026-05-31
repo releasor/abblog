@@ -1,5 +1,6 @@
+import { vi } from "vitest";
 // Mock prisma before importing points
-jest.mock("@/lib/prisma", () => ({ prisma: {} }));
+vi.mock("@/lib/prisma", () => ({ prisma: {} }));
 
 import { getLevelForPoints, getLevelName, getProgressToNextLevel, POINTS, LEVELS } from "../points";
 

@@ -1,25 +1,26 @@
+import { vi } from "vitest";
 import { NextRequest } from "next/server";
 import { GET } from "../route";
 
 // Mock Prisma
-jest.mock("@/lib/prisma", () => ({
+vi.mock("@/lib/prisma", () => ({
   prisma: {
-    $queryRaw: jest.fn(),
+    $queryRaw: vi.fn(),
   },
 }));
 
 // Mock rate limit to allow requests by default
-jest.mock("@/lib/rate-limit", () => ({
-  checkRateLimit: jest.fn(() => ({ allowed: true, remaining: 10, resetAt: Date.now() + 60000 })),
+vi.mock("@/lib/rate-limit", () => ({
+  checkRateLimit: vi.fn(() => ({ allowed: true, remaining: 10, resetAt: Date.now() + 60000 })),
   RATE_LIMITS: { search: { windowMs: 60000, max: 30 } },
-  getRateLimitHeaders: jest.fn(() => ({})),
+  getRateLimitHeaders: vi.fn(() => ({})),
 }));
 
 import { prisma } from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limit";
 
-const mockPrisma = prisma as jest.Mocked<typeof prisma>;
-const mockCheckRateLimit = checkRateLimit as jest.MockedFunction<typeof checkRateLimit>;
+const mockPrisma = prisma as unknown as { $queryRaw: ReturnType<typeof vi.fn> };
+const mockCheckRateLimit = checkRateLimit as unknown as ReturnType<typeof vi.fn>;
 
 function makeRequest(url: string) {
   return new NextRequest(new URL(url, "http://localhost:3000"));
@@ -27,7 +28,7 @@ function makeRequest(url: string) {
 
 describe("GET /api/search", () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     mockCheckRateLimit.mockReturnValue({ allowed: true, remaining: 10, resetAt: Date.now() + 60000 });
   });
 

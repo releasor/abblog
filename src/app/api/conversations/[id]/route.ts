@@ -21,6 +21,7 @@ export async function GET(
 
     const membership = await prisma.conversationMember.findUnique({
       where: { conversationId_userId: { conversationId, userId } },
+      select: { id: true },
     });
 
     if (!membership) {
@@ -29,10 +30,10 @@ export async function GET(
 
     const conversation = await prisma.conversation.findUnique({
       where: { id: conversationId },
-      include: {
+      select: {
         members: {
           where: { userId: { not: userId } },
-          include: {
+          select: {
             user: { select: { id: true, name: true, username: true, avatar: true } },
           },
         },

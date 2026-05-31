@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { prisma } from "@/lib/prisma";
+import { absoluteUrl } from "@/lib/site-url";
 import { formatDate } from "@/lib/format-date";
 import { EmptyState } from "@/components/empty-state";
 
@@ -22,9 +23,25 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const topic = await prisma.topic.findUnique({ where: { slug }, select: { name: true, description: true } });
+  const topic = await prisma.topic.findUnique({ where: { slug }, select: { name: true, description: true, slug: true, coverImage: true } });
   if (!topic) return { title: "话题未找到" };
-  return { title: `#${topic.name}`, description: topic.description || undefined };
+
+  const description = topic.description || `浏览#${topic.name}话题下的所有文章`;
+  const url = absoluteUrl(`/topics/${topic.slug}`);
+
+  return {
+    title: `#${topic.name}`,
+    description,
+    alternates: { canonical: url },
+    openGraph: {
+      title: `#${topic.name}`,
+      description,
+      url,
+      type: "website",
+      siteName: "billionaire",
+      images: topic.coverImage ? [{ url: topic.coverImage, alt: topic.name }] : [],
+    },
+  };
 }
 
 export default async function TopicDetailPage({ params }: Props) {

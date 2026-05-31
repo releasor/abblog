@@ -25,15 +25,19 @@ function getDrafts(): Record<string, DraftData> {
 }
 
 function saveDraft(key: string, data: DraftData) {
-  const drafts = getDrafts();
-  drafts[key] = data;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(drafts));
+  try {
+    const drafts = getDrafts();
+    drafts[key] = data;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(drafts));
+  } catch { /* storage full or private browsing */ }
 }
 
 function removeDraft(key: string) {
-  const drafts = getDrafts();
-  delete drafts[key];
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(drafts));
+  try {
+    const drafts = getDrafts();
+    delete drafts[key];
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(drafts));
+  } catch { /* storage full or private browsing */ }
 }
 
 export function getDraft(key: string): DraftData | null {
@@ -42,10 +46,6 @@ export function getDraft(key: string): DraftData | null {
 
 export function clearDraft(key: string) {
   removeDraft(key);
-}
-
-export function getAllDrafts(): Record<string, DraftData> {
-  return getDrafts();
 }
 
 export function useAutoSave(

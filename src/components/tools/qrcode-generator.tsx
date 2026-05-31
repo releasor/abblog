@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, memo } from "react";
 
-export default function QRCodeGenerator() {
+export default memo(function QRCodeGenerator() {
   const [text, setText] = useState("https://example.com");
   const [canvasReady, setCanvasReady] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -94,4 +94,4 @@ export default function QRCodeGenerator() {
       </div>
     </div>
   );
-}
+});

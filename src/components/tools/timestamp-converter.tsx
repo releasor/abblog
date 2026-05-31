@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import { useCopyWithId } from "@/hooks/use-copy";
 
-export default function TimestampConverter() {
+export default memo(function TimestampConverter() {
   const [now, setNow] = useState(() => Math.floor(Date.now() / 1000));
   const [inputTs, setInputTs] = useState("");
   const [inputDate, setInputDate] = useState("");
@@ -117,4 +117,4 @@ export default function TimestampConverter() {
       </div>
     </div>
   );
-}
+});

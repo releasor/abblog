@@ -133,6 +133,7 @@ export default function BookmarksPage() {
             <div className="sticky top-24 space-y-2">
               <button
                 onClick={() => setShowNew(!showNew)}
+                aria-expanded={showNew}
                 className="flex items-center gap-2 w-full px-3 py-2 text-sm text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded-lg"
               >
                 <Plus className="w-4 h-4" />

@@ -35,7 +35,7 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: "新密码至少需要6个字符" }, { status: 400 });
     }
 
-    const user = await prisma.user.findUnique({ where: { id: userId } });
+    const user = await prisma.user.findUnique({ where: { id: userId }, select: { passwordHash: true } });
     if (!user) {
       return NextResponse.json({ error: "用户不存在" }, { status: 404 });
     }

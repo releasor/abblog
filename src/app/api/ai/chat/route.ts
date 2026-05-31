@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions, getAuthUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getAiConfig } from "@/lib/ai-config";
-import { checkRateLimit, getRateLimitHeaders } from "@/lib/rate-limit";
+import { checkRateLimit, RATE_LIMITS, getRateLimitHeaders } from "@/lib/rate-limit";
 import { requireId, invalidIdResponse } from "@/lib/api-utils";
 import { stripHtml } from "@/lib/text";
 
@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "请先登录" }, { status: 401 });
     }
 
-    const rl = checkRateLimit(`ai:${userId}`, { windowMs: 60_000, max: 10 });
+    const rl = checkRateLimit(`ai:${userId}`, RATE_LIMITS.ai);
     if (!rl.allowed) {
       return NextResponse.json(
         { error: "AI 请求过于频繁，请稍后再试" },

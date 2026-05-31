@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, memo } from "react";
 import { getErrorMessage } from "@/lib/api-utils";
 
-export default function RegexTester() {
+export default memo(function RegexTester() {
   const [pattern, setPattern] = useState("");
   const [flags, setFlags] = useState("g");
   const [testStr, setTestStr] = useState("");
@@ -75,4 +75,4 @@ export default function RegexTester() {
       )}
     </div>
   );
-}
+});

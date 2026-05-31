@@ -1,26 +1,29 @@
+import { vi } from "vitest";
 import { NextRequest } from "next/server";
 import { POST } from "../route";
 
 // Mock Prisma
-jest.mock("@/lib/prisma", () => ({
+vi.mock("@/lib/prisma", () => ({
   prisma: {
     user: {
-      findUnique: jest.fn(),
-      create: jest.fn(),
+      findUnique: vi.fn(),
+      create: vi.fn(),
     },
   },
 }));
 
 // Mock bcrypt
-jest.mock("bcrypt", () => ({
-  hash: jest.fn().mockResolvedValue("$2b$10$hashedpassword"),
+vi.mock("bcrypt", () => ({
+  default: {
+    hash: vi.fn().mockResolvedValue("$2b$10$hashedpassword"),
+  },
 }));
 
 // Mock rate limit
-jest.mock("@/lib/rate-limit", () => ({
-  checkRateLimit: jest.fn().mockReturnValue({ allowed: true, remaining: 9, resetAt: Date.now() + 60000 }),
+vi.mock("@/lib/rate-limit", () => ({
+  checkRateLimit: vi.fn().mockReturnValue({ allowed: true, remaining: 9, resetAt: Date.now() + 60000 }),
   RATE_LIMITS: { auth: { windowMs: 900000, max: 10 } },
-  getRateLimitHeaders: jest.fn().mockReturnValue({}),
+  getRateLimitHeaders: vi.fn().mockReturnValue({}),
 }));
 
 import { prisma } from "@/lib/prisma";
@@ -28,12 +31,12 @@ import { checkRateLimit } from "@/lib/rate-limit";
 
 const mockPrisma = prisma as unknown as {
   user: {
-    findUnique: jest.Mock;
-    create: jest.Mock;
+    findUnique: ReturnType<typeof vi.fn>;
+    create: ReturnType<typeof vi.fn>;
   };
 };
 
-const mockCheckRateLimit = checkRateLimit as jest.MockedFunction<typeof checkRateLimit>;
+const mockCheckRateLimit = checkRateLimit as ReturnType<typeof vi.fn>;
 
 function makeRequest(body: string) {
   return new NextRequest(new URL("http://localhost:3000/api/auth/register"), {
@@ -44,7 +47,7 @@ function makeRequest(body: string) {
 
 describe("POST /api/auth/register", () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     mockCheckRateLimit.mockReturnValue({ allowed: true, remaining: 9, resetAt: Date.now() + 60000 });
   });
 

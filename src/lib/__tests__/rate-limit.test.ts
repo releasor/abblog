@@ -1,12 +1,13 @@
+import { vi } from "vitest";
 import { checkRateLimit, getRateLimitHeaders } from "../rate-limit";
 
 // Clear the store before each test
 beforeEach(() => {
-  jest.useFakeTimers();
+  vi.useFakeTimers();
 });
 
 afterEach(() => {
-  jest.useRealTimers();
+  vi.useRealTimers();
 });
 
 describe("checkRateLimit", () => {
@@ -40,7 +41,7 @@ describe("checkRateLimit", () => {
     const blocked = checkRateLimit("test-key-4", config);
     expect(blocked.allowed).toBe(false);
 
-    jest.advanceTimersByTime(1001);
+    vi.advanceTimersByTime(1001);
     const allowed = checkRateLimit("test-key-4", config);
     expect(allowed.allowed).toBe(true);
   });

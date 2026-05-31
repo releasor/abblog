@@ -30,6 +30,7 @@ export async function GET(
     if (userId) {
       const existing = await prisma.follow.findUnique({
         where: { followerId_followingId: { followerId: userId, followingId: targetUser.id } },
+        select: { id: true },
       });
       isFollowing = !!existing;
     }
@@ -76,6 +77,7 @@ export async function POST(
 
     const existing = await prisma.follow.findUnique({
       where: { followerId_followingId: { followerId: userId, followingId: targetId } },
+      select: { id: true },
     });
 
     if (existing) {

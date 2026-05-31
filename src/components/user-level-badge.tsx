@@ -29,9 +29,11 @@ const LEVEL_COLORS: Record<number, string> = {
 function useLevelInfo() {
   const [info, setInfo] = useState<LevelInfo | null>(null);
   useEffect(() => {
-    fetchApi<LevelInfo>("/api/user/points").then((res) => {
+    async function loadLevelInfo() {
+      const res = await fetchApi<LevelInfo>("/api/user/points");
       if (res.ok) setInfo(res.data);
-    });
+    }
+    loadLevelInfo();
   }, []);
   return info;
 }

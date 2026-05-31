@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
         p.title,
         p.slug,
         p.excerpt,
-        p.content,
+        LEFT(p.content, 1000) AS content,
         p.published_at AS publishedAt,
         c.name AS categoryName,
         c.slug AS categorySlug,

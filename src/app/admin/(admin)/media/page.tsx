@@ -30,11 +30,12 @@ export default function MediaPage() {
   const [deleteTargetFile, setDeleteTargetFile] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchApi<MediaFile[]>("/api/media", { errorMessage: "加载媒体库失败" })
-      .then((result) => {
-        setLoading(false);
-        if (result.ok && Array.isArray(result.data)) setImages(result.data);
-      });
+    async function loadMedia() {
+      const result = await fetchApi<MediaFile[]>("/api/media", { errorMessage: "加载媒体库失败" });
+      setLoading(false);
+      if (result.ok && Array.isArray(result.data)) setImages(result.data);
+    }
+    loadMedia();
   }, []);
 
   const copyUrl = (url: string) => copy(url, url);

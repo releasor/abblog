@@ -22,6 +22,7 @@ export async function GET(
       where: {
         groupId_userId: { groupId, userId },
       },
+      select: { id: true },
     });
 
     return NextResponse.json({ isMember: !!membership }, { headers: { "Cache-Control": "private, max-age=10, stale-while-revalidate=20" } });

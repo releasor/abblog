@@ -18,8 +18,11 @@ export const PopularPosts = memo(function PopularPosts() {
   const [period, setPeriod] = useState<"week" | "month">("week");
 
   useEffect(() => {
-    fetchApi<PopularPost[]>(`/api/posts/popular?period=${period}&limit=5`, { showErrorToast: false })
-      .then((res) => { if (res.ok) setPosts(res.data); });
+    async function loadPopular() {
+      const res = await fetchApi<PopularPost[]>(`/api/posts/popular?period=${period}&limit=5`, { showErrorToast: false });
+      if (res.ok) setPosts(res.data);
+    }
+    loadPopular();
   }, [period]);
 
   return (

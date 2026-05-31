@@ -1,4 +1,5 @@
-jest.mock("@/lib/prisma", () => ({ prisma: {} }));
+import { vi } from "vitest";
+vi.mock("@/lib/prisma", () => ({ prisma: {} }));
 
 import { getAuthUserId, getAuthUserRole, getAuthUsername } from "../auth";
 

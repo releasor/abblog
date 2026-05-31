@@ -43,17 +43,19 @@ export function getProgressToNextLevel(points: number): { current: number; next:
 }
 
 export async function addPoints(userId: number, points: number) {
-  const user = await prisma.user.update({
-    where: { id: userId },
-    data: { points: { increment: points } },
-    select: { points: true, level: true },
-  });
-
-  const newLevel = getLevelForPoints(user.points);
-  if (newLevel !== user.level) {
-    await prisma.user.update({
-      where: { id: userId },
-      data: { level: newLevel },
-    });
-  }
+  await prisma.$executeRaw`
+    UPDATE users
+    SET points = points + ${points},
+      level = CASE
+        WHEN points + ${points} >= 5000 THEN 8
+        WHEN points + ${points} >= 3000 THEN 7
+        WHEN points + ${points} >= 1500 THEN 6
+        WHEN points + ${points} >= 800 THEN 5
+        WHEN points + ${points} >= 400 THEN 4
+        WHEN points + ${points} >= 150 THEN 3
+        WHEN points + ${points} >= 50 THEN 2
+        ELSE 1
+      END
+    WHERE id = ${userId}
+  `;
 }

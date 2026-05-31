@@ -1,12 +1,13 @@
+import { vi } from "vitest";
 import { NextRequest } from "next/server";
 import { GET } from "../route";
 
 // Mock Prisma
-jest.mock("@/lib/prisma", () => ({
+vi.mock("@/lib/prisma", () => ({
   prisma: {
     post: {
-      findMany: jest.fn(),
-      count: jest.fn(),
+      findMany: vi.fn(),
+      count: vi.fn(),
     },
   },
 }));
@@ -15,8 +16,8 @@ import { prisma } from "@/lib/prisma";
 
 const mockPrisma = prisma as unknown as {
   post: {
-    findMany: jest.Mock;
-    count: jest.Mock;
+    findMany: ReturnType<typeof vi.fn>;
+    count: ReturnType<typeof vi.fn>;
   };
 };
 
@@ -26,7 +27,7 @@ function makeRequest(url: string) {
 
 describe("GET /api/posts", () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it("returns posts with pagination", async () => {

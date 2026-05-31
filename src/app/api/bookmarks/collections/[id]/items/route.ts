@@ -4,12 +4,18 @@ import { authOptions, getAuthUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { createActivity } from "@/lib/activity";
 import { requireId, invalidIdResponse } from "@/lib/api-utils";
+import { checkRateLimit, RATE_LIMITS, getRateLimitHeaders } from "@/lib/rate-limit";
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getServerSession(authOptions);
     const userId = getAuthUserId(session);
     if (!userId) return NextResponse.json({ error: "请先登录" }, { status: 401 });
+
+    const rl = checkRateLimit(`bookmark-item:${userId}`, RATE_LIMITS.api);
+    if (!rl.allowed) {
+      return NextResponse.json({ error: "操作太频繁，请稍后再试" }, { status: 429, headers: getRateLimitHeaders(rl) });
+    }
 
     const { id } = await params;
     let collectionId: number;
@@ -51,6 +57,10 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
     const { id } = await params;
     let collectionId: number;
     try { collectionId = requireId(id); } catch { return invalidIdResponse(); }
+
+    const collection = await prisma.bookmarkCollection.findUnique({ where: { id: collectionId } });
+    if (!collection || collection.userId !== userId)
+      return NextResponse.json({ error: "无权限" }, { status: 403 });
 
     const { searchParams } = new URL(request.url);
     const postId = searchParams.get("postId");

@@ -24,6 +24,7 @@ export async function GET(
     if (userId) {
       const existing = await prisma.like.findUnique({
         where: { postId_userId: { postId, userId } },
+        select: { id: true },
       });
       isLiked = !!existing;
     }
@@ -58,6 +59,7 @@ export async function POST(
 
     const existing = await prisma.like.findUnique({
       where: { postId_userId: { postId, userId } },
+      select: { id: true },
     });
 
     if (existing) {

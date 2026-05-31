@@ -24,6 +24,7 @@ export async function GET(
     // Verify user is a member
     const membership = await prisma.conversationMember.findUnique({
       where: { conversationId_userId: { conversationId, userId } },
+      select: { id: true },
     });
 
     if (!membership) {
@@ -52,7 +53,7 @@ export async function GET(
       data: { lastReadAt: new Date() },
     });
 
-    return NextResponse.json(messages.reverse(), { headers: { "Cache-Control": "private, max-age=10, stale-while-revalidate=20" } });
+    return NextResponse.json(messages.toReversed(), { headers: { "Cache-Control": "private, max-age=10, stale-while-revalidate=20" } });
   } catch (e) {
     console.error("[Messages] Failed to fetch messages:", e);
     return NextResponse.json({ error: "获取消息列表失败" }, { status: 500 });
@@ -77,6 +78,7 @@ export async function POST(
 
     const membership = await prisma.conversationMember.findUnique({
       where: { conversationId_userId: { conversationId, userId } },
+      select: { id: true },
     });
 
     if (!membership) {
@@ -95,8 +97,11 @@ export async function POST(
       return NextResponse.json({ error: "请求格式无效" }, { status: 400 });
     }
     const { content } = body;
-    if (!content?.trim()) {
+    if (!content || typeof content !== "string" || !content.trim()) {
       return NextResponse.json({ error: "消息不能为空" }, { status: 400 });
+    }
+    if (content.length > 2000) {
+      return NextResponse.json({ error: "消息不能超过2000个字符" }, { status: 400 });
     }
 
     const message = await prisma.directMessage.create({
@@ -117,6 +122,7 @@ export async function POST(
     // Notify other members
     const otherMembers = await prisma.conversationMember.findMany({
       where: { conversationId, userId: { not: userId } },
+      select: { userId: true },
     });
 
     const senderName = session?.user?.name || "有人";

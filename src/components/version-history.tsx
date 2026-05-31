@@ -23,8 +23,11 @@ export const VersionHistory = memo(function VersionHistory({ postId, onRestore }
   const [restoring, setRestoring] = useState<number | null>(null);
 
   useEffect(() => {
-    fetchApi<{ versions: Version[] }>(`/api/posts/${postId}/versions`, { errorMessage: "加载版本历史失败" })
-      .then((result) => { if (result.ok) setVersions(result.data.versions || []); });
+    async function loadVersions() {
+      const result = await fetchApi<{ versions: Version[] }>(`/api/posts/${postId}/versions`, { errorMessage: "加载版本历史失败" });
+      if (result.ok) setVersions(result.data.versions || []);
+    }
+    loadVersions();
   }, [postId]);
 
   async function handleRestore(versionId: number) {
@@ -46,6 +49,7 @@ export const VersionHistory = memo(function VersionHistory({ postId, onRestore }
     <div className="border border-zinc-200 dark:border-zinc-800 rounded-lg overflow-hidden">
       <button
         onClick={() => setExpanded(!expanded)}
+        aria-expanded={expanded}
         className="flex items-center justify-between w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-800/50"
       >
         <div className="flex items-center gap-2">

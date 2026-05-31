@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, memo } from "react";
 import { sanitizeHtml } from "@/lib/sanitize";
 
 const renderMarkdown = (md: string) => {
@@ -20,7 +20,7 @@ const renderMarkdown = (md: string) => {
   return `<p>${html}</p>`;
 };
 
-export default function MarkdownPreview() {
+export default memo(function MarkdownPreview() {
   const [input, setInput] = useState("# Hello World\n\n这是一段 **Markdown** 文本。\n\n- 列表项 1\n- 列表项 2\n\n```js\nconsole.log('hello');\n```");
   const sanitizedHtml = useMemo(() => sanitizeHtml(renderMarkdown(input)), [input]);
 
@@ -43,4 +43,4 @@ export default function MarkdownPreview() {
       </div>
     </div>
   );
-}
+});

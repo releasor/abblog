@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions, getAuthUserId } from "@/lib/auth";
+import { authOptions, getAuthUserId, isAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { requireId, invalidIdResponse } from "@/lib/api-utils";
+import { checkRateLimit, RATE_LIMITS, getRateLimitHeaders } from "@/lib/rate-limit";
 
 export async function PATCH(
   request: NextRequest,
@@ -13,6 +14,14 @@ export async function PATCH(
     const userId = getAuthUserId(session);
     if (!userId) {
       return NextResponse.json({ error: "请先登录" }, { status: 401 });
+    }
+    if (!isAdmin(session)) {
+      return NextResponse.json({ error: "无权限" }, { status: 403 });
+    }
+
+    const rl = checkRateLimit(`comment-edit:${userId}`, RATE_LIMITS.api);
+    if (!rl.allowed) {
+      return NextResponse.json({ error: "操作太频繁，请稍后再试" }, { status: 429, headers: getRateLimitHeaders(rl) });
     }
 
     const { id } = await params;
@@ -34,7 +43,7 @@ export async function PATCH(
       );
     }
 
-    const existing = await prisma.comment.findUnique({ where: { id: commentId } });
+    const existing = await prisma.comment.findUnique({ where: { id: commentId }, select: { id: true } });
     if (!existing) {
       return NextResponse.json({ error: "评论不存在" }, { status: 404 });
     }
@@ -69,9 +78,12 @@ export async function DELETE(
     let commentId: number;
     try { commentId = requireId(id); } catch { return invalidIdResponse(); }
 
-    const existing = await prisma.comment.findUnique({ where: { id: commentId } });
+    const existing = await prisma.comment.findUnique({ where: { id: commentId }, select: { userId: true } });
     if (!existing) {
       return NextResponse.json({ error: "评论不存在" }, { status: 404 });
+    }
+    if (existing.userId !== userId && !isAdmin(session)) {
+      return NextResponse.json({ error: "无权限" }, { status: 403 });
     }
 
     await prisma.comment.delete({ where: { id: commentId } });

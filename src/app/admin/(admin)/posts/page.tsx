@@ -7,7 +7,7 @@ import { ConfirmDialog } from "@/components/confirm-dialog";
 import { fetchApi } from "@/lib/fetch-api";
 import { formatDateShort } from "@/lib/format-date";
 import { DataTable } from "@/components/data-table";
-
+import { useConfirmDelete } from "@/hooks/use-confirm-delete";
 import { SimplePagination } from "@/components/pagination";
 import { FilterTabs } from "@/components/filter-tabs";
 
@@ -38,8 +38,6 @@ export default function AdminPostsPage() {
   const [sortOrder, setSortOrder] = useState<string>("desc");
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
-  const [deleteId, setDeleteId] = useState<number | null>(null);
-  const [confirmDelete, setConfirmDelete] = useState<number | null>(null);
 
   const fetchPosts = useCallback(async () => {
     setLoading(true);
@@ -65,16 +63,13 @@ export default function AdminPostsPage() {
     fetchPosts();
   }, [fetchPosts]);
 
-  const handleDelete = async (id: number) => {
-    setDeleteId(id);
+  const { targetId: deleteTargetId, requestDelete, confirm: confirmDelete, cancel: cancelDelete, isDeleting } = useConfirmDelete(async (id: number) => {
     const result = await fetchApi(`/api/posts/${id}`, {
       method: "DELETE",
       errorMessage: "删除失败",
     });
-    setDeleteId(null);
-    setConfirmDelete(null);
     if (result.ok) fetchPosts();
-  };
+  });
 
   return (
     <div className="space-y-6">
@@ -207,9 +202,9 @@ export default function AdminPostsPage() {
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    setConfirmDelete(post.id);
+                    requestDelete(post.id);
                   }}
-                  disabled={deleteId === post.id}
+                  disabled={isDeleting}
                   className="p-2 rounded-lg text-zinc-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50 transition-colors"
                   aria-label={`删除 ${post.title}`}
                 >
@@ -246,13 +241,13 @@ export default function AdminPostsPage() {
       )}
 
       <ConfirmDialog
-        open={confirmDelete !== null}
+        open={deleteTargetId !== null}
         title="删除文章"
         message="确定要删除这篇文章吗？相关的评论和标签关联也会被删除。"
-        confirmLabel="删除"
+        confirmLabel={isDeleting ? "删除中..." : "删除"}
         variant="danger"
-        onConfirm={() => confirmDelete && handleDelete(confirmDelete)}
-        onCancel={() => setConfirmDelete(null)}
+        onConfirm={confirmDelete}
+        onCancel={cancelDelete}
       />
     </div>
   );

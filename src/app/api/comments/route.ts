@@ -27,7 +27,12 @@ export async function GET(request: NextRequest) {
         orderBy: { createdAt: "desc" },
         skip,
         take: limit,
-        include: {
+        select: {
+          id: true,
+          authorName: true,
+          content: true,
+          status: true,
+          createdAt: true,
           post: { select: { id: true, title: true, slug: true } },
         },
       }),

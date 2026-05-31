@@ -23,6 +23,28 @@ const isUnread = (conv: Conversation) => {
   return new Date(conv.lastMessage.createdAt) > new Date(conv.lastReadAt);
 };
 
+function ConversationSkeleton() {
+  return (
+    <div className="max-w-2xl mx-auto px-4 py-12">
+      <Skeleton className="h-9 w-16 mb-8" />
+      <div className="space-y-2">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="flex items-center gap-4 p-4 rounded-lg border border-zinc-200 dark:border-zinc-800">
+            <Skeleton className="w-12 h-12 rounded-full flex-shrink-0" />
+            <div className="flex-1 space-y-2">
+              <div className="flex items-center justify-between">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-3 w-12" />
+              </div>
+              <Skeleton className="h-3 w-3/4" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function MessagesContent() {
   const { status } = useSession();
   const router = useRouter();
@@ -36,44 +58,26 @@ function MessagesContent() {
     if (status === "unauthenticated") router.push("/login");
     if (status !== "authenticated") return;
 
-    if (targetUserId) {
-      fetchApi<{ id: number }>("/api/conversations", {
-        method: "POST",
-        body: JSON.stringify({ targetUserId }),
-        errorMessage: "创建会话失败",
-      }).then((result) => {
+    async function load() {
+      if (targetUserId) {
+        const result = await fetchApi<{ id: number }>("/api/conversations", {
+          method: "POST",
+          body: JSON.stringify({ targetUserId }),
+          errorMessage: "创建会话失败",
+        });
         if (result.ok && result.data.id) router.push(`/messages/${result.data.id}`);
-      });
-      return;
-    }
+        return;
+      }
 
-    fetchApi<Conversation[]>("/api/conversations", { errorMessage: "加载会话列表失败" })
-      .then((result) => {
-        setLoading(false);
-        if (result.ok && Array.isArray(result.data)) setConversations(result.data);
-      });
+      const result = await fetchApi<Conversation[]>("/api/conversations", { errorMessage: "加载会话列表失败" });
+      setLoading(false);
+      if (result.ok && Array.isArray(result.data)) setConversations(result.data);
+    }
+    load();
   }, [status, targetUserId, router]);
 
   if (status !== "authenticated" || loading) {
-    return (
-      <div className="max-w-2xl mx-auto px-4 py-12">
-        <Skeleton className="h-9 w-16 mb-8" />
-        <div className="space-y-2">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="flex items-center gap-4 p-4 rounded-lg border border-zinc-200 dark:border-zinc-800">
-              <Skeleton className="w-12 h-12 rounded-full flex-shrink-0" />
-              <div className="flex-1 space-y-2">
-                <div className="flex items-center justify-between">
-                  <Skeleton className="h-4 w-24" />
-                  <Skeleton className="h-3 w-12" />
-                </div>
-                <Skeleton className="h-3 w-3/4" />
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
+    return <ConversationSkeleton />;
   }
 
   return (
@@ -125,25 +129,7 @@ function MessagesContent() {
 
 export default function MessagesPage() {
   return (
-    <Suspense fallback={
-      <div className="max-w-2xl mx-auto px-4 py-12">
-        <Skeleton className="h-9 w-16 mb-8" />
-        <div className="space-y-2">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="flex items-center gap-4 p-4 rounded-lg border border-zinc-200 dark:border-zinc-800">
-              <Skeleton className="w-12 h-12 rounded-full flex-shrink-0" />
-              <div className="flex-1 space-y-2">
-                <div className="flex items-center justify-between">
-                  <Skeleton className="h-4 w-24" />
-                  <Skeleton className="h-3 w-12" />
-                </div>
-                <Skeleton className="h-3 w-3/4" />
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    }>
+    <Suspense fallback={<ConversationSkeleton />}>
       <MessagesContent />
     </Suspense>
   );

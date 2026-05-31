@@ -35,17 +35,18 @@ export default function AdminConfigPage() {
   useEffect(() => () => clearTimeout(timerRef.current), []);
 
   useEffect(() => {
-    fetchApi<{ key: string; value: string }[]>("/api/admin/config", { errorMessage: "加载配置失败" })
-      .then((result) => {
-        if (result.ok && Array.isArray(result.data)) {
-          setConfigs((prev) =>
-            prev.map((c) => {
-              const found = result.data.find((d) => d.key === c.key);
-              return found ? { ...c, value: found.value } : c;
-            })
-          );
-        }
-      });
+    async function loadConfig() {
+      const result = await fetchApi<{ key: string; value: string }[]>("/api/admin/config", { errorMessage: "加载配置失败" });
+      if (result.ok && Array.isArray(result.data)) {
+        setConfigs((prev) =>
+          prev.map((c) => {
+            const found = result.data.find((d) => d.key === c.key);
+            return found ? { ...c, value: found.value } : c;
+          })
+        );
+      }
+    }
+    loadConfig();
   }, []);
 
   const handleChange = (key: string, value: string) => {

@@ -56,6 +56,9 @@ export async function POST(request: NextRequest) {
     while (await prisma.user.findUnique({ where: { username } })) {
       username = `${baseUsername}${counter}`;
       counter++;
+      if (counter > 1000) {
+        return NextResponse.json({ error: "无法生成唯一用户名，请手动设置" }, { status: 409 });
+      }
     }
 
     try {

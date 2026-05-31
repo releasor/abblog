@@ -1,29 +1,30 @@
+import { vi } from "vitest";
 import { NextRequest } from "next/server";
 import { POST } from "../route";
 
-jest.mock("@/lib/prisma", () => ({
+vi.mock("@/lib/prisma", () => ({
   prisma: {
-    readHistory: { create: jest.fn() },
+    readHistory: { create: vi.fn() },
   },
 }));
-jest.mock("next-auth", () => ({ getServerSession: jest.fn() }));
-jest.mock("@/lib/auth", () => ({
+vi.mock("next-auth", () => ({ getServerSession: vi.fn() }));
+vi.mock("@/lib/auth", () => ({
   authOptions: {},
-  getAuthUserId: jest.fn(),
+  getAuthUserId: vi.fn(),
 }));
-jest.mock("@/lib/api-utils", () => ({
-  requireId: jest.fn((id: string) => {
+vi.mock("@/lib/api-utils", () => ({
+  requireId: vi.fn((id: string) => {
     const n = Number(id);
     if (!id || isNaN(n) || n < 1) throw new Error("Invalid ID");
     return n;
   }),
-  invalidIdResponse: jest.fn(() => new Response(JSON.stringify({ error: "无效的ID" }), { status: 400 })),
-  getClientIp: jest.fn(() => "127.0.0.1"),
+  invalidIdResponse: vi.fn(() => new Response(JSON.stringify({ error: "无效的ID" }), { status: 400 })),
+  getClientIp: vi.fn(() => "127.0.0.1"),
 }));
-jest.mock("@/lib/rate-limit", () => ({
-  checkRateLimit: jest.fn(() => ({ allowed: true, remaining: 10, resetAt: Date.now() + 60000 })),
+vi.mock("@/lib/rate-limit", () => ({
+  checkRateLimit: vi.fn(() => ({ allowed: true, remaining: 10, resetAt: Date.now() + 60000 })),
   RATE_LIMITS: { api: { windowMs: 60000, max: 10 } },
-  getRateLimitHeaders: jest.fn(() => ({})),
+  getRateLimitHeaders: vi.fn(() => ({})),
 }));
 
 import { prisma } from "@/lib/prisma";
@@ -31,7 +32,7 @@ import { getServerSession } from "next-auth";
 import { getAuthUserId } from "@/lib/auth";
 
 const mockPrisma = prisma as unknown as {
-  readHistory: { create: jest.Mock };
+  readHistory: { create: ReturnType<typeof vi.fn> };
 };
 
 function makeRequest(url: string, init?: RequestInit) {
@@ -43,11 +44,11 @@ function makeParams(id: string) {
 }
 
 describe("POST /api/posts/[id]/read", () => {
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(() => vi.clearAllMocks());
 
   it("returns ok without recording when not authenticated", async () => {
-    (getServerSession as jest.Mock).mockResolvedValue(null);
-    (getAuthUserId as jest.Mock).mockReturnValue(null);
+    (getServerSession as ReturnType<typeof vi.fn>).mockResolvedValue(null);
+    (getAuthUserId as ReturnType<typeof vi.fn>).mockReturnValue(null);
 
     const res = await POST(makeRequest("http://localhost:3000/api/posts/1/read", { method: "POST" }), makeParams("1"));
     const data = await res.json();
@@ -58,8 +59,8 @@ describe("POST /api/posts/[id]/read", () => {
   });
 
   it("records read history when authenticated", async () => {
-    (getServerSession as jest.Mock).mockResolvedValue({ user: { id: "1" } });
-    (getAuthUserId as jest.Mock).mockReturnValue(1);
+    (getServerSession as ReturnType<typeof vi.fn>).mockResolvedValue({ user: { id: "1" } });
+    (getAuthUserId as ReturnType<typeof vi.fn>).mockReturnValue(1);
     mockPrisma.readHistory.create.mockResolvedValue({ id: 1, postId: 1, userId: 1 });
 
     const res = await POST(makeRequest("http://localhost:3000/api/posts/1/read", { method: "POST" }), makeParams("1"));
@@ -76,8 +77,8 @@ describe("POST /api/posts/[id]/read", () => {
   });
 
   it("returns 500 on database error", async () => {
-    (getServerSession as jest.Mock).mockResolvedValue({ user: { id: "1" } });
-    (getAuthUserId as jest.Mock).mockReturnValue(1);
+    (getServerSession as ReturnType<typeof vi.fn>).mockResolvedValue({ user: { id: "1" } });
+    (getAuthUserId as ReturnType<typeof vi.fn>).mockReturnValue(1);
     mockPrisma.readHistory.create.mockRejectedValue(new Error("DB error"));
 
     const res = await POST(makeRequest("http://localhost:3000/api/posts/1/read", { method: "POST" }), makeParams("1"));

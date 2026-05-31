@@ -109,7 +109,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "无效的标签ID" }, { status: 400 });
     }
     const slug = body.slug || slugify(title);
-    const existing = await prisma.post.findUnique({ where: { slug } });
+    const existing = await prisma.post.findUnique({ where: { slug }, select: { id: true } });
     if (existing) {
       return NextResponse.json({ error: "该标识已被其他文章使用" }, { status: 409 });
     }
@@ -140,8 +140,8 @@ export async function POST(request: NextRequest) {
             : undefined,
         },
         include: {
-          category: true,
-          tags: { include: { tag: true } },
+          category: { select: { id: true, name: true, slug: true } },
+          tags: { include: { tag: { select: { id: true, name: true, slug: true } } } },
         },
       });
 

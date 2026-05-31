@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, memo } from "react";
 import { useCopyToClipboard } from "@/hooks/use-copy";
 
-export default function Base64Tool() {
+export default memo(function Base64Tool() {
   const [input, setInput] = useState("");
   const [output, setOutput] = useState("");
   const [mode, setMode] = useState<"encode" | "decode">("encode");
@@ -62,4 +62,4 @@ export default function Base64Tool() {
       </div>
     </div>
   );
-}
+});

@@ -1,30 +1,31 @@
+import { vi } from "vitest";
 import { NextRequest } from "next/server";
 import { POST, GET } from "../route";
 
-jest.mock("@/lib/prisma", () => ({
+vi.mock("@/lib/prisma", () => ({
   prisma: {
-    shareStat: { upsert: jest.fn(), findMany: jest.fn() },
+    shareStat: { upsert: vi.fn(), findMany: vi.fn() },
   },
 }));
-jest.mock("@/lib/api-utils", () => ({
-  requireId: jest.fn((id: string) => {
+vi.mock("@/lib/api-utils", () => ({
+  requireId: vi.fn((id: string) => {
     const n = Number(id);
     if (!id || isNaN(n) || n < 1) throw new Error("Invalid ID");
     return n;
   }),
-  invalidIdResponse: jest.fn(() => new Response(JSON.stringify({ error: "无效的ID" }), { status: 400 })),
-  getClientIp: jest.fn(() => "127.0.0.1"),
+  invalidIdResponse: vi.fn(() => new Response(JSON.stringify({ error: "无效的ID" }), { status: 400 })),
+  getClientIp: vi.fn(() => "127.0.0.1"),
 }));
-jest.mock("@/lib/rate-limit", () => ({
-  checkRateLimit: jest.fn(() => ({ allowed: true, remaining: 10, resetAt: Date.now() + 60000 })),
+vi.mock("@/lib/rate-limit", () => ({
+  checkRateLimit: vi.fn(() => ({ allowed: true, remaining: 10, resetAt: Date.now() + 60000 })),
   RATE_LIMITS: { api: { windowMs: 60000, max: 10 } },
-  getRateLimitHeaders: jest.fn(() => ({})),
+  getRateLimitHeaders: vi.fn(() => ({})),
 }));
 
 import { prisma } from "@/lib/prisma";
 
 const mockPrisma = prisma as unknown as {
-  shareStat: { upsert: jest.Mock; findMany: jest.Mock };
+  shareStat: { upsert: ReturnType<typeof vi.fn>; findMany: ReturnType<typeof vi.fn> };
 };
 
 function makeRequest(url: string, init?: RequestInit) {
@@ -36,7 +37,7 @@ function makeParams(id: string) {
 }
 
 describe("POST /api/posts/[id]/share", () => {
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(() => vi.clearAllMocks());
 
   it("increments share count for valid platform", async () => {
     mockPrisma.shareStat.upsert.mockResolvedValue({ id: 1, postId: 1, platform: "weibo", count: 1 });
@@ -107,7 +108,7 @@ describe("POST /api/posts/[id]/share", () => {
 });
 
 describe("GET /api/posts/[id]/share", () => {
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(() => vi.clearAllMocks());
 
   it("returns share stats grouped by platform", async () => {
     mockPrisma.shareStat.findMany.mockResolvedValue([

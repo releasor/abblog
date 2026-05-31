@@ -47,11 +47,13 @@ export default function SettingsPage() {
     if (status === "unauthenticated") router.push("/login");
     if (status !== "authenticated") return;
 
-    Promise.all([
-      fetchApi<{ name: string; username: string; bio: string; website: string; location: string; avatar: string | null }>("/api/user/profile", { showErrorToast: false }),
-      fetchApi<{ aiApiKey: string; aiApiUrl: string; aiModel: string }>("/api/user/ai-settings", { showErrorToast: false }),
-      fetchApi<{ emailNotifications: boolean }>("/api/user/notification-settings", { showErrorToast: false }),
-    ]).then(([profileRes, aiRes, notifRes]) => {
+    async function loadSettings() {
+      const [profileRes, aiRes, notifRes] = await Promise.all([
+        fetchApi<{ name: string; username: string; bio: string; website: string; location: string; avatar: string | null }>("/api/user/profile", { showErrorToast: false }),
+        fetchApi<{ aiApiKey: string; aiApiUrl: string; aiModel: string }>("/api/user/ai-settings", { showErrorToast: false }),
+        fetchApi<{ emailNotifications: boolean }>("/api/user/notification-settings", { showErrorToast: false }),
+      ]);
+
       if (profileRes.ok) {
         setName(profileRes.data.name || "");
         setUsername(profileRes.data.username || "");
@@ -68,7 +70,8 @@ export default function SettingsPage() {
       if (notifRes.ok) {
         setEmailNotifications(notifRes.data.emailNotifications ?? true);
       }
-    });
+    }
+    loadSettings();
   }, [status, router]);
 
   const saveProfile = async () => {

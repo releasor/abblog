@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, memo } from "react";
 import { useCopyWithId } from "@/hooks/use-copy";
 
-export default function ColorConverter() {
+export default memo(function ColorConverter() {
   const [hex, setHex] = useState("#3b82f6");
   const [rgb, setRgb] = useState({ r: 59, g: 130, b: 246 });
   const [hsl, setHsl] = useState({ h: 217, s: 91, l: 60 });
@@ -108,4 +108,4 @@ export default function ColorConverter() {
       </div>
     </div>
   );
-}
+});

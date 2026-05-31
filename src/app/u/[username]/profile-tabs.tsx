@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import Link from "next/link";
 import { fetchApi } from "@/lib/fetch-api";
 import { formatDate } from "@/lib/format-date";
@@ -30,16 +30,25 @@ const TAB_EMPTY_MSG: Record<string, string> = {
   bookmarks: "暂无收藏",
 };
 
-export function ProfileTabs({ username }: { username: string }) {
+export const ProfileTabs = memo(function ProfileTabs({ username }: { username: string }) {
   const [posts, setPosts] = useState<UserPost[]>([]);
   const [tab, setTab] = useState<"posts" | "likes" | "bookmarks">("posts");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setLoading(true);
-    fetchApi<UserPost[]>(`/api/users/${username}/posts?tab=${tab}`, { showErrorToast: false })
-      .then((res) => { if (res.ok) setPosts(res.data); })
-      .finally(() => setLoading(false));
+    let cancelled = false;
+
+    async function loadPosts() {
+      setLoading(true);
+      try {
+        const res = await fetchApi<UserPost[]>(`/api/users/${username}/posts?tab=${tab}`, { showErrorToast: false });
+        if (!cancelled && res.ok) setPosts(res.data);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+    loadPosts();
+    return () => { cancelled = true; };
   }, [tab, username]);
 
   return (
@@ -99,4 +108,4 @@ export function ProfileTabs({ username }: { username: string }) {
       </div>
     </>
   );
-}
+});

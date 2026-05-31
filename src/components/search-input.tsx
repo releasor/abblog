@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, memo } from "react";
 import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
 import { fetchApi } from "@/lib/fetch-api";
 
-export function SearchInput() {
+export const SearchInput = memo(function SearchInput() {
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState<
@@ -129,4 +129,4 @@ export function SearchInput() {
       )}
     </div>
   );
-}
+});

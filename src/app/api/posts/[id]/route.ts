@@ -6,6 +6,7 @@ import { slugify } from "@/lib/slugify";
 import { createActivity } from "@/lib/activity";
 import { estimateReadingTime } from "@/lib/reading-time";
 import { requireId, invalidIdResponse } from "@/lib/api-utils";
+import { checkRateLimit, RATE_LIMITS, getRateLimitHeaders } from "@/lib/rate-limit";
 
 export async function GET(
   _request: NextRequest,
@@ -19,8 +20,8 @@ export async function GET(
     const post = await prisma.post.findUnique({
       where: { id: postId },
       include: {
-        category: true,
-        tags: { include: { tag: true } },
+        category: { select: { id: true, name: true, slug: true } },
+        tags: { include: { tag: { select: { id: true, name: true, slug: true } } } },
         author: { select: { id: true, name: true } },
       },
     });
@@ -50,6 +51,11 @@ export async function PUT(
     const userId = getAuthUserId(session);
     if (!userId) {
       return NextResponse.json({ error: "请先登录" }, { status: 401 });
+    }
+
+    const rl = checkRateLimit(`post-edit:${userId}`, RATE_LIMITS.api);
+    if (!rl.allowed) {
+      return NextResponse.json({ error: "操作太频繁，请稍后再试" }, { status: 429, headers: getRateLimitHeaders(rl) });
     }
 
     const { id } = await params;
@@ -90,7 +96,7 @@ export async function PUT(
 
     const slug = body.slug || (title ? slugify(title) : existing.slug);
     if (slug !== existing.slug) {
-      const slugTaken = await prisma.post.findUnique({ where: { slug } });
+      const slugTaken = await prisma.post.findUnique({ where: { slug }, select: { id: true } });
       if (slugTaken) {
         return NextResponse.json({ error: "该标识已被其他文章使用" }, { status: 409 });
       }
@@ -155,8 +161,8 @@ export async function PUT(
         ...tagUpdate,
       },
       include: {
-        category: true,
-        tags: { include: { tag: true } },
+        category: { select: { id: true, name: true, slug: true } },
+        tags: { include: { tag: { select: { id: true, name: true, slug: true } } } },
       },
     });
 
@@ -190,7 +196,7 @@ export async function DELETE(
     let postId: number;
     try { postId = requireId(id); } catch { return invalidIdResponse(); }
 
-    const existing = await prisma.post.findUnique({ where: { id: postId } });
+    const existing = await prisma.post.findUnique({ where: { id: postId }, select: { authorId: true, userId: true } });
     if (!existing) {
       return NextResponse.json({ error: "文章不存在" }, { status: 404 });
     }

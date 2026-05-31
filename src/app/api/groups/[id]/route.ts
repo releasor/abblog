@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions, getAuthUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { requireId, invalidIdResponse } from "@/lib/api-utils";
+import { checkRateLimit, RATE_LIMITS, getRateLimitHeaders } from "@/lib/rate-limit";
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -13,7 +14,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
       where: { id: groupId },
       include: {
         owner: { select: { id: true, name: true, username: true, avatar: true } },
-        members: { include: { user: { select: { id: true, name: true, username: true, avatar: true } } } },
+        members: { include: { user: { select: { id: true, name: true, username: true, avatar: true } } }, take: 100 },
         _count: { select: { members: true, posts: true } },
       },
     });
@@ -34,11 +35,16 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     const userId = getAuthUserId(session);
     if (!userId) return NextResponse.json({ error: "请先登录" }, { status: 401 });
 
+    const rl = checkRateLimit(`group-edit:${userId}`, RATE_LIMITS.api);
+    if (!rl.allowed) {
+      return NextResponse.json({ error: "操作太频繁，请稍后再试" }, { status: 429, headers: getRateLimitHeaders(rl) });
+    }
+
     const { id } = await params;
     let groupId: number;
     try { groupId = requireId(id); } catch { return invalidIdResponse(); }
 
-    const group = await prisma.group.findUnique({ where: { id: groupId } });
+    const group = await prisma.group.findUnique({ where: { id: groupId }, select: { ownerId: true } });
     if (!group || group.ownerId !== userId) return NextResponse.json({ error: "无权限" }, { status: 403 });
 
     let body;
@@ -47,13 +53,20 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     } catch {
       return NextResponse.json({ error: "请求格式无效" }, { status: 400 });
     }
+    const { name, description, coverImage, isPublic } = body;
+    if (name !== undefined && (typeof name !== "string" || name.trim().length === 0)) {
+      return NextResponse.json({ error: "圈子名称不能为空" }, { status: 400 });
+    }
+    if (name !== undefined && name.trim().length > 50) {
+      return NextResponse.json({ error: "圈子名称不能超过50个字符" }, { status: 400 });
+    }
     const updated = await prisma.group.update({
       where: { id: groupId },
       data: {
-        name: body.name ?? undefined,
-        description: body.description ?? undefined,
-        coverImage: body.coverImage ?? undefined,
-        isPublic: body.isPublic ?? undefined,
+        ...(name !== undefined && { name: name.trim() }),
+        ...(description !== undefined && { description: description?.trim().slice(0, 500) || null }),
+        ...(coverImage !== undefined && { coverImage: coverImage || null }),
+        ...(isPublic !== undefined && { isPublic: Boolean(isPublic) }),
       },
     });
     return NextResponse.json(updated);
@@ -73,7 +86,7 @@ export async function DELETE(_request: NextRequest, { params }: { params: Promis
     let groupId: number;
     try { groupId = requireId(id); } catch { return invalidIdResponse(); }
 
-    const group = await prisma.group.findUnique({ where: { id: groupId } });
+    const group = await prisma.group.findUnique({ where: { id: groupId }, select: { ownerId: true } });
     if (!group || group.ownerId !== userId) return NextResponse.json({ error: "无权限" }, { status: 403 });
 
     await prisma.group.delete({ where: { id: groupId } });
