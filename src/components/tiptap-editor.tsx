@@ -55,6 +55,12 @@ const TiptapEditor = memo(function TiptapEditor({ content, onChange }: TiptapEdi
 
 export default TiptapEditor;
 
+// Type helper for tiptap commands not in base types (provided by StarterKit)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function chain(editor: NonNullable<ReturnType<typeof useEditor>>) {
+  return editor.chain() as any;
+}
+
 function Toolbar({ editor }: { editor: ReturnType<typeof useEditor> }) {
   const imgInputRef = useRef<HTMLInputElement>(null);
   const vidInputRef = useRef<HTMLInputElement>(null);
@@ -103,42 +109,42 @@ function Toolbar({ editor }: { editor: ReturnType<typeof useEditor> }) {
 
   const addLink = () => {
     const url = window.prompt("输入链接地址：");
-    if (url) editor.chain().focus().setLink({ href: url }).run();
+    if (url) chain(editor).focus().setLink({ href: url }).run();
   };
 
   return (
     <div className="flex flex-wrap items-center gap-1 p-2 border-b border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900">
-      <button type="button" onClick={() => editor.chain().focus().toggleBold().run()} className={btnClass(editor.isActive("bold"))} title="粗体" aria-label="粗体">
+      <button type="button" onClick={() => chain(editor).focus().toggleBold().run()} className={btnClass(editor.isActive("bold"))} title="粗体" aria-label="粗体">
         <strong>B</strong>
       </button>
-      <button type="button" onClick={() => editor.chain().focus().toggleItalic().run()} className={btnClass(editor.isActive("italic"))} title="斜体" aria-label="斜体">
+      <button type="button" onClick={() => chain(editor).focus().toggleItalic().run()} className={btnClass(editor.isActive("italic"))} title="斜体" aria-label="斜体">
         <em>I</em>
       </button>
-      <button type="button" onClick={() => editor.chain().focus().toggleStrike().run()} className={btnClass(editor.isActive("strike"))} title="删除线" aria-label="删除线">
+      <button type="button" onClick={() => chain(editor).focus().toggleStrike().run()} className={btnClass(editor.isActive("strike"))} title="删除线" aria-label="删除线">
         <s>S</s>
       </button>
 
       <span className="w-px h-5 bg-zinc-300 dark:bg-zinc-700 mx-1" />
 
-      <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} className={btnClass(editor.isActive("heading", { level: 2 }))} title="标题2" aria-label="标题2">
+      <button type="button" onClick={() => chain(editor).focus().toggleHeading({ level: 2 }).run()} className={btnClass(editor.isActive("heading", { level: 2 }))} title="标题2" aria-label="标题2">
         H2
       </button>
-      <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} className={btnClass(editor.isActive("heading", { level: 3 }))} title="标题3" aria-label="标题3">
+      <button type="button" onClick={() => chain(editor).focus().toggleHeading({ level: 3 }).run()} className={btnClass(editor.isActive("heading", { level: 3 }))} title="标题3" aria-label="标题3">
         H3
       </button>
 
       <span className="w-px h-5 bg-zinc-300 dark:bg-zinc-700 mx-1" />
 
-      <button type="button" onClick={() => editor.chain().focus().toggleBulletList().run()} className={btnClass(editor.isActive("bulletList"))} title="无序列表" aria-label="无序列表">
+      <button type="button" onClick={() => chain(editor).focus().toggleBulletList().run()} className={btnClass(editor.isActive("bulletList"))} title="无序列表" aria-label="无序列表">
         <List className="w-4 h-4" />
       </button>
-      <button type="button" onClick={() => editor.chain().focus().toggleOrderedList().run()} className={btnClass(editor.isActive("orderedList"))} title="有序列表" aria-label="有序列表">
+      <button type="button" onClick={() => chain(editor).focus().toggleOrderedList().run()} className={btnClass(editor.isActive("orderedList"))} title="有序列表" aria-label="有序列表">
         <ListOrdered className="w-4 h-4" />
       </button>
-      <button type="button" onClick={() => editor.chain().focus().toggleBlockquote().run()} className={btnClass(editor.isActive("blockquote"))} title="引用" aria-label="引用">
+      <button type="button" onClick={() => chain(editor).focus().toggleBlockquote().run()} className={btnClass(editor.isActive("blockquote"))} title="引用" aria-label="引用">
         <Quote className="w-4 h-4" />
       </button>
-      <button type="button" onClick={() => editor.chain().focus().toggleCodeBlock().run()} className={btnClass(editor.isActive("codeBlock"))} title="代码块" aria-label="代码块">
+      <button type="button" onClick={() => chain(editor).focus().toggleCodeBlock().run()} className={btnClass(editor.isActive("codeBlock"))} title="代码块" aria-label="代码块">
         {"</>"}
       </button>
 
