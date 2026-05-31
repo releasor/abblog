@@ -53,8 +53,21 @@ export default async function TopicDetailPage({ params }: Props) {
 
   const posts = topic.posts.map((tp) => tp.post);
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: `#${topic.name}`,
+    description: topic.description || undefined,
+    url: `/topics/${topic.slug}`,
+    numberOfItems: topic.postCount,
+  };
+
   return (
     <main className="container mx-auto px-4 py-8">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <div className="max-w-4xl mx-auto">
         <div className="mb-8">
           <div className="flex items-center gap-4 mb-4">
