@@ -42,6 +42,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: absoluteUrl("/topics"), lastModified: new Date(), changeFrequency: "weekly", priority: 0.6 },
     { url: absoluteUrl("/timeline"), lastModified: new Date(), changeFrequency: "daily", priority: 0.5 },
     { url: absoluteUrl("/uses"), lastModified: new Date(), changeFrequency: "monthly", priority: 0.3 },
+    { url: absoluteUrl("/archive"), lastModified: new Date(), changeFrequency: "weekly", priority: 0.5 },
+    { url: absoluteUrl("/prompts"), lastModified: new Date(), changeFrequency: "monthly", priority: 0.3 },
   ];
 
   const postPages: MetadataRoute.Sitemap = posts.map((post) => ({
