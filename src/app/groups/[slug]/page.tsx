@@ -71,8 +71,21 @@ export default async function GroupDetailPage({ params }: Props) {
 
   const posts = groupPosts.map((gp) => gp.post);
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: group.name,
+    description: group.description || undefined,
+    url: `/groups/${group.slug}`,
+    memberCount: group._count.members,
+  };
+
   return (
     <main className="container mx-auto px-4 py-8">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <div className="max-w-4xl mx-auto">
         <div className="relative h-48 rounded-xl overflow-hidden mb-6">
           <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 to-teal-600" />
