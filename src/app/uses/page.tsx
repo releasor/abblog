@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { absoluteUrl } from "@/lib/site-url";
 
 export const revalidate = 86400;
 
@@ -82,8 +83,31 @@ const categories: ToolCategory[] = [
 ];
 
 export default function UsesPage() {
+  const allItems = categories.flatMap((c) => c.items);
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: "我的装备",
+    description: "我日常使用的设备、软件和工具",
+    url: absoluteUrl("/uses"),
+    itemListElement: allItems.map((item, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      item: {
+        "@type": "SoftwareApplication",
+        name: item.name,
+        description: item.description,
+        ...(item.url && { url: item.url }),
+      },
+    })),
+  };
+
   return (
     <div className="max-w-4xl mx-auto px-4 py-12">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <header className="mb-12">
         <h1 className="text-4xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 mb-4">
           我的装备
