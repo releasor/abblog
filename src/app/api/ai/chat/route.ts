@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { getAiConfig } from "@/lib/ai-config";
 import { checkRateLimit, getRateLimitHeaders } from "@/lib/rate-limit";
 import { requireId, invalidIdResponse } from "@/lib/api-utils";
+import { stripHtml } from "@/lib/text";
 
 export async function POST(request: NextRequest) {
   try {
@@ -66,7 +67,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const plainText = post.content.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim().slice(0, 4000);
+    const plainText = stripHtml(post.content).slice(0, 4000);
 
     const res = await fetch(config.apiUrl, {
       method: "POST",

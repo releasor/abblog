@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions, getAuthUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { requireId, invalidIdResponse } from "@/lib/api-utils";
+import { stripHtml } from "@/lib/text";
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -48,7 +49,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     }
 
     // Content length check
-    const contentText = post.content.replace(/<[^>]*>/g, "");
+    const contentText = stripHtml(post.content);
     if (contentText.length >= 300) {
       score += 20;
     } else {

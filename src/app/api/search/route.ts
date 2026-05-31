@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { highlightTerms } from "@/lib/highlight";
 import { checkRateLimit, RATE_LIMITS, getRateLimitHeaders } from "@/lib/rate-limit";
 import { getClientIp } from "@/lib/api-utils";
+import { stripHtml } from "@/lib/text";
 
 export async function GET(request: NextRequest) {
   const ip = getClientIp(request);
@@ -77,7 +78,7 @@ export async function GET(request: NextRequest) {
           slug: r.slug,
           excerpt: r.excerpt ? highlightTerms(r.excerpt, query) : null,
           highlightedContent: highlightTerms(
-            r.content.replace(/<[^>]*>/g, "").slice(0, 300),
+            stripHtml(r.content).slice(0, 300),
             query
           ),
           publishedAt: r.publishedAt,
