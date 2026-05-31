@@ -3,6 +3,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
+import { absoluteUrl } from "@/lib/site-url";
 
 export const metadata: Metadata = {
   title: "分类",
@@ -19,8 +20,25 @@ export default async function CategoriesPage() {
     },
   });
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: "分类",
+    description: "按分类浏览文章",
+    url: absoluteUrl("/categories"),
+    hasPart: categories.map((category) => ({
+      "@type": "Thing",
+      name: category.name,
+      url: absoluteUrl(`/categories/${category.slug}`),
+    })),
+  };
+
   return (
     <div className="max-w-6xl mx-auto px-4 py-12">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <PageHeader title="分类" />
 
       {categories.length === 0 ? (

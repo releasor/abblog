@@ -6,6 +6,7 @@ import { PostsSidebar } from "@/components/posts-sidebar";
 import { PageHeader } from "@/components/page-header";
 import { EmptyState } from "@/components/empty-state";
 import { notFound } from "next/navigation";
+import { absoluteUrl } from "@/lib/site-url";
 
 export const metadata: Metadata = {
   title: "所有文章",
@@ -48,8 +49,28 @@ export default async function PostsPage({ searchParams }: PageProps) {
     notFound();
   }
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: "所有文章",
+    description: "浏览所有已发布的文章",
+    url: absoluteUrl("/posts"),
+    numberOfItems: total,
+    hasPart: posts.map((post) => ({
+      "@type": "Article",
+      headline: post.title,
+      url: absoluteUrl(`/posts/${post.slug}`),
+      ...(post.excerpt && { description: post.excerpt }),
+      ...(post.publishedAt && { datePublished: post.publishedAt.toISOString() }),
+    })),
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-12">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <PageHeader title="所有文章" />
 
       <div className="flex gap-8">

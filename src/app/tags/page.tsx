@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { EmptyState } from "@/components/empty-state";
+import { absoluteUrl } from "@/lib/site-url";
 
 export const metadata: Metadata = {
   title: "标签云",
@@ -38,8 +39,25 @@ export default async function TagsPage() {
     return "opacity-60";
   };
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: "标签云",
+    description: "所有标签及文章数量",
+    url: absoluteUrl("/tags"),
+    hasPart: tags.map((tag) => ({
+      "@type": "Thing",
+      name: `#${tag.name}`,
+      url: absoluteUrl(`/tags/${tag.slug}`),
+    })),
+  };
+
   return (
     <div className="max-w-4xl mx-auto px-4 py-12">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <header className="mb-12">
         <h1 className="text-4xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 mb-4">
           标签云
