@@ -79,15 +79,19 @@ export default memo(function PostForm({ mode, apiEndpoint, redirectPath, initial
   );
 
   useEffect(() => {
+    let cancelled = false;
     async function loadFormData() {
       const [cats, tgs] = await Promise.all([
         fetchApi<Category[]>("/api/categories"),
         fetchApi<Tag[]>("/api/tags"),
       ]);
-      if (cats.ok) setCategories(cats.data);
-      if (tgs.ok) setTags(tgs.data);
+      if (!cancelled) {
+        if (cats.ok) setCategories(cats.data);
+        if (tgs.ok) setTags(tgs.data);
+      }
     }
     loadFormData();
+    return () => { cancelled = true; };
   }, []);
 
 
@@ -214,7 +218,7 @@ export default memo(function PostForm({ mode, apiEndpoint, redirectPath, initial
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           required
-          className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500"
+          className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500"
         />
       </div>
 
@@ -227,7 +231,7 @@ export default memo(function PostForm({ mode, apiEndpoint, redirectPath, initial
           type="text"
           value={slug}
           onChange={(e) => setManualSlug(e.target.value)}
-          className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500"
+          className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500"
         />
       </div>
 
@@ -250,7 +254,7 @@ export default memo(function PostForm({ mode, apiEndpoint, redirectPath, initial
           value={excerpt}
           onChange={(e) => setExcerpt(e.target.value)}
           rows={3}
-          className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500"
+          className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500"
         />
       </div>
 
@@ -270,7 +274,7 @@ export default memo(function PostForm({ mode, apiEndpoint, redirectPath, initial
             id="category"
             value={categoryId}
             onChange={(e) => setCategoryId(e.target.value)}
-            className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500"
+            className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500"
           >
             <option value="">无</option>
             {categories.map((cat) => (
@@ -338,7 +342,7 @@ export default memo(function PostForm({ mode, apiEndpoint, redirectPath, initial
             value={newTag}
             onChange={(e) => setNewTag(e.target.value)}
             placeholder="创建新标签..."
-            className="flex-1 px-3 py-1.5 text-sm border border-zinc-300 dark:border-zinc-700 rounded-md bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500"
+            className="flex-1 px-3 py-1.5 text-sm border border-zinc-300 dark:border-zinc-700 rounded-md bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500"
             onKeyDown={(e) => {
               if (e.key === "Enter") {
                 e.preventDefault();

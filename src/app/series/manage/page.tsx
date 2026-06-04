@@ -8,6 +8,7 @@ import { Plus, Edit3, Trash2, BookOpen, GripVertical, X, Save } from "lucide-rea
 import { EmptyState } from "@/components/empty-state";
 import { Skeleton } from "@/components/skeleton";
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import { Button } from "@/components/ui/button";
 import { fetchApi } from "@/lib/fetch-api";
 
 interface Series {
@@ -38,12 +39,16 @@ export default memo(function SeriesManagePage() {
     }
     if (status !== "authenticated") return;
 
+    let cancelled = false;
     async function loadSeries() {
       const result = await fetchApi<{ series: Series[] }>("/api/series?mine=true&limit=50", { showErrorToast: false });
-      setLoading(false);
-      if (result.ok) setSeries(result.data.series || []);
+      if (!cancelled) {
+        setLoading(false);
+        if (result.ok) setSeries(result.data.series || []);
+      }
     }
     loadSeries();
+    return () => { cancelled = true; };
   }, [status, router]);
 
   const handleCreate = async () => {
@@ -124,17 +129,16 @@ export default memo(function SeriesManagePage() {
           <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">我的系列</h1>
           <p className="text-sm text-zinc-500 mt-1">管理你的系列文章，将相关文章组织在一起</p>
         </div>
-        <button
+        <Button
           onClick={() => {
             setShowCreate(true);
             setForm({ name: "", description: "", coverImage: "" });
           }}
           aria-expanded={showCreate}
-          className="flex items-center gap-2 px-4 py-2 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-lg font-medium hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors"
         >
           <Plus className="w-4 h-4" />
           新建系列
-        </button>
+        </Button>
       </div>
 
       {/* Create Form */}
@@ -153,7 +157,7 @@ export default memo(function SeriesManagePage() {
               value={form.name}
               onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
               aria-label="系列名称"
-              className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500"
+              className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500"
             />
             <textarea
               placeholder="系列描述（可选）"
@@ -161,7 +165,7 @@ export default memo(function SeriesManagePage() {
               onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
               aria-label="系列描述"
               rows={2}
-              className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500"
+              className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500"
             />
             <input
               type="text"
@@ -169,22 +173,21 @@ export default memo(function SeriesManagePage() {
               value={form.coverImage}
               onChange={(e) => setForm((f) => ({ ...f, coverImage: e.target.value }))}
               aria-label="封面图片URL"
-              className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500"
+              className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500"
             />
             <div className="flex gap-2">
-              <button
+              <Button
                 onClick={handleCreate}
-                disabled={submitting}
-                className="px-4 py-2 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-lg font-medium hover:bg-zinc-800 dark:hover:bg-zinc-200 disabled:opacity-50 transition-colors"
+                loading={submitting}
               >
-                {submitting ? "创建中..." : "创建"}
-              </button>
-              <button
+                创建
+              </Button>
+              <Button
+                variant="secondary"
                 onClick={() => setShowCreate(false)}
-                className="px-4 py-2 border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
               >
                 取消
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -208,14 +211,14 @@ export default memo(function SeriesManagePage() {
                     value={form.name}
                     onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
                     aria-label="系列名称"
-                    className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500"
+                    className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500"
                   />
                   <textarea
                     value={form.description}
                     onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
                     aria-label="系列描述"
                     rows={2}
-                    className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500"
+                    className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500"
                   />
                   <input
                     type="text"
@@ -223,26 +226,27 @@ export default memo(function SeriesManagePage() {
                     onChange={(e) => setForm((f) => ({ ...f, coverImage: e.target.value }))}
                     placeholder="封面图片 URL"
                     aria-label="封面图片URL"
-                    className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500"
+                    className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500"
                   />
                   <div className="flex gap-2">
-                    <button
+                    <Button
+                      size="sm"
                       onClick={() => handleUpdate(s.id)}
-                      disabled={submitting}
-                      className="flex items-center gap-1 px-3 py-1.5 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-lg text-sm font-medium hover:bg-zinc-800 dark:hover:bg-zinc-200 disabled:opacity-50 transition-colors"
+                      loading={submitting}
                     >
                       <Save className="w-3.5 h-3.5" />
-                      {submitting ? "保存中..." : "保存"}
-                    </button>
-                    <button
+                      保存
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="secondary"
                       onClick={() => {
                         setEditingId(null);
                         setForm({ name: "", description: "", coverImage: "" });
                       }}
-                      className="px-3 py-1.5 border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 rounded-lg text-sm hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
                     >
                       取消
-                    </button>
+                    </Button>
                   </div>
                 </div>
               ) : (

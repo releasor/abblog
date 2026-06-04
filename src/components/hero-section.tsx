@@ -19,7 +19,10 @@ export const HeroSection = memo(function HeroSection() {
   return (
     <section
       className={`hero-section ${flipped ? "hero-flipped" : ""}`}
+      role="button"
+      tabIndex={0}
       onClick={() => setFlipped((f) => !f)}
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setFlipped((f) => !f); } }}
     >
       <div className="hero-flipper">
         {/* Front */}

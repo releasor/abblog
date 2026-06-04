@@ -7,6 +7,7 @@ import { PageHeader } from "@/components/page-header";
 import { EmptyState } from "@/components/empty-state";
 import { notFound } from "next/navigation";
 import { absoluteUrl } from "@/lib/site-url";
+import { POSTS_PER_PAGE } from "@/lib/constants";
 
 export const metadata: Metadata = {
   title: "所有文章",
@@ -21,8 +22,8 @@ interface PageProps {
 
 export default async function PostsPage({ searchParams }: PageProps) {
   const params = await searchParams;
-  const page = Math.max(1, parseInt(params.page || "1"));
-  const limit = 12;
+  const page = Math.max(1, parseInt(params.page || "1", 10));
+  const limit = POSTS_PER_PAGE;
 
   const [posts, total] = await Promise.all([
     prisma.post.findMany({
@@ -66,7 +67,7 @@ export default async function PostsPage({ searchParams }: PageProps) {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-12">
+    <div className="max-w-6xl mx-auto px-4 py-12">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

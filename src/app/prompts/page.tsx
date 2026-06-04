@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, memo } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { MessageCircle, Zap, Trash2, Copy, Check } from "lucide-react";
@@ -10,7 +10,7 @@ import { useCopyToClipboard } from "@/hooks/use-copy";
 
 type Tab = "chat" | "optimizer";
 
-export default function PromptsPage() {
+export default memo(function PromptsPage() {
   const { status } = useSession();
   const router = useRouter();
   const [tab, setTab] = useState<Tab>("chat");
@@ -66,7 +66,7 @@ export default function PromptsPage() {
       {tab === "chat" ? <ChatTab /> : <OptimizerTab />}
     </div>
   );
-}
+});
 
 /* ======================== AI Chat Tab ======================== */
 
@@ -167,7 +167,7 @@ function ChatTab() {
             onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && sendMessage()}
             placeholder="输入消息..."
             aria-label="消息内容"
-            className="flex-1 px-4 py-2.5 text-sm border border-zinc-300 dark:border-zinc-700 rounded-full bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500"
+            className="flex-1 px-4 py-2.5 text-sm border border-zinc-300 dark:border-zinc-700 rounded-full bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500"
             disabled={loading}
           />
           <button
@@ -215,7 +215,7 @@ function OptimizerTab() {
           onChange={(e) => setInput(e.target.value)}
           placeholder="输入您的原始提示词..."
           aria-label="原始提示词"
-          className="w-full h-48 p-4 text-sm border border-zinc-300 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500 resize-none"
+          className="w-full h-48 p-4 text-sm border border-zinc-300 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500 resize-none"
         />
       </div>
 

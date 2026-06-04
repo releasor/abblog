@@ -4,6 +4,7 @@ import { authOptions, isAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { parsePagination, paginationMeta } from "@/lib/pagination";
 import { checkRateLimit, RATE_LIMITS, getRateLimitHeaders } from "@/lib/rate-limit";
+import { CACHE_PRIVATE_MAX_AGE, CACHE_PRIVATE_STALE } from "@/lib/constants";
 
 export async function GET(request: NextRequest) {
   try {
@@ -41,7 +42,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       comments,
       pagination: paginationMeta(page, limit, total),
-    }, { headers: { "Cache-Control": "private, max-age=10, stale-while-revalidate=20" } });
+    }, { headers: { "Cache-Control": `private, max-age=${CACHE_PRIVATE_MAX_AGE}, stale-while-revalidate=${CACHE_PRIVATE_STALE}` } });
   } catch (e) {
     console.error("[AdminComments] Failed to fetch comments:", e);
     return NextResponse.json({ error: "获取评论列表失败" }, { status: 500 });
@@ -73,7 +74,7 @@ export async function PATCH(request: NextRequest) {
     if (!validStatus) {
       return NextResponse.json({ error: "无效的状态值" }, { status: 400 });
     }
-    const validIds = ids.map((id) => parseInt(id)).filter((id) => !isNaN(id));
+    const validIds = ids.map((id) => parseInt(id, 10)).filter((id) => !isNaN(id));
     if (validIds.length === 0) {
       return NextResponse.json({ error: "无效的评论ID" }, { status: 400 });
     }

@@ -1,11 +1,11 @@
-import { ReactNode, ButtonHTMLAttributes } from "react";
+import { memo, ReactNode, ButtonHTMLAttributes } from "react";
 
 type Variant = "default" | "danger" | "success";
 
 const variantStyles: Record<Variant, string> = {
-  default: "text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800",
-  danger: "text-zinc-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20",
-  success: "text-zinc-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20",
+  default: "text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500",
+  danger: "text-zinc-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500",
+  success: "text-zinc-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500",
 };
 
 interface ActionButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "className"> {
@@ -14,7 +14,7 @@ interface ActionButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>
   label: string;
 }
 
-export function ActionButton({
+export const ActionButton = memo(function ActionButton({
   variant = "default",
   icon,
   label,
@@ -29,4 +29,4 @@ export function ActionButton({
       {icon}
     </button>
   );
-}
+});

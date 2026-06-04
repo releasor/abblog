@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { CACHE_PUBLIC_S_MAXAGE, CACHE_PUBLIC_STALE } from "@/lib/constants";
 
 export async function GET(
   _request: NextRequest,
@@ -35,7 +36,7 @@ export async function GET(
     }
 
     return NextResponse.json(user, {
-      headers: { "Cache-Control": "public, s-maxage=60, stale-while-revalidate=120" },
+      headers: { "Cache-Control": `public, s-maxage=${CACHE_PUBLIC_S_MAXAGE}, stale-while-revalidate=${CACHE_PUBLIC_STALE}` },
     });
   } catch (e) {
     console.error("[User] Failed to fetch user:", e);

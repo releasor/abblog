@@ -1,4 +1,4 @@
-import { Skeleton } from "@/components/skeleton";
+import { Skeleton, SkeletonList } from "@/components/skeleton";
 
 export default function BookmarksLoading() {
   return (
@@ -13,16 +13,8 @@ export default function BookmarksLoading() {
             <Skeleton key={i} className="h-10 w-full rounded-lg" />
           ))}
         </div>
-        <div className="lg:col-span-3 space-y-4">
-          {[...Array(3)].map((_, i) => (
-            <div
-              key={i}
-              className="p-4 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl"
-            >
-              <Skeleton className="h-5 w-3/4 mb-2" />
-              <Skeleton className="h-3 w-full" />
-            </div>
-          ))}
+        <div className="lg:col-span-3">
+          <SkeletonList count={3} />
         </div>
       </div>
     </div>

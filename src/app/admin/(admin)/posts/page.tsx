@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, memo } from "react";
 import Link from "next/link";
 import { Plus, Pencil, Trash2, FileText } from "lucide-react";
 import { ConfirmDialog } from "@/components/confirm-dialog";
@@ -8,8 +8,10 @@ import { fetchApi } from "@/lib/fetch-api";
 import { formatDateShort } from "@/lib/format-date";
 import { DataTable } from "@/components/data-table";
 import { useConfirmDelete } from "@/hooks/use-confirm-delete";
+import { StatusBadge } from "@/components/status-badge";
 import { SimplePagination } from "@/components/pagination";
 import { FilterTabs } from "@/components/filter-tabs";
+import { ADMIN_PAGE_SIZE } from "@/lib/constants";
 
 interface Post {
   id: number;
@@ -30,7 +32,7 @@ interface Pagination {
   totalPages: number;
 }
 
-export default function AdminPostsPage() {
+export default memo(function AdminPostsPage() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [pagination, setPagination] = useState<Pagination | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -39,11 +41,11 @@ export default function AdminPostsPage() {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
 
-  const fetchPosts = useCallback(async () => {
+  const fetchPosts = useCallback(async (cancelled?: { current: boolean }) => {
     setLoading(true);
     const params = new URLSearchParams({
       page: page.toString(),
-      limit: "10",
+      limit: String(ADMIN_PAGE_SIZE),
       sortBy,
       sortOrder,
     });
@@ -52,15 +54,19 @@ export default function AdminPostsPage() {
     }
 
     const result = await fetchApi<{ posts: Post[]; pagination: Pagination }>(`/api/posts?${params}`, { showErrorToast: false });
-    setLoading(false);
-    if (result.ok) {
-      setPosts(result.data.posts);
-      setPagination(result.data.pagination);
+    if (!cancelled?.current) {
+      setLoading(false);
+      if (result.ok) {
+        setPosts(result.data.posts);
+        setPagination(result.data.pagination);
+      }
     }
   }, [page, statusFilter, sortBy, sortOrder]);
 
   useEffect(() => {
-    fetchPosts();
+    const cancelled = { current: false };
+    fetchPosts(cancelled);
+    return () => { cancelled.current = true; };
   }, [fetchPosts]);
 
   const { targetId: deleteTargetId, requestDelete, confirm: confirmDelete, cancel: cancelDelete, isDeleting } = useConfirmDelete(async (id: number) => {
@@ -104,9 +110,9 @@ export default function AdminPostsPage() {
         <select
           value={`${sortBy}-${sortOrder}`}
           onChange={(e) => {
-            const [by, order] = e.target.value.split("-");
-            setSortBy(by);
-            setSortOrder(order);
+            const parts = e.target.value.split("-");
+            setSortBy(parts[0] ?? "createdAt");
+            setSortOrder(parts[1] ?? "desc");
             setPage(1);
           }}
           aria-label="排序方式"
@@ -148,22 +154,13 @@ export default function AdminPostsPage() {
             key: "status",
             label: "状态",
             render: (post) => (
-              <span
-                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
+              <StatusBadge
+                config={
                   post.status === "PUBLISHED"
-                    ? "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400"
-                    : "bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400"
-                }`}
-              >
-                <span
-                  className={`w-1.5 h-1.5 rounded-full ${
-                    post.status === "PUBLISHED"
-                      ? "bg-emerald-500"
-                      : "bg-zinc-400"
-                  }`}
-                />
-                {post.status === "PUBLISHED" ? "已发布" : "草稿"}
-              </span>
+                    ? { label: "已发布", dot: "bg-emerald-500", bg: "bg-emerald-50 dark:bg-emerald-900/20", text: "text-emerald-700 dark:text-emerald-400" }
+                    : { label: "草稿", dot: "bg-zinc-400", bg: "bg-zinc-100 dark:bg-zinc-800", text: "text-zinc-600 dark:text-zinc-400" }
+                }
+              />
             ),
           },
           {
@@ -251,4 +248,4 @@ export default function AdminPostsPage() {
       />
     </div>
   );
-}
+});

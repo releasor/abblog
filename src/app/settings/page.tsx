@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, memo } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { fetchApi } from "@/lib/fetch-api";
@@ -17,7 +17,7 @@ const TAB_LABELS: Record<SettingsTab, string> = {
   notifications: "通知设置",
 };
 
-export default function SettingsPage() {
+export default memo(function SettingsPage() {
   const { status, update } = useSession();
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -47,6 +47,7 @@ export default function SettingsPage() {
     if (status === "unauthenticated") router.push("/login");
     if (status !== "authenticated") return;
 
+    let cancelled = false;
     async function loadSettings() {
       const [profileRes, aiRes, notifRes] = await Promise.all([
         fetchApi<{ name: string; username: string; bio: string; website: string; location: string; avatar: string | null }>("/api/user/profile", { showErrorToast: false }),
@@ -54,24 +55,27 @@ export default function SettingsPage() {
         fetchApi<{ emailNotifications: boolean }>("/api/user/notification-settings", { showErrorToast: false }),
       ]);
 
-      if (profileRes.ok) {
-        setName(profileRes.data.name || "");
-        setUsername(profileRes.data.username || "");
-        setBio(profileRes.data.bio || "");
-        setWebsite(profileRes.data.website || "");
-        setLocation(profileRes.data.location || "");
-        setAvatar(profileRes.data.avatar || null);
-      }
-      if (aiRes.ok) {
-        setAiApiKey(aiRes.data.aiApiKey || "");
-        setAiApiUrl(aiRes.data.aiApiUrl || "");
-        setAiModel(aiRes.data.aiModel || "");
-      }
-      if (notifRes.ok) {
-        setEmailNotifications(notifRes.data.emailNotifications ?? true);
+      if (!cancelled) {
+        if (profileRes.ok) {
+          setName(profileRes.data.name || "");
+          setUsername(profileRes.data.username || "");
+          setBio(profileRes.data.bio || "");
+          setWebsite(profileRes.data.website || "");
+          setLocation(profileRes.data.location || "");
+          setAvatar(profileRes.data.avatar || null);
+        }
+        if (aiRes.ok) {
+          setAiApiKey(aiRes.data.aiApiKey || "");
+          setAiApiUrl(aiRes.data.aiApiUrl || "");
+          setAiModel(aiRes.data.aiModel || "");
+        }
+        if (notifRes.ok) {
+          setEmailNotifications(notifRes.data.emailNotifications ?? true);
+        }
       }
     }
     loadSettings();
+    return () => { cancelled = true; };
   }, [status, router]);
 
   const saveProfile = async () => {
@@ -116,15 +120,18 @@ export default function SettingsPage() {
   };
 
   const changePassword = async () => {
+    if (saving) return;
     setMessage("");
     if (newPassword !== confirmPassword) {
       setMessage("两次输入的密码不一致");
       return;
     }
+    setSaving(true);
     const res = await fetchApi("/api/user/password", {
       method: "PATCH",
       body: JSON.stringify({ currentPassword, newPassword }),
     });
+    setSaving(false);
     if (res.ok) {
       setMessage("密码修改成功");
       setCurrentPassword("");
@@ -229,7 +236,7 @@ export default function SettingsPage() {
 
           <div>
             <label htmlFor="settings-bio" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">个人简介</label>
-            <textarea id="settings-bio" value={bio} onChange={(e) => setBio(e.target.value)} rows={3} className="w-full px-3 py-2 text-sm border border-zinc-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500 resize-none" placeholder="介绍一下自己..." />
+            <textarea id="settings-bio" value={bio} onChange={(e) => setBio(e.target.value)} rows={3} className="w-full px-3 py-2 text-sm border border-zinc-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500 resize-none" placeholder="介绍一下自己..." />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -281,8 +288,8 @@ export default function SettingsPage() {
             onChange={(e) => setConfirmPassword(e.target.value)}
             autoComplete="new-password"
           />
-          <button onClick={changePassword} className="w-full px-4 py-2 text-sm bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-lg hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors">
-            修改密码
+          <button onClick={changePassword} disabled={saving} className="w-full px-4 py-2 text-sm bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-lg hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors disabled:opacity-50">
+            {saving ? "修改中..." : "修改密码"}
           </button>
         </div>
       )}
@@ -308,7 +315,7 @@ export default function SettingsPage() {
                 value={aiApiKey}
                 onChange={(e) => setAiApiKey(e.target.value)}
                 placeholder="sk-..."
-                className="w-full px-3 py-2 pr-16 text-sm border border-zinc-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500"
+                className="w-full px-3 py-2 pr-16 text-sm border border-zinc-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500"
               />
               <button
                 onClick={() => setShowApiKey(!showApiKey)}
@@ -374,4 +381,4 @@ export default function SettingsPage() {
       )}
     </div>
   );
-}
+});

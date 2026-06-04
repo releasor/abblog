@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, lazy, Suspense } from "react";
+import { useState, lazy, Suspense, memo } from "react";
 
 type Tool = "json" | "regex" | "color" | "markdown" | "timestamp" | "base64" | "password" | "diff" | "qrcode" | "yaml" | "cron" | "httpstatus" | "cssunit";
 
@@ -42,7 +42,7 @@ function ToolLoader() {
   );
 }
 
-export default function ToolsPage() {
+export default memo(function ToolsPage() {
   const [active, setActive] = useState<Tool>("json");
 
   const tabs: { key: Tool; label: string; icon: string }[] = [
@@ -64,7 +64,7 @@ export default function ToolsPage() {
   const ActiveComponent = TOOL_COMPONENTS[active];
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-12">
+    <div className="max-w-6xl mx-auto px-4 py-12">
       <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">
         在线工具箱
       </h1>
@@ -98,4 +98,4 @@ export default function ToolsPage() {
       </div>
     </div>
   );
-}
+});

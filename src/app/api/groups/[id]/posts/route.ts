@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions, getAuthUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { parsePagination, paginationMeta } from "@/lib/pagination";
+import { CACHE_PUBLIC_S_MAXAGE_MEDIUM, CACHE_PUBLIC_STALE_MEDIUM } from "@/lib/constants";
 import { requireId, invalidIdResponse } from "@/lib/api-utils";
 import { checkRateLimit, RATE_LIMITS, getRateLimitHeaders } from "@/lib/rate-limit";
 
@@ -44,7 +45,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         posts: posts.map((gp) => gp.post),
         pagination: paginationMeta(page, limit, total),
       },
-      { headers: { "Cache-Control": "public, s-maxage=120, stale-while-revalidate=300" } }
+      { headers: { "Cache-Control": `public, s-maxage=${CACHE_PUBLIC_S_MAXAGE_MEDIUM}, stale-while-revalidate=${CACHE_PUBLIC_STALE_MEDIUM}` } }
     );
   } catch (e) {
     console.error("[GroupPosts] Failed to fetch group posts:", e);

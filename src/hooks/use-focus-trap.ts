@@ -25,8 +25,9 @@ export function useFocusTrap(active: boolean) {
 
     // Focus the first focusable element
     const focusable = getFocusableElements();
-    if (focusable.length > 0) {
-      focusable[0].focus();
+    const firstFocusable = focusable[0];
+    if (firstFocusable) {
+      firstFocusable.focus();
     }
 
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -37,6 +38,7 @@ export function useFocusTrap(active: boolean) {
 
       const first = currentFocusable[0];
       const last = currentFocusable[currentFocusable.length - 1];
+      if (!first || !last) return;
 
       if (e.shiftKey) {
         if (document.activeElement === first) {

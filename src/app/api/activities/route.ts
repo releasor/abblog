@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { parsePagination, paginationMeta } from "@/lib/pagination";
+import { CACHE_PUBLIC_S_MAXAGE, CACHE_PUBLIC_STALE } from "@/lib/constants";
 
 export async function GET(request: NextRequest) {
   try {
@@ -8,7 +9,7 @@ export async function GET(request: NextRequest) {
     const { page, limit, skip } = parsePagination(searchParams, { limit: 20 });
     const userId = searchParams.get("userId");
 
-    const userIdNum = userId ? parseInt(userId) : NaN;
+    const userIdNum = userId ? parseInt(userId, 10) : NaN;
     const where = !isNaN(userIdNum) ? { userId: userIdNum } : {};
 
     const [activities, total] = await Promise.all([
@@ -26,7 +27,7 @@ export async function GET(request: NextRequest) {
       activities,
       pagination: paginationMeta(page, limit, total),
     }, {
-      headers: { "Cache-Control": "public, max-age=60" },
+      headers: { "Cache-Control": `public, s-maxage=${CACHE_PUBLIC_S_MAXAGE}, stale-while-revalidate=${CACHE_PUBLIC_STALE}` },
     });
   } catch (e) {
     console.error("[Activities] Failed to list activities:", e);

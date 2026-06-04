@@ -52,10 +52,10 @@ export default memo(function YamlConverter() {
       const indent = rawLine.search(/\S/);
       const line = rawLine.trim();
 
-      while (stack.length > 1 && stack[stack.length - 1].indent >= indent) {
+      while (stack.length > 1 && (stack[stack.length - 1]?.indent ?? 0) >= indent) {
         stack.pop();
       }
-      const parent = stack[stack.length - 1].obj;
+      const parent = stack[stack.length - 1]?.obj ?? root;
 
       if (line.startsWith("- ")) {
         const val = line.slice(2).trim();
@@ -88,7 +88,7 @@ export default memo(function YamlConverter() {
     if (val === "null" || val === "~") return null;
     if (val === "true") return true;
     if (val === "false") return false;
-    if (/^-?\d+$/.test(val)) return parseInt(val);
+    if (/^-?\d+$/.test(val)) return parseInt(val, 10);
     if (/^-?\d+\.\d+$/.test(val)) return parseFloat(val);
     if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
       return val.slice(1, -1);
@@ -131,7 +131,7 @@ export default memo(function YamlConverter() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label htmlFor="yaml-input" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">输入</label>
-          <textarea id="yaml-input" value={input} onChange={(e) => setInput(e.target.value)} className="w-full h-80 p-3 font-mono text-sm border border-zinc-300 dark:border-zinc-700 rounded-lg bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500 resize-none" placeholder={mode === "json2yaml" ? '{"key": "value"}' : "key: value"} />
+          <textarea id="yaml-input" value={input} onChange={(e) => setInput(e.target.value)} className="w-full h-80 p-3 font-mono text-sm border border-zinc-300 dark:border-zinc-700 rounded-lg bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500 resize-none" placeholder={mode === "json2yaml" ? '{"key": "value"}' : "key: value"} />
         </div>
         <div>
           <label htmlFor="yaml-output" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">输出</label>

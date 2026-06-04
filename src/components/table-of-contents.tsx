@@ -39,7 +39,7 @@ export const TableOfContents = memo(function TableOfContents({ headings }: Table
           .filter((e) => e.isIntersecting)
           .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
 
-        if (visible.length > 0) {
+        if (visible.length > 0 && visible[0]) {
           setActiveId(visible[0].target.id);
         }
       },

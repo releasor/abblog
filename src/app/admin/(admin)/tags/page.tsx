@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, memo } from "react";
 import { Tag, Plus, Pencil, Trash2, Check, X } from "lucide-react";
 import { SkeletonRow } from "@/components/skeleton";
 import { EmptyState } from "@/components/empty-state";
@@ -15,7 +15,7 @@ interface TagItem {
   _count: { posts: number };
 }
 
-export default function AdminTagsPage() {
+export default memo(function AdminTagsPage() {
   const [tags, setTags] = useState<TagItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [newName, setNewName] = useState("");
@@ -25,15 +25,19 @@ export default function AdminTagsPage() {
   const [editName, setEditName] = useState("");
   const [saving, setSaving] = useState(false);
 
-  const fetchTags = useCallback(async () => {
+  const fetchTags = useCallback(async (cancelled?: { current: boolean }) => {
     setLoading(true);
     const result = await fetchApi<TagItem[]>("/api/tags", { showErrorToast: false });
-    setLoading(false);
-    if (result.ok) setTags(result.data);
+    if (!cancelled?.current) {
+      setLoading(false);
+      if (result.ok) setTags(result.data);
+    }
   }, []);
 
   useEffect(() => {
-    fetchTags();
+    const cancelled = { current: false };
+    fetchTags(cancelled);
+    return () => { cancelled.current = true; };
   }, [fetchTags]);
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -97,7 +101,7 @@ export default function AdminTagsPage() {
             maxLength={50}
             required
             aria-label="新标签名称"
-            className="w-full px-3 py-2.5 text-sm border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-200 dark:focus:ring-zinc-700 transition-shadow"
+            className="w-full px-3 py-2.5 text-sm border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500 transition-shadow"
           />
           {createError && (
             <p className="mt-1.5 text-xs text-red-600 dark:text-red-400">
@@ -134,7 +138,7 @@ export default function AdminTagsPage() {
                     onChange={(e) => setEditName(e.target.value)}
                     maxLength={50}
                     aria-label={`编辑标签 ${tag.name}`}
-                    className="px-2 py-1 text-sm border border-zinc-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 w-24 focus:outline-none focus:ring-2 focus:ring-zinc-200 dark:focus:ring-zinc-700"
+                    className="px-2 py-1 text-sm border border-zinc-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 w-24 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500"
                     autoFocus
                     onKeyDown={(e) => {
                       if (e.key === "Enter") handleSave(tag.id);
@@ -171,7 +175,7 @@ export default function AdminTagsPage() {
                   <span className="text-xs text-zinc-400">
                     {tag._count.posts}
                   </span>
-                  <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="flex items-center gap-0.5 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                     <button
                       onClick={() => {
                         setEditId(tag.id);
@@ -209,4 +213,4 @@ export default function AdminTagsPage() {
       />
     </div>
   );
-}
+});

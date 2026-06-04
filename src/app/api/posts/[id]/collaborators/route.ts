@@ -4,6 +4,7 @@ import { authOptions, getAuthUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { requireId, invalidIdResponse } from "@/lib/api-utils";
 import { checkRateLimit, RATE_LIMITS, getRateLimitHeaders } from "@/lib/rate-limit";
+import { CACHE_PRIVATE_MAX_AGE_LONG, CACHE_PRIVATE_STALE_LONG } from "@/lib/constants";
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -15,7 +16,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
       where: { postId },
       include: { user: { select: { id: true, name: true, username: true, avatar: true } } },
     });
-    return NextResponse.json(collaborators, { headers: { "Cache-Control": "private, max-age=60, stale-while-revalidate=120" } });
+    return NextResponse.json(collaborators, { headers: { "Cache-Control": `private, max-age=${CACHE_PRIVATE_MAX_AGE_LONG}, stale-while-revalidate=${CACHE_PRIVATE_STALE_LONG}` } });
   } catch (e) {
     console.error("[Collaborators] Failed to fetch collaborators:", e);
     return NextResponse.json({ error: "获取协作者列表失败" }, { status: 500 });
@@ -76,6 +77,11 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
     const userId = getAuthUserId(session);
     if (!userId) return NextResponse.json({ error: "请先登录" }, { status: 401 });
 
+    const rl = checkRateLimit(`collaborator-delete:${userId}`, RATE_LIMITS.api);
+    if (!rl.allowed) {
+      return NextResponse.json({ error: "操作太频繁，请稍后再试" }, { status: 429, headers: getRateLimitHeaders(rl) });
+    }
+
     const { id } = await params;
     let postId: number;
     try { postId = requireId(id); } catch { return invalidIdResponse(); }
@@ -92,9 +98,16 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
     let targetUid: number;
     try { targetUid = requireId(targetUserId); } catch { return invalidIdResponse(); }
 
-    await prisma.postCollaborator.delete({
-      where: { postId_userId: { postId, userId: targetUid } },
-    });
+    try {
+      await prisma.postCollaborator.delete({
+        where: { postId_userId: { postId, userId: targetUid } },
+      });
+    } catch (deleteErr: unknown) {
+      if ((deleteErr as { code?: string }).code === "P2025") {
+        return NextResponse.json({ error: "该用户不是协作者" }, { status: 404 });
+      }
+      throw deleteErr;
+    }
     return NextResponse.json({ success: true });
   } catch (e) {
     console.error("[Collaborators] Failed to remove collaborator:", e);

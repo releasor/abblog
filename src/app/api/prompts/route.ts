@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions, getAuthUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { checkRateLimit, RATE_LIMITS, getRateLimitHeaders } from "@/lib/rate-limit";
+import { MAX_TITLE_LENGTH, MAX_PROMPT_CONTENT_LENGTH, CACHE_PRIVATE_MAX_AGE, CACHE_PRIVATE_STALE } from "@/lib/constants";
 
 export async function GET(request: NextRequest) {
   try {
@@ -34,7 +35,7 @@ export async function GET(request: NextRequest) {
       orderBy: [{ isPinned: "desc" }, { updatedAt: "desc" }],
     });
 
-    return NextResponse.json(prompts, { headers: { "Cache-Control": "private, max-age=10, stale-while-revalidate=20" } });
+    return NextResponse.json(prompts, { headers: { "Cache-Control": `private, max-age=${CACHE_PRIVATE_MAX_AGE}, stale-while-revalidate=${CACHE_PRIVATE_STALE}` } });
   } catch (e) {
     console.error("[Prompts] Failed to fetch prompts:", e);
     return NextResponse.json({ error: "获取Prompt列表失败" }, { status: 500 });
@@ -66,13 +67,13 @@ export async function POST(request: NextRequest) {
     if (!title || typeof title !== "string" || title.trim().length === 0) {
       return NextResponse.json({ error: "标题不能为空" }, { status: 400 });
     }
-    if (title.trim().length > 200) {
-      return NextResponse.json({ error: "标题不能超过200个字符" }, { status: 400 });
+    if (title.trim().length > MAX_TITLE_LENGTH) {
+      return NextResponse.json({ error: `标题不能超过${MAX_TITLE_LENGTH}个字符` }, { status: 400 });
     }
     if (!content || typeof content !== "string" || content.trim().length === 0) {
       return NextResponse.json({ error: "内容不能为空" }, { status: 400 });
     }
-    if (content.length > 50000) {
+    if (content.length > MAX_PROMPT_CONTENT_LENGTH) {
       return NextResponse.json({ error: "内容过长" }, { status: 400 });
     }
 

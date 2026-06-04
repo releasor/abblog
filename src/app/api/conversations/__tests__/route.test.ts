@@ -20,7 +20,7 @@ vi.mock("@/lib/prisma", () => ({
 }));
 vi.mock("@/lib/api-utils", () => ({
   requireId: vi.fn((id: string) => {
-    const n = parseInt(id);
+    const n = parseInt(id, 10);
     if (isNaN(n)) throw new Error("invalid");
     return n;
   }),

@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { ONE_WEEK_MS, MAX_PAGE_SIZE, DEFAULT_PAGE_SIZE, LIKE_WEIGHT, COMMENT_WEIGHT, READ_WEIGHT, CACHE_PUBLIC_S_MAXAGE_SHORT, CACHE_PUBLIC_STALE_SHORT } from "@/lib/constants";
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const period = searchParams.get("period") || "week";
-    const limit = Math.min(50, Math.max(1, parseInt(searchParams.get("limit") || "10") || 10));
+    const limit = Math.min(MAX_PAGE_SIZE, Math.max(1, parseInt(searchParams.get("limit") || String(DEFAULT_PAGE_SIZE), 10) || DEFAULT_PAGE_SIZE));
 
     const now = new Date();
     let startDate: Date;
@@ -13,7 +14,7 @@ export async function GET(request: NextRequest) {
     if (period === "month") {
       startDate = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
     } else {
-      startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      startDate = new Date(now.getTime() - ONE_WEEK_MS);
     }
 
     const candidateLimit = limit * 3;
@@ -49,13 +50,13 @@ export async function GET(request: NextRequest) {
     const scored = allCandidates
       .map((post) => ({
         ...post,
-        score: post._count.likes * 3 + post._count.comments * 2 + post._count.readHistory,
+        score: post._count.likes * LIKE_WEIGHT + post._count.comments * COMMENT_WEIGHT + post._count.readHistory * READ_WEIGHT,
       }))
       .sort((a, b) => b.score - a.score)
       .slice(0, limit);
 
     return NextResponse.json(scored, {
-      headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600" },
+      headers: { "Cache-Control": `public, s-maxage=${CACHE_PUBLIC_S_MAXAGE_SHORT}, stale-while-revalidate=${CACHE_PUBLIC_STALE_SHORT}` },
     });
   } catch (e) {
     console.error("[PopularPosts] Failed to fetch popular posts:", e);

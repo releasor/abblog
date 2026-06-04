@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { createActivity } from "@/lib/activity";
 import { checkRateLimit, RATE_LIMITS, getRateLimitHeaders } from "@/lib/rate-limit";
 import { requireId, invalidIdResponse } from "@/lib/api-utils";
+import { CACHE_PRIVATE_MAX_AGE_MEDIUM, CACHE_PRIVATE_STALE_MEDIUM } from "@/lib/constants";
 
 export async function GET(
   _request: NextRequest,
@@ -29,7 +30,7 @@ export async function GET(
       isLiked = !!existing;
     }
 
-    return NextResponse.json({ count: likeCount, isLiked }, { headers: { "Cache-Control": "private, max-age=30, stale-while-revalidate=60" } });
+    return NextResponse.json({ count: likeCount, isLiked }, { headers: { "Cache-Control": `private, max-age=${CACHE_PRIVATE_MAX_AGE_MEDIUM}, stale-while-revalidate=${CACHE_PRIVATE_STALE_MEDIUM}` } });
   } catch (e) {
     console.error("[Like] Failed to fetch like status:", e);
     return NextResponse.json({ error: "获取点赞状态失败" }, { status: 500 });
@@ -72,8 +73,10 @@ export async function POST(
       } catch (e: unknown) {
         if ((e as { code?: string }).code !== "P2002") throw e;
       }
-      const count = await prisma.like.count({ where: { postId } });
-      await createActivity(userId, "LIKE_ADDED", postId);
+      const [count] = await Promise.all([
+        prisma.like.count({ where: { postId } }),
+        createActivity(userId, "LIKE_ADDED", postId),
+      ]);
       return NextResponse.json({ isLiked: true, count });
     }
   } catch (e) {

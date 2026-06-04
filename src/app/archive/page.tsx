@@ -70,21 +70,27 @@ export default async function ArchivePage() {
         <EmptyState compact message="暂无已发布文章" />
       ) : (
       <div className="space-y-12">
-        {years.map((year) => (
+        {years.map((year) => {
+          const yearData = grouped[year];
+          if (!yearData) return null;
+          return (
           <div key={year}>
             <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 mb-6">
               {year}
             </h2>
-            {Object.keys(grouped[year])
+            {Object.keys(yearData)
               .map(Number)
               .sort((a, b) => b - a)
-              .map((month) => (
+              .map((month) => {
+                const monthPosts = yearData[month];
+                if (!monthPosts) return null;
+                return (
                 <div key={month} className="mb-8">
                   <h3 className="text-lg font-semibold text-zinc-700 dark:text-zinc-300 mb-3">
                     {month} 月
                   </h3>
                   <div className="space-y-2 border-l-2 border-zinc-200 dark:border-zinc-800 pl-4">
-                    {grouped[year][month].map((post) => (
+                    {monthPosts.map((post) => (
                       <div key={post.slug} className="flex items-baseline gap-3">
                         <time className="text-sm text-zinc-500 dark:text-zinc-500 w-20 flex-shrink-0">
                           {formatMonthDay(post.publishedAt)}
@@ -104,9 +110,11 @@ export default async function ArchivePage() {
                     ))}
                   </div>
                 </div>
-              ))}
+              );
+              })}
           </div>
-        ))}
+        );
+        })}
       </div>
       )}
     </div>

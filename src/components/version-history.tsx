@@ -23,11 +23,13 @@ export const VersionHistory = memo(function VersionHistory({ postId, onRestore }
   const [restoring, setRestoring] = useState<number | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
     async function loadVersions() {
       const result = await fetchApi<{ versions: Version[] }>(`/api/posts/${postId}/versions`, { errorMessage: "加载版本历史失败" });
-      if (result.ok) setVersions(result.data.versions || []);
+      if (!cancelled && result.ok) setVersions(result.data.versions || []);
     }
     loadVersions();
+    return () => { cancelled = true; };
   }, [postId]);
 
   async function handleRestore(versionId: number) {

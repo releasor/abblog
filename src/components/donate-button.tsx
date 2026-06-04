@@ -57,7 +57,7 @@ export const DonateButton = memo(function DonateButton({ recipientId, recipientN
     <>
       <button
         onClick={() => setShow(true)}
-        className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-pink-600 dark:text-pink-400 hover:bg-pink-50 dark:hover:bg-pink-500/10 rounded-lg transition-colors"
+        className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-pink-600 dark:text-pink-400 hover:bg-pink-50 dark:hover:bg-pink-500/10 rounded-lg transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500"
       >
         <Heart className="w-4 h-4" />
         <span>赞赏</span>
@@ -69,7 +69,7 @@ export const DonateButton = memo(function DonateButton({ recipientId, recipientN
           <div ref={focusTrapRef} className="relative bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl p-6 w-80">
             <button
               onClick={closeModal}
-              className="absolute top-3 right-3 p-1 text-zinc-400 hover:text-zinc-600"
+              className="absolute top-3 right-3 p-1 text-zinc-400 hover:text-zinc-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500"
               aria-label="关闭"
             >
               <X className="w-4 h-4" />

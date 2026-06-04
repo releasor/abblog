@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, memo } from "react";
 import { Download, FileJson } from "lucide-react";
 import { showToast } from "@/components/toast";
 
-export default function AdminExportPage() {
+export default memo(function AdminExportPage() {
   const [exporting, setExporting] = useState(false);
   const [exported, setExported] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
@@ -78,4 +78,4 @@ export default function AdminExportPage() {
       </div>
     </div>
   );
-}
+});

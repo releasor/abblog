@@ -18,7 +18,7 @@ export default memo(function TimestampConverter() {
   }, []);
 
   const tsToDate = () => {
-    const ts = parseInt(inputTs);
+    const ts = parseInt(inputTs, 10);
     if (isNaN(ts)) { setTsResult("请输入有效时间戳"); return; }
     const ms = unit === "s" ? ts * 1000 : ts;
     const d = new Date(ms);
@@ -68,7 +68,7 @@ export default memo(function TimestampConverter() {
               value={inputTs}
               onChange={(e) => setInputTs(e.target.value)}
               placeholder="输入时间戳"
-              className="flex-1 px-3 py-2 font-mono text-sm border border-zinc-300 dark:border-zinc-700 rounded-lg bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500"
+              className="flex-1 px-3 py-2 font-mono text-sm border border-zinc-300 dark:border-zinc-700 rounded-lg bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500"
             />
             <select
               value={unit}
@@ -101,7 +101,7 @@ export default memo(function TimestampConverter() {
               type="datetime-local"
               value={inputDate}
               onChange={(e) => setInputDate(e.target.value)}
-              className="flex-1 px-3 py-2 text-sm border border-zinc-300 dark:border-zinc-700 rounded-lg bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500"
+              className="flex-1 px-3 py-2 text-sm border border-zinc-300 dark:border-zinc-700 rounded-lg bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500"
             />
             <button
               onClick={dateToTs}

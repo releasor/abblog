@@ -46,8 +46,8 @@ describe("getRelatedPosts", () => {
     const result = await getRelatedPosts(1, 3);
 
     expect(result).toHaveLength(3);
-    expect(result[0].score).toBe(2); // Post 2 shares 2 tags
-    expect(result[1].score).toBe(1); // Post 3 shares 1 tag (sorted by date desc)
+    expect(result[0]?.score).toBe(2); // Post 2 shares 2 tags
+    expect(result[1]?.score).toBe(1); // Post 3 shares 1 tag (sorted by date desc)
   });
 
   it("fills remaining slots with category posts", async () => {
@@ -67,9 +67,9 @@ describe("getRelatedPosts", () => {
     const result = await getRelatedPosts(1, 3);
 
     expect(result).toHaveLength(2);
-    expect(result[0].id).toBe(2);
-    expect(result[1].id).toBe(3);
-    expect(result[1].score).toBe(0);
+    expect(result[0]?.id).toBe(2);
+    expect(result[1]?.id).toBe(3);
+    expect(result[1]?.score).toBe(0);
   });
 
   it("skips tag search when post has no tags", async () => {

@@ -48,7 +48,7 @@ const categories: ToolCategory[] = [
       { name: "Claude", description: "AI 助手，代码和写作", url: "https://claude.ai/" },
       { name: "ChatGPT", description: "通用 AI 对话", url: "https://chat.openai.com/" },
       { name: "Midjourney", description: "AI 图像生成", url: "https://www.midjourney.com/" },
-      { name: "Cursor", description: "AI 编程助手", url: "https://cursor.sh/" },
+      { name: "GitHub Copilot", description: "AI 编程助手", url: "https://github.com/features/copilot" },
     ],
   },
   {

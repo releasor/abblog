@@ -11,8 +11,10 @@ interface ExportButtonProps {
 
 export const ExportButton = memo(function ExportButton({ postId, title }: ExportButtonProps) {
   const [exporting, setExporting] = useState(false);
+  const [open, setOpen] = useState(false);
 
   async function handleExport(format: "markdown" | "pdf") {
+    setOpen(false);
     setExporting(true);
     try {
       if (format === "markdown") {
@@ -38,30 +40,38 @@ export const ExportButton = memo(function ExportButton({ postId, title }: Export
   }
 
   return (
-    <div className="relative group">
+    <div className="relative">
       <button
+        onClick={() => setOpen(!open)}
         className="flex items-center gap-2 px-3 py-2 text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
         disabled={exporting}
+        aria-expanded={open}
+        aria-haspopup="true"
       >
         <Download className="w-4 h-4" />
         <span>导出</span>
       </button>
-      <div className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-zinc-900 rounded-lg shadow-lg border border-zinc-200 dark:border-zinc-800 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
-        <button
-          onClick={() => handleExport("markdown")}
-          className="flex items-center gap-2 w-full px-4 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-t-lg"
-        >
-          <FileText className="w-4 h-4" />
-          <span>Markdown</span>
-        </button>
-        <button
-          onClick={() => handleExport("pdf")}
-          className="flex items-center gap-2 w-full px-4 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-b-lg"
-        >
-          <Download className="w-4 h-4" />
-          <span>PDF (打印)</span>
-        </button>
-      </div>
+      {open && (
+        <>
+          <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
+          <div className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-zinc-900 rounded-lg shadow-lg border border-zinc-200 dark:border-zinc-800 z-20">
+            <button
+              onClick={() => handleExport("markdown")}
+              className="flex items-center gap-2 w-full px-4 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-t-lg"
+            >
+              <FileText className="w-4 h-4" />
+              <span>Markdown</span>
+            </button>
+            <button
+              onClick={() => handleExport("pdf")}
+              className="flex items-center gap-2 w-full px-4 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-b-lg"
+            >
+              <Download className="w-4 h-4" />
+              <span>PDF (打印)</span>
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 });

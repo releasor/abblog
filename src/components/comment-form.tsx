@@ -120,7 +120,7 @@ export const CommentForm = memo(function CommentForm({ postId, onCommentAdded }:
           maxLength={1000}
           rows={4}
           placeholder="写下你的想法..."
-          className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md text-sm bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500 resize-y"
+          className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md text-sm bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500 resize-y"
         />
         <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-500 text-right">
           {content.length}/1000 字符
@@ -130,7 +130,7 @@ export const CommentForm = memo(function CommentForm({ postId, onCommentAdded }:
       <button
         type="submit"
         disabled={submitting}
-        className="px-4 py-2 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-md font-medium text-sm hover:bg-zinc-800 dark:hover:bg-zinc-200 disabled:opacity-50 transition-colors"
+        className="px-4 py-2 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-md font-medium text-sm hover:bg-zinc-800 dark:hover:bg-zinc-200 disabled:opacity-50 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500"
       >
         {submitting ? "提交中..." : "发表评论"}
       </button>

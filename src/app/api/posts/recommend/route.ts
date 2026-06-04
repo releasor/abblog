@@ -2,13 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions, getAuthUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { CACHE_PUBLIC_S_MAXAGE_SHORT, CACHE_PUBLIC_STALE_SHORT, ADMIN_PAGE_SIZE } from "@/lib/constants";
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const rawPostId = parseInt(searchParams.get("postId") || "");
+    const rawPostId = parseInt(searchParams.get("postId") || "", 10);
     const postId = Math.max(0, isNaN(rawPostId) ? 0 : rawPostId);
-    const rawLimit = parseInt(searchParams.get("limit") || "");
+    const rawLimit = parseInt(searchParams.get("limit") || "", 10);
     const limit = Math.min(20, Math.max(1, isNaN(rawLimit) ? 4 : rawLimit));
 
     const session = await getServerSession(authOptions);
@@ -20,7 +21,7 @@ export async function GET(request: NextRequest) {
       const readHistory = await prisma.readHistory.findMany({
         where: { userId },
         orderBy: { readAt: "desc" },
-        take: 20,
+        take: ADMIN_PAGE_SIZE,
         include: {
           post: {
             select: {
@@ -49,12 +50,12 @@ export async function GET(request: NextRequest) {
       const topCategories = Object.entries(categoryFreq)
         .sort(([, a], [, b]) => b - a)
         .slice(0, 3)
-        .map(([id]) => parseInt(id));
+        .map(([id]) => parseInt(id, 10));
 
       const topTags = Object.entries(tagFreq)
         .sort(([, a], [, b]) => b - a)
         .slice(0, 5)
-        .map(([id]) => parseInt(id));
+        .map(([id]) => parseInt(id, 10));
 
       if (topCategories.length > 0 || topTags.length > 0) {
         const posts = await prisma.post.findMany({
@@ -94,7 +95,7 @@ export async function GET(request: NextRequest) {
         }),
       ]);
       return NextResponse.json([...mainPosts, ...fallback], {
-        headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600" },
+        headers: { "Cache-Control": `public, s-maxage=${CACHE_PUBLIC_S_MAXAGE_SHORT}, stale-while-revalidate=${CACHE_PUBLIC_STALE_SHORT}` },
       });
     }
 
@@ -104,7 +105,7 @@ export async function GET(request: NextRequest) {
     });
 
     return NextResponse.json(posts, {
-      headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600" },
+      headers: { "Cache-Control": `public, s-maxage=${CACHE_PUBLIC_S_MAXAGE_SHORT}, stale-while-revalidate=${CACHE_PUBLIC_STALE_SHORT}` },
     });
   } catch (e) {
     console.error("[Recommend] Failed to fetch recommendations:", e);

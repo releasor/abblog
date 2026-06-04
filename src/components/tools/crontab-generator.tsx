@@ -43,12 +43,12 @@ export default memo(function CrontabGenerator() {
   };
 
   const applyPreset = (value: string) => {
-    const [m, h, d, mo, w] = value.split(" ");
-    setMinute(m);
-    setHour(h);
-    setDay(d);
-    setMonth(mo);
-    setWeekday(w);
+    const parts = value.split(" ");
+    setMinute(parts[0] ?? "*");
+    setHour(parts[1] ?? "*");
+    setDay(parts[2] ?? "*");
+    setMonth(parts[3] ?? "*");
+    setWeekday(parts[4] ?? "*");
   };
 
   return (
@@ -68,7 +68,7 @@ export default memo(function CrontabGenerator() {
               value={field.value}
               onChange={(e) => field.set(e.target.value)}
               placeholder={field.placeholder}
-              className="w-full px-3 py-2 font-mono text-sm text-center border border-zinc-300 dark:border-zinc-700 rounded-lg bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500"
+              className="w-full px-3 py-2 font-mono text-sm text-center border border-zinc-300 dark:border-zinc-700 rounded-lg bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500"
             />
           </div>
         ))}

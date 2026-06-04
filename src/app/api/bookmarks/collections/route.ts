@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions, getAuthUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { checkRateLimit, RATE_LIMITS, getRateLimitHeaders } from "@/lib/rate-limit";
+import { ADMIN_PAGE_SIZE, CACHE_PRIVATE_MAX_AGE, CACHE_PRIVATE_STALE } from "@/lib/constants";
 
 export async function GET() {
   try {
@@ -16,14 +17,14 @@ export async function GET() {
         items: {
           include: { post: { select: { id: true, title: true, slug: true, excerpt: true, publishedAt: true } } },
           orderBy: { createdAt: "desc" },
-          take: 20,
+          take: ADMIN_PAGE_SIZE,
         },
         _count: { select: { items: true } },
       },
       orderBy: { createdAt: "desc" },
     });
 
-    return NextResponse.json({ collections: collections.map((c) => ({ ...c, itemCount: c._count.items })) }, { headers: { "Cache-Control": "private, max-age=10, stale-while-revalidate=20" } });
+    return NextResponse.json({ collections: collections.map((c) => ({ ...c, itemCount: c._count.items })) }, { headers: { "Cache-Control": `private, max-age=${CACHE_PRIVATE_MAX_AGE}, stale-while-revalidate=${CACHE_PRIVATE_STALE}` } });
   } catch (e) {
     console.error("[BookmarkCollections] Failed to fetch collections:", e);
     return NextResponse.json({ error: "获取收藏夹列表失败" }, { status: 500 });

@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { memo, ReactNode } from "react";
 
 interface EmptyStateProps {
   icon?: ReactNode;
@@ -8,7 +8,7 @@ interface EmptyStateProps {
   compact?: boolean;
 }
 
-export function EmptyState({ icon, message, description, action, compact }: EmptyStateProps) {
+export const EmptyState = memo(function EmptyState({ icon, message, description, action, compact }: EmptyStateProps) {
   return (
     <div className={`flex flex-col items-center justify-center text-center ${compact ? "py-8" : "py-20"}`}>
       {icon && (
@@ -23,4 +23,4 @@ export function EmptyState({ icon, message, description, action, compact }: Empt
       {action}
     </div>
   );
-}
+});

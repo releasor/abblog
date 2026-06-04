@@ -18,22 +18,26 @@ export const PostActions = memo(function PostActions({ postId }: PostActionsProp
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [liking, setLiking] = useState(false);
 
-  const fetchStatus = useCallback(async () => {
+  const fetchStatus = useCallback(async (cancelled?: { current: boolean }) => {
     const [likeResult, bookmarkResult] = await Promise.all([
       fetchApi<{ count: number; isLiked: boolean }>(`/api/posts/${postId}/like`, { showErrorToast: false }),
       fetchApi<{ isBookmarked: boolean }>(`/api/posts/${postId}/bookmark`, { showErrorToast: false }),
     ]);
-    if (likeResult.ok) {
-      setLikeCount(likeResult.data.count);
-      setIsLiked(likeResult.data.isLiked);
-    }
-    if (bookmarkResult.ok) {
-      setIsBookmarked(bookmarkResult.data.isBookmarked);
+    if (!cancelled?.current) {
+      if (likeResult.ok) {
+        setLikeCount(likeResult.data.count);
+        setIsLiked(likeResult.data.isLiked);
+      }
+      if (bookmarkResult.ok) {
+        setIsBookmarked(bookmarkResult.data.isBookmarked);
+      }
     }
   }, [postId]);
 
   useEffect(() => {
-    fetchStatus();
+    const cancelled = { current: false };
+    fetchStatus(cancelled);
+    return () => { cancelled.current = true; };
   }, [fetchStatus]);
 
   const toggleLike = useCallback(async () => {

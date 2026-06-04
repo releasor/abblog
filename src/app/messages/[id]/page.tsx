@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, memo } from "react";
 import { useSession } from "next-auth/react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
@@ -46,7 +46,7 @@ function ChatSkeleton() {
   );
 }
 
-export default function ChatPage() {
+export default memo(function ChatPage() {
   const { data: session, status } = useSession();
   const params = useParams();
   const router = useRouter();
@@ -64,21 +64,25 @@ export default function ChatPage() {
     if (status === "unauthenticated") router.push("/login");
     if (status !== "authenticated") return;
 
+    let cancelled = false;
     async function load() {
       const [convResult, msgResult] = await Promise.all([
         fetchApi<{ id: number; otherUser: ConversationInfo["otherUser"] }[]>("/api/conversations", { showErrorToast: false }),
         fetchApi<Message[]>(`/api/conversations/${conversationId}/messages`, { showErrorToast: false }),
       ]);
 
-      if (convResult.ok) {
-        const conv = convResult.data.find((c) => c.id === parseInt(conversationId));
-        if (conv) setInfo({ otherUser: conv.otherUser });
-      }
+      if (!cancelled) {
+        if (convResult.ok) {
+          const conv = convResult.data.find((c) => c.id === parseInt(conversationId, 10));
+          if (conv) setInfo({ otherUser: conv.otherUser });
+        }
 
-      setLoading(false);
-      if (msgResult.ok) setMessages(msgResult.data);
+        setLoading(false);
+        if (msgResult.ok) setMessages(msgResult.data);
+      }
     }
     load();
+    return () => { cancelled = true; };
   }, [status, conversationId, router]);
 
   useEffect(() => {
@@ -154,7 +158,7 @@ export default function ChatPage() {
               onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && send()}
               placeholder="输入消息..."
               aria-label="消息内容"
-              className="flex-1 px-4 py-2 text-sm border border-zinc-300 dark:border-zinc-700 rounded-full bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500"
+              className="flex-1 px-4 py-2 text-sm border border-zinc-300 dark:border-zinc-700 rounded-full bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500"
               disabled={sending}
             />
             <button
@@ -169,4 +173,4 @@ export default function ChatPage() {
       </div>
     </div>
   );
-}
+});

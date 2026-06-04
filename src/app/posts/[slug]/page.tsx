@@ -9,14 +9,12 @@ import { absoluteUrl } from "@/lib/site-url";
 import { getRelatedPosts } from "@/lib/related-posts";
 import { injectHeadingIds, extractHeadings, countWords } from "@/lib/toc";
 import { PostContent } from "./post-content";
-import { CommentSection } from "@/components/comment-section";
 import { RelatedPosts } from "@/components/related-posts";
 import { TableOfContents } from "@/components/table-of-contents";
 import { ReadingProgress } from "@/components/reading-progress";
 import { ShareButtons } from "@/components/share-buttons";
 import { PostActions } from "@/components/post-actions";
 import { ReadingTracker } from "@/components/reading-tracker";
-import { RecommendedPosts } from "@/components/recommended-posts";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { formatDate } from "@/lib/format-date";
@@ -26,6 +24,8 @@ const AiChat = dynamic(() => import("@/components/ai-chat").then((m) => m.AiChat
 const DonateButton = dynamic(() => import("@/components/donate-button").then((m) => m.DonateButton));
 const SEOPanel = dynamic(() => import("@/components/seo-panel").then((m) => m.SEOPanel));
 const ExportButton = dynamic(() => import("@/components/export-button").then((m) => m.ExportButton));
+const CommentSection = dynamic(() => import("@/components/comment-section").then((m) => m.CommentSection));
+const RecommendedPosts = dynamic(() => import("@/components/recommended-posts").then((m) => m.RecommendedPosts));
 
 export const revalidate = 3600;
 

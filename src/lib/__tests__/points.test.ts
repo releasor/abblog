@@ -22,7 +22,7 @@ describe("getLevelForPoints", () => {
   });
 
   it("returns max level for very high points", () => {
-    expect(getLevelForPoints(99999)).toBe(LEVELS[LEVELS.length - 1].level);
+    expect(getLevelForPoints(99999)).toBe(LEVELS[LEVELS.length - 1]!.level);
   });
 
   it("returns correct level for intermediate values", () => {
@@ -64,7 +64,7 @@ describe("getProgressToNextLevel", () => {
   });
 
   it("returns 100% at max level", () => {
-    const maxLevel = LEVELS[LEVELS.length - 1];
+    const maxLevel = LEVELS[LEVELS.length - 1]!;
     const result = getProgressToNextLevel(maxLevel.minPoints + 1000);
     expect(result.progress).toBe(100);
   });
@@ -75,7 +75,7 @@ describe("getProgressToNextLevel", () => {
   });
 
   it("clamps progress at 100", () => {
-    const maxLevel = LEVELS[LEVELS.length - 1];
+    const maxLevel = LEVELS[LEVELS.length - 1]!;
     const result = getProgressToNextLevel(maxLevel.minPoints);
     expect(result.progress).toBeLessThanOrEqual(100);
   });

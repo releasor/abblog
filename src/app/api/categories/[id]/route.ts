@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/slugify";
 import { requireId, invalidIdResponse } from "@/lib/api-utils";
 import { checkRateLimit, RATE_LIMITS, getRateLimitHeaders } from "@/lib/rate-limit";
+import { CACHE_S_MAXAGE, CACHE_STALE_WHILE_REVALIDATE } from "@/lib/constants";
 
 export async function GET(
   _request: NextRequest,
@@ -25,7 +26,7 @@ export async function GET(
     }
 
     return NextResponse.json(category, {
-      headers: { "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=7200" },
+      headers: { "Cache-Control": `public, s-maxage=${CACHE_S_MAXAGE}, stale-while-revalidate=${CACHE_STALE_WHILE_REVALIDATE}` },
     });
   } catch (e) {
     console.error("[Category] Failed to fetch category:", e);

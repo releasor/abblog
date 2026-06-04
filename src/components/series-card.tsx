@@ -1,3 +1,4 @@
+import { memo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { BookOpen } from "lucide-react";
@@ -13,7 +14,7 @@ interface SeriesCardProps {
   };
 }
 
-export function SeriesCard({ series }: SeriesCardProps) {
+export const SeriesCard = memo(function SeriesCard({ series }: SeriesCardProps) {
   return (
     <Link
       href={`/series/${series.slug}`}
@@ -48,4 +49,4 @@ export function SeriesCard({ series }: SeriesCardProps) {
       </div>
     </Link>
   );
-}
+});

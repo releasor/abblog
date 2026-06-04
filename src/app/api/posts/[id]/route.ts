@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions, getAuthUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/slugify";
+import { CACHE_PUBLIC_S_MAXAGE_MEDIUM, CACHE_PUBLIC_STALE_MEDIUM, MAX_TITLE_LENGTH, MAX_CONTENT_LENGTH } from "@/lib/constants";
 import { createActivity } from "@/lib/activity";
 import { estimateReadingTime } from "@/lib/reading-time";
 import { requireId, invalidIdResponse } from "@/lib/api-utils";
@@ -34,7 +35,7 @@ export async function GET(
       ...post,
       tags: post.tags.map((pt) => pt.tag),
     }, {
-      headers: { "Cache-Control": "public, s-maxage=120, stale-while-revalidate=300" },
+      headers: { "Cache-Control": `public, s-maxage=${CACHE_PUBLIC_S_MAXAGE_MEDIUM}, stale-while-revalidate=${CACHE_PUBLIC_STALE_MEDIUM}` },
     });
   } catch (e) {
     console.error("[Posts] Failed to fetch post:", e);
@@ -70,16 +71,16 @@ export async function PUT(
     }
     const { title, content, excerpt, coverImageUrl, categoryId, tags, status, isPinned, scheduledAt } = body;
 
-    if (title !== undefined && (typeof title !== "string" || title.length > 200)) {
-      return NextResponse.json({ error: "标题不能超过200个字符" }, { status: 400 });
+    if (title !== undefined && (typeof title !== "string" || title.length > MAX_TITLE_LENGTH)) {
+      return NextResponse.json({ error: `标题不能超过${MAX_TITLE_LENGTH}个字符` }, { status: 400 });
     }
-    if (content !== undefined && (typeof content !== "string" || content.length > 500000)) {
+    if (content !== undefined && (typeof content !== "string" || content.length > MAX_CONTENT_LENGTH)) {
       return NextResponse.json({ error: "内容过长" }, { status: 400 });
     }
-    if (categoryId && isNaN(parseInt(categoryId))) {
+    if (categoryId && isNaN(parseInt(categoryId, 10))) {
       return NextResponse.json({ error: "无效的分类ID" }, { status: 400 });
     }
-    if (tags && (!Array.isArray(tags) || tags.some((t: string) => isNaN(parseInt(t))))) {
+    if (tags && (!Array.isArray(tags) || tags.some((t: string) => isNaN(parseInt(t, 10))))) {
       return NextResponse.json({ error: "无效的标签ID" }, { status: 400 });
     }
 
@@ -136,7 +137,7 @@ export async function PUT(
           tags: {
             deleteMany: {},
             create: tags.map((tagId: string) => ({
-              tag: { connect: { id: parseInt(tagId) } },
+              tag: { connect: { id: parseInt(tagId, 10) } },
             })),
           },
         }
@@ -157,7 +158,7 @@ export async function PUT(
         isPinned: isPinned !== undefined ? Boolean(isPinned) : existing.isPinned,
         scheduledAt: scheduledAt !== undefined ? (scheduledAt ? new Date(scheduledAt) : null) : existing.scheduledAt,
         readingTime: content ? estimateReadingTime(content) : existing.readingTime,
-        categoryId: categoryId !== undefined ? (categoryId ? parseInt(categoryId) : null) : existing.categoryId,
+        categoryId: categoryId !== undefined ? (categoryId ? parseInt(categoryId, 10) : null) : existing.categoryId,
         ...tagUpdate,
       },
       include: {

@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { absoluteUrl } from "@/lib/site-url";
+import { CACHE_MAX_AGE, ADMIN_PAGE_SIZE } from "@/lib/constants";
 
 export async function GET() {
   try {
     const posts = await prisma.post.findMany({
       where: { status: "PUBLISHED" },
       orderBy: { publishedAt: "desc" },
-      take: 20,
+      take: ADMIN_PAGE_SIZE,
       select: {
         title: true,
         slug: true,
@@ -56,7 +57,7 @@ export async function GET() {
     return new NextResponse(xml, {
       headers: {
         "Content-Type": "application/xml; charset=utf-8",
-        "Cache-Control": "public, max-age=3600",
+        "Cache-Control": `public, max-age=${CACHE_MAX_AGE}`,
       },
     });
   } catch (e) {

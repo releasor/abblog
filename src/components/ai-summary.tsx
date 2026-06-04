@@ -9,6 +9,7 @@ export const AiSummary = memo(function AiSummary({ postId }: { postId: number })
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let cancelled = false;
     async function loadSummary() {
       try {
         const res = await fetchApi<{ summary?: string }>("/api/ai/summarize", {
@@ -16,12 +17,13 @@ export const AiSummary = memo(function AiSummary({ postId }: { postId: number })
           body: JSON.stringify({ postId }),
           showErrorToast: false,
         });
-        if (res.ok && res.data.summary) setSummary(res.data.summary);
+        if (!cancelled && res.ok && res.data.summary) setSummary(res.data.summary);
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     }
     loadSummary();
+    return () => { cancelled = true; };
   }, [postId]);
 
   if (loading) {

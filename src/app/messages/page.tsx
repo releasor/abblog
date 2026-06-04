@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, Suspense, memo } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -58,6 +58,7 @@ function MessagesContent() {
     if (status === "unauthenticated") router.push("/login");
     if (status !== "authenticated") return;
 
+    let cancelled = false;
     async function load() {
       if (targetUserId) {
         const result = await fetchApi<{ id: number }>("/api/conversations", {
@@ -65,15 +66,18 @@ function MessagesContent() {
           body: JSON.stringify({ targetUserId }),
           errorMessage: "创建会话失败",
         });
-        if (result.ok && result.data.id) router.push(`/messages/${result.data.id}`);
+        if (!cancelled && result.ok && result.data.id) router.push(`/messages/${result.data.id}`);
         return;
       }
 
       const result = await fetchApi<Conversation[]>("/api/conversations", { errorMessage: "加载会话列表失败" });
-      setLoading(false);
-      if (result.ok && Array.isArray(result.data)) setConversations(result.data);
+      if (!cancelled) {
+        setLoading(false);
+        if (result.ok && Array.isArray(result.data)) setConversations(result.data);
+      }
     }
     load();
+    return () => { cancelled = true; };
   }, [status, targetUserId, router]);
 
   if (status !== "authenticated" || loading) {
@@ -127,10 +131,10 @@ function MessagesContent() {
   );
 }
 
-export default function MessagesPage() {
+export default memo(function MessagesPage() {
   return (
     <Suspense fallback={<ConversationSkeleton />}>
       <MessagesContent />
     </Suspense>
   );
-}
+});

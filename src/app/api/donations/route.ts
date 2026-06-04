@@ -6,6 +6,7 @@ import { addPoints, POINTS } from "@/lib/points";
 import { checkRateLimit, RATE_LIMITS, getRateLimitHeaders } from "@/lib/rate-limit";
 import { parsePagination, paginationMeta } from "@/lib/pagination";
 import { requireId, invalidIdResponse } from "@/lib/api-utils";
+import { CACHE_PRIVATE_MAX_AGE_MEDIUM, CACHE_PRIVATE_STALE_MEDIUM } from "@/lib/constants";
 
 export async function GET(request: NextRequest) {
   try {
@@ -50,7 +51,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       donations,
       pagination: paginationMeta(page, limit, total),
-    }, { headers: { "Cache-Control": "private, max-age=30, stale-while-revalidate=60" } });
+    }, { headers: { "Cache-Control": `private, max-age=${CACHE_PRIVATE_MAX_AGE_MEDIUM}, stale-while-revalidate=${CACHE_PRIVATE_STALE_MEDIUM}` } });
   } catch (e) {
     console.error("[Donations] Failed to fetch donations:", e);
     return NextResponse.json({ error: "获取打赏列表失败" }, { status: 500 });

@@ -6,6 +6,7 @@ import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import crypto from "crypto";
 import { checkRateLimit, RATE_LIMITS, getRateLimitHeaders } from "@/lib/rate-limit";
+import { MAX_FILE_SIZE } from "@/lib/constants";
 
 const EXT_MAP: Record<string, string> = {
   "image/jpeg": "jpg",
@@ -28,7 +29,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "上传太频繁，请稍后再试" }, { status: 429, headers: getRateLimitHeaders(rl) });
     }
 
-    const formData = await request.formData();
+    let formData: FormData;
+    try {
+      formData = await request.formData();
+    } catch {
+      return NextResponse.json({ error: "无效的表单数据" }, { status: 400 });
+    }
     const file = formData.get("file");
 
     if (!file || !(file instanceof File)) {
@@ -40,8 +46,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "仅支持 JPG/PNG/GIF/WebP 格式" }, { status: 400 });
     }
 
-    if (file.size > 2 * 1024 * 1024) {
-      return NextResponse.json({ error: "文件大小不能超过 2MB" }, { status: 400 });
+    if (file.size > MAX_FILE_SIZE) {
+      return NextResponse.json({ error: `文件大小不能超过 ${MAX_FILE_SIZE / 1024 / 1024}MB` }, { status: 400 });
     }
 
     const bytes = await file.arrayBuffer();

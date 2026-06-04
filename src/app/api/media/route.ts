@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions, getAuthUserId } from "@/lib/auth";
 import { readdir, stat } from "fs/promises";
 import path from "path";
+import { CACHE_PRIVATE_MAX_AGE, CACHE_PRIVATE_STALE } from "@/lib/constants";
 
 export async function GET() {
   try {
@@ -33,7 +34,7 @@ export async function GET() {
 
     images.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
-    return NextResponse.json(images, { headers: { "Cache-Control": "private, max-age=10, stale-while-revalidate=20" } });
+    return NextResponse.json(images, { headers: { "Cache-Control": `private, max-age=${CACHE_PRIVATE_MAX_AGE}, stale-while-revalidate=${CACHE_PRIVATE_STALE}` } });
   } catch (e) {
     console.error("[Media] Failed to list files:", e);
     return NextResponse.json({ error: "获取媒体文件失败" }, { status: 500 });

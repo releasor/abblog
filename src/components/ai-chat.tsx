@@ -41,7 +41,7 @@ export const AiChat = memo(function AiChat({ postId }: { postId: number }) {
     <>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-6 right-6 z-50 w-12 h-12 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-full shadow-lg hover:shadow-xl transition-all flex items-center justify-center"
+        className="fixed bottom-6 right-6 z-50 w-12 h-12 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-full shadow-lg hover:shadow-xl transition-all flex items-center justify-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500"
         aria-label={isOpen ? "关闭 AI 问答" : "打开 AI 问答"}
       >
         {isOpen ? (
@@ -52,7 +52,7 @@ export const AiChat = memo(function AiChat({ postId }: { postId: number }) {
       </button>
 
       {isOpen && (
-        <div className="fixed bottom-20 right-6 z-50 w-80 sm:w-96 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-2xl flex flex-col" style={{ maxHeight: "70vh" }}>
+        <div className="fixed bottom-20 right-6 z-50 w-80 sm:w-96 max-h-[70vh] bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-2xl flex flex-col">
           <div className="flex items-center justify-between p-4 border-b border-zinc-200 dark:border-zinc-800">
             <h3 className="font-semibold text-zinc-900 dark:text-zinc-100 text-sm">AI 文章问答</h3>
             <span className="text-xs text-zinc-500 dark:text-zinc-400">基于当前文章</span>
@@ -94,13 +94,13 @@ export const AiChat = memo(function AiChat({ postId }: { postId: number }) {
                 onKeyDown={(e) => e.key === "Enter" && ask()}
                 placeholder="输入问题..."
                 aria-label="输入问题"
-                className="flex-1 px-3 py-2 text-sm border border-zinc-300 dark:border-zinc-700 rounded-lg bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500"
+                className="flex-1 px-3 py-2 text-sm border border-zinc-300 dark:border-zinc-700 rounded-lg bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500"
                 disabled={loading}
               />
               <button
                 onClick={ask}
                 disabled={loading || !question.trim()}
-                className="px-3 py-2 text-sm bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-lg hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors disabled:opacity-50"
+                className="px-3 py-2 text-sm bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-lg hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500"
               >
                 发送
               </button>

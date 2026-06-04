@@ -4,6 +4,7 @@ import { authOptions, getAuthUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { createActivity } from "@/lib/activity";
 import { checkRateLimit, RATE_LIMITS, getRateLimitHeaders } from "@/lib/rate-limit";
+import { CACHE_PRIVATE_MAX_AGE_MEDIUM, CACHE_PRIVATE_STALE_MEDIUM } from "@/lib/constants";
 
 export async function GET(
   _request: NextRequest,
@@ -23,8 +24,10 @@ export async function GET(
       return NextResponse.json({ error: "用户不存在" }, { status: 404 });
     }
 
-    const followerCount = await prisma.follow.count({ where: { followingId: targetUser.id } });
-    const followingCount = await prisma.follow.count({ where: { followerId: targetUser.id } });
+    const [followerCount, followingCount] = await Promise.all([
+      prisma.follow.count({ where: { followingId: targetUser.id } }),
+      prisma.follow.count({ where: { followerId: targetUser.id } }),
+    ]);
 
     let isFollowing = false;
     if (userId) {
@@ -35,7 +38,7 @@ export async function GET(
       isFollowing = !!existing;
     }
 
-    return NextResponse.json({ isFollowing, followerCount, followingCount }, { headers: { "Cache-Control": "private, max-age=30, stale-while-revalidate=60" } });
+    return NextResponse.json({ isFollowing, followerCount, followingCount }, { headers: { "Cache-Control": `private, max-age=${CACHE_PRIVATE_MAX_AGE_MEDIUM}, stale-while-revalidate=${CACHE_PRIVATE_STALE_MEDIUM}` } });
   } catch (e) {
     console.error("[Follow] Failed to fetch follow status:", e);
     return NextResponse.json({ error: "获取关注状态失败" }, { status: 500 });
@@ -90,21 +93,21 @@ export async function POST(
       } catch (e: unknown) {
         if ((e as { code?: string }).code !== "P2002") throw e;
       }
-      const followerCount = await prisma.follow.count({ where: { followingId: targetId } });
-
       const followerName = session?.user?.name || "有人";
       const followerUsername = session?.user?.username;
 
-      await prisma.notification.create({
-        data: {
-          userId: targetId,
-          type: "FOLLOW",
-          message: `${followerName}关注了你`,
-          link: `/u/${followerUsername || userId}`,
-        },
-      });
-
-      await createActivity(userId, "FOLLOW_USER", targetId);
+      const [followerCount] = await Promise.all([
+        prisma.follow.count({ where: { followingId: targetId } }),
+        prisma.notification.create({
+          data: {
+            userId: targetId,
+            type: "FOLLOW",
+            message: `${followerName}关注了你`,
+            link: `/u/${followerUsername || userId}`,
+          },
+        }),
+        createActivity(userId, "FOLLOW_USER", targetId),
+      ]);
 
       return NextResponse.json({ isFollowing: true, followerCount });
     }

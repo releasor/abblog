@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import dynamic from "next/dynamic";
 import { Skeleton } from "@/components/skeleton";
 
@@ -13,7 +14,7 @@ const PostForm = dynamic(() => import("@/components/post-form"), {
   ),
 });
 
-export default function NewPostPage() {
+export default memo(function NewPostPage() {
   return (
     <div>
       <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 mb-6">
@@ -22,4 +23,4 @@ export default function NewPostPage() {
       <PostForm mode="create" />
     </div>
   );
-}
+});

@@ -4,6 +4,7 @@ import { authOptions, getAuthUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { requireId, invalidIdResponse } from "@/lib/api-utils";
 import { checkRateLimit, RATE_LIMITS, getRateLimitHeaders } from "@/lib/rate-limit";
+import { CACHE_PRIVATE_MAX_AGE_SHORT, CACHE_PRIVATE_STALE_SHORT } from "@/lib/constants";
 
 export async function GET() {
   try {
@@ -26,7 +27,7 @@ export async function GET() {
       }),
     ]);
 
-    return NextResponse.json({ notifications, unreadCount }, { headers: { "Cache-Control": "private, max-age=5, stale-while-revalidate=10" } });
+    return NextResponse.json({ notifications, unreadCount }, { headers: { "Cache-Control": `private, max-age=${CACHE_PRIVATE_MAX_AGE_SHORT}, stale-while-revalidate=${CACHE_PRIVATE_STALE_SHORT}` } });
   } catch (e) {
     console.error("[Notifications] Failed to fetch notifications:", e);
     return NextResponse.json({ error: "获取通知列表失败" }, { status: 500 });

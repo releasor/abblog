@@ -27,7 +27,10 @@ export async function GET(request: NextRequest) {
       data: { status: "PUBLISHED", publishedAt: now, scheduledAt: null },
     });
 
-    return NextResponse.json({ published: scheduled.length });
+    return NextResponse.json(
+      { published: scheduled.length },
+      { headers: { "Cache-Control": "no-store" } },
+    );
   } catch (e) {
     console.error("[CronPublish] Failed to publish scheduled posts:", e);
     return NextResponse.json({ error: "发布定时文章失败" }, { status: 500 });

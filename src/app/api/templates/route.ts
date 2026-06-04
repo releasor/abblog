@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions, getAuthUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { checkRateLimit, RATE_LIMITS, getRateLimitHeaders } from "@/lib/rate-limit";
+import { MAX_PROMPT_CONTENT_LENGTH, CACHE_PRIVATE_MAX_AGE, CACHE_PRIVATE_STALE } from "@/lib/constants";
 
 export async function GET() {
   try {
@@ -15,7 +16,7 @@ export async function GET() {
       orderBy: { updatedAt: "desc" },
     });
 
-    return NextResponse.json(templates, { headers: { "Cache-Control": "private, max-age=10, stale-while-revalidate=20" } });
+    return NextResponse.json(templates, { headers: { "Cache-Control": `private, max-age=${CACHE_PRIVATE_MAX_AGE}, stale-while-revalidate=${CACHE_PRIVATE_STALE}` } });
   } catch (e) {
     console.error("[Templates] Failed to fetch templates:", e);
     return NextResponse.json({ error: "获取模板列表失败" }, { status: 500 });
@@ -52,7 +53,7 @@ export async function POST(request: NextRequest) {
     if (!content || typeof content !== "string" || content.trim().length === 0) {
       return NextResponse.json({ error: "请输入模板内容" }, { status: 400 });
     }
-    if (content.length > 50000) {
+    if (content.length > MAX_PROMPT_CONTENT_LENGTH) {
       return NextResponse.json({ error: "模板内容过长" }, { status: 400 });
     }
 

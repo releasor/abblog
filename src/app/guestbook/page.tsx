@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, memo } from "react";
 import { useSession } from "next-auth/react";
 import { formatRelativeTime } from "@/lib/format-date";
 import { fetchApi } from "@/lib/fetch-api";
@@ -14,7 +14,7 @@ interface Message {
   createdAt: string;
 }
 
-export default function GuestbookPage() {
+export default memo(function GuestbookPage() {
   const { data: session } = useSession();
   const [messages, setMessages] = useState<Message[]>([]);
   const [content, setContent] = useState("");
@@ -23,14 +23,18 @@ export default function GuestbookPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const fetchMessages = useCallback(async () => {
+  const fetchMessages = useCallback(async (cancelled?: { current: boolean }) => {
     const res = await fetchApi<Message[]>("/api/messages", { showErrorToast: false });
-    if (res.ok) setMessages(res.data);
-    setLoading(false);
+    if (!cancelled?.current) {
+      if (res.ok) setMessages(res.data);
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => {
-    fetchMessages();
+    const cancelled = { current: false };
+    fetchMessages(cancelled);
+    return () => { cancelled.current = true; };
   }, [fetchMessages]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -77,7 +81,7 @@ export default function GuestbookPage() {
             onChange={(e) => setName(e.target.value)}
             placeholder="你的名字（选填）"
             aria-label="你的名字"
-            className="w-full mb-3 px-4 py-2 text-sm border border-zinc-300 dark:border-zinc-700 rounded-lg bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500"
+            className="w-full mb-3 px-4 py-2 text-sm border border-zinc-300 dark:border-zinc-700 rounded-lg bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500"
           />
         )}
         <textarea
@@ -87,7 +91,7 @@ export default function GuestbookPage() {
           rows={3}
           maxLength={500}
           aria-label="留言内容"
-          className="w-full px-4 py-2 text-sm border border-zinc-300 dark:border-zinc-700 rounded-lg bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500 resize-none"
+          className="w-full px-4 py-2 text-sm border border-zinc-300 dark:border-zinc-700 rounded-lg bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500 resize-none"
         />
         <div className="flex items-center justify-between mt-3">
           <div className="text-xs text-zinc-400">
@@ -151,4 +155,4 @@ export default function GuestbookPage() {
       </div>
     </div>
   );
-}
+});

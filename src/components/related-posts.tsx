@@ -1,3 +1,4 @@
+import { memo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { formatDateShort } from "@/lib/format-date";
@@ -18,7 +19,7 @@ interface RelatedPostsProps {
   posts: RelatedPostData[];
 }
 
-export function RelatedPosts({ posts }: RelatedPostsProps) {
+export const RelatedPosts = memo(function RelatedPosts({ posts }: RelatedPostsProps) {
   if (posts.length === 0) return null;
 
   return (
@@ -76,4 +77,4 @@ export function RelatedPosts({ posts }: RelatedPostsProps) {
       </div>
     </section>
   );
-}
+});

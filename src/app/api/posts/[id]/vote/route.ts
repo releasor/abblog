@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { createActivity } from "@/lib/activity";
 import { checkRateLimit, RATE_LIMITS, getRateLimitHeaders } from "@/lib/rate-limit";
 import { requireId, invalidIdResponse } from "@/lib/api-utils";
+import { CACHE_PRIVATE_MAX_AGE_MEDIUM, CACHE_PRIVATE_STALE_MEDIUM } from "@/lib/constants";
 
 export async function GET(
   _request: NextRequest,
@@ -36,7 +37,7 @@ export async function GET(
 
     return NextResponse.json(
       { score: post.score, userVote },
-      { headers: { "Cache-Control": "private, max-age=30, stale-while-revalidate=60" } }
+      { headers: { "Cache-Control": `private, max-age=${CACHE_PRIVATE_MAX_AGE_MEDIUM}, stale-while-revalidate=${CACHE_PRIVATE_STALE_MEDIUM}` } }
     );
   } catch (e) {
     console.error("[Vote] Failed to fetch vote status:", e);
@@ -119,15 +120,17 @@ export async function POST(
         ]);
       } catch (e: unknown) {
         if ((e as { code?: string }).code === "P2002") {
-          const retryVote = await prisma.postVote.findUnique({
-            where: { postId_userId: { postId, userId } },
-            select: { value: true },
-          });
-          if (retryVote) {
-            const currentPost = await prisma.post.findUnique({
+          const [retryVote, currentPost] = await Promise.all([
+            prisma.postVote.findUnique({
+              where: { postId_userId: { postId, userId } },
+              select: { value: true },
+            }),
+            prisma.post.findUnique({
               where: { id: postId },
               select: { score: true },
-            });
+            }),
+          ]);
+          if (retryVote) {
             return NextResponse.json({ userVote: retryVote.value, score: currentPost?.score ?? 0 });
           }
         }

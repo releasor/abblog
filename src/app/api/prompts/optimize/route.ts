@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions, getAuthUserId } from "@/lib/auth";
 import { getAiConfig } from "@/lib/ai-config";
 import { checkRateLimit, RATE_LIMITS, getRateLimitHeaders } from "@/lib/rate-limit";
+import { MAX_PROMPT_LENGTH, AI_MAX_TOKENS } from "@/lib/constants";
 
 export async function POST(request: NextRequest) {
   try {
@@ -29,7 +30,7 @@ export async function POST(request: NextRequest) {
     if (!content || typeof content !== "string" || content.trim().length === 0) {
       return NextResponse.json({ error: "缺少提示词内容" }, { status: 400 });
     }
-    if (content.length > 10000) {
+    if (content.length > MAX_PROMPT_LENGTH) {
       return NextResponse.json({ error: "提示词内容过长" }, { status: 400 });
     }
 
@@ -89,7 +90,7 @@ export async function POST(request: NextRequest) {
             content: `请优化以下提示词并生成 Spec：\n\n${content}`,
           },
         ],
-        max_tokens: 2000,
+        max_tokens: AI_MAX_TOKENS,
         temperature: 0.7,
       }),
     });

@@ -35,12 +35,14 @@ export const BookmarkPicker = memo(function BookmarkPicker({ postId, initialBook
 
   useEffect(() => {
     if (!showPicker) return;
+    let cancelled = false;
 
     async function loadCollections() {
       const result = await fetchApi<{ collections: Collection[] }>("/api/bookmarks/collections", { errorMessage: "加载收藏夹失败" });
-      if (result.ok) setCollections(result.data.collections || []);
+      if (!cancelled && result.ok) setCollections(result.data.collections || []);
     }
     loadCollections();
+    return () => { cancelled = true; };
   }, [showPicker]);
 
   async function handleQuickBookmark() {
@@ -75,7 +77,7 @@ export const BookmarkPicker = memo(function BookmarkPicker({ postId, initialBook
         <button
           onClick={handleQuickBookmark}
           disabled={loading}
-          className={`p-2 rounded-lg transition-colors ${
+          className={`p-2 rounded-lg transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500 ${
             isBookmarked
               ? "text-yellow-500 bg-yellow-500/10"
               : "text-zinc-400 hover:text-yellow-500 hover:bg-yellow-500/10"
@@ -87,7 +89,7 @@ export const BookmarkPicker = memo(function BookmarkPicker({ postId, initialBook
         <button
           onClick={() => setShowPicker(!showPicker)}
           aria-expanded={showPicker}
-          className="p-2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+          className="p-2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500"
           aria-label="选择收藏夹"
         >
           <Plus className="w-3.5 h-3.5" />

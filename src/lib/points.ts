@@ -22,7 +22,8 @@ export const LEVELS = [
 
 export function getLevelForPoints(points: number): number {
   for (let i = LEVELS.length - 1; i >= 0; i--) {
-    if (points >= LEVELS[i].minPoints) return LEVELS[i].level;
+    const level = LEVELS[i];
+    if (level && points >= level.minPoints) return level.level;
   }
   return 1;
 }

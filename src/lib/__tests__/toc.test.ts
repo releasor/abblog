@@ -16,14 +16,14 @@ describe("extractHeadings", () => {
   it("strips inner HTML from heading text", () => {
     const html = '<h2><strong>Bold</strong> Title</h2>';
     const headings = extractHeadings(html);
-    expect(headings[0].text).toBe("Bold Title");
+    expect(headings[0]?.text).toBe("Bold Title");
   });
 
   it("skips empty headings", () => {
     const html = "<h2></h2><h3>  </h3><h2>Valid</h2>";
     const headings = extractHeadings(html);
     expect(headings).toHaveLength(1);
-    expect(headings[0].text).toBe("Valid");
+    expect(headings[0]?.text).toBe("Valid");
   });
 });
 

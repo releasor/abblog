@@ -1,3 +1,5 @@
+import { memo } from "react";
+
 interface FilterTab {
   key: string;
   label: string;
@@ -9,7 +11,7 @@ interface FilterTabsProps {
   onChange: (key: string) => void;
 }
 
-export function FilterTabs({ tabs, active, onChange }: FilterTabsProps) {
+export const FilterTabs = memo(function FilterTabs({ tabs, active, onChange }: FilterTabsProps) {
   return (
     <div className="overflow-x-auto" role="tablist">
       <div className="flex gap-1 p-1 bg-zinc-100 dark:bg-zinc-800/50 rounded-lg w-fit">
@@ -31,4 +33,4 @@ export function FilterTabs({ tabs, active, onChange }: FilterTabsProps) {
       </div>
     </div>
   );
-}
+});

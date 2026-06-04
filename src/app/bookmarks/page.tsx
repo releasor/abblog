@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, memo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Bookmark, Plus, Folder, Trash2 } from "lucide-react";
@@ -27,41 +27,48 @@ interface Collection {
   }[];
 }
 
-export default function BookmarksPage() {
+export default memo(function BookmarksPage() {
   const [collections, setCollections] = useState<Collection[]>([]);
   const [activeCollection, setActiveCollection] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [showNew, setShowNew] = useState(false);
   const [newName, setNewName] = useState("");
   const [newDesc, setNewDesc] = useState("");
+  const [creating, setCreating] = useState(false);
 
-  const fetchCollections = useCallback(async () => {
+  const fetchCollections = useCallback(async (cancelled?: { current: boolean }) => {
     const result = await fetchApi<{ collections: Collection[] }>("/api/bookmarks/collections", {
       errorMessage: "加载收藏夹失败",
     });
-    setLoading(false);
-    if (result.ok) {
-      setCollections(result.data.collections || []);
-      setActiveCollection((prev) => {
-        if (prev === null && result.data.collections?.length > 0) {
-          return result.data.collections[0].id;
-        }
-        return prev;
-      });
+    if (!cancelled?.current) {
+      setLoading(false);
+      if (result.ok) {
+        setCollections(result.data.collections || []);
+        setActiveCollection((prev) => {
+          if (prev === null && result.data.collections?.length > 0) {
+            return result.data.collections[0]?.id ?? null;
+          }
+          return prev;
+        });
+      }
     }
   }, []);
 
   useEffect(() => {
-    fetchCollections();
+    const cancelled = { current: false };
+    fetchCollections(cancelled);
+    return () => { cancelled.current = true; };
   }, [fetchCollections]);
 
   async function handleCreate() {
-    if (!newName.trim()) return;
+    if (!newName.trim() || creating) return;
+    setCreating(true);
     const result = await fetchApi("/api/bookmarks/collections", {
       method: "POST",
       body: JSON.stringify({ name: newName, description: newDesc }),
       errorMessage: "创建收藏夹失败",
     });
+    setCreating(false);
     if (result.ok) {
       setNewName("");
       setNewDesc("");
@@ -160,9 +167,10 @@ export default function BookmarksPage() {
                   />
                   <button
                     onClick={handleCreate}
-                    className="w-full px-2 py-1 text-sm bg-indigo-500 text-white rounded hover:bg-indigo-600"
+                    disabled={creating}
+                    className="w-full px-2 py-1 text-sm bg-indigo-500 text-white rounded hover:bg-indigo-600 disabled:opacity-50"
                   >
-                    创建
+                    {creating ? "创建中..." : "创建"}
                   </button>
                 </div>
               )}
@@ -272,4 +280,4 @@ export default function BookmarksPage() {
       />
     </main>
   );
-}
+});

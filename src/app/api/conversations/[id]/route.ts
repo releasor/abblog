@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions, getAuthUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { requireId, invalidIdResponse } from "@/lib/api-utils";
+import { CACHE_PRIVATE_MAX_AGE_MEDIUM, CACHE_PRIVATE_STALE_MEDIUM } from "@/lib/constants";
 
 export async function GET(
   _request: NextRequest,
@@ -46,7 +47,7 @@ export async function GET(
 
     return NextResponse.json(
       { otherUser: conversation.members[0]?.user || null },
-      { headers: { "Cache-Control": "private, max-age=30, stale-while-revalidate=60" } }
+      { headers: { "Cache-Control": `private, max-age=${CACHE_PRIVATE_MAX_AGE_MEDIUM}, stale-while-revalidate=${CACHE_PRIVATE_STALE_MEDIUM}` } }
     );
   } catch (e) {
     console.error("[Conversation] Failed to fetch conversation:", e);

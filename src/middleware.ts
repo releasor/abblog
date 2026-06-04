@@ -22,6 +22,11 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
+  // Check admin role for admin routes
+  if (token.role !== "admin") {
+    return NextResponse.redirect(new URL("/", request.url));
+  }
+
   return addSecurityHeaders(NextResponse.next());
 }
 

@@ -1,10 +1,12 @@
+import { memo } from "react";
+
 interface PageHeaderProps {
   title: string;
   description?: string;
   action?: React.ReactNode;
 }
 
-export function PageHeader({ title, description, action }: PageHeaderProps) {
+export const PageHeader = memo(function PageHeader({ title, description, action }: PageHeaderProps) {
   return (
     <div className="flex items-start justify-between mb-8">
       <div>
@@ -18,4 +20,4 @@ export function PageHeader({ title, description, action }: PageHeaderProps) {
       {action && <div className="flex-shrink-0 ml-4">{action}</div>}
     </div>
   );
-}
+});

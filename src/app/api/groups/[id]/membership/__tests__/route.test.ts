@@ -19,7 +19,7 @@ vi.mock("@/lib/auth", () => ({
 
 vi.mock("@/lib/api-utils", () => ({
   requireId: vi.fn((id: string) => {
-    const num = parseInt(id);
+    const num = parseInt(id, 10);
     if (isNaN(num) || num <= 0) throw new Error("Invalid ID");
     return num;
   }),

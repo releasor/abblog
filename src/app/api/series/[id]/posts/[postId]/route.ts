@@ -30,9 +30,16 @@ export async function DELETE(
       return NextResponse.json({ error: "无权限" }, { status: 403 });
     }
 
-    await prisma.seriesPost.delete({
-      where: { seriesId_postId: { seriesId, postId: postIdNum } },
-    });
+    try {
+      await prisma.seriesPost.delete({
+        where: { seriesId_postId: { seriesId, postId: postIdNum } },
+      });
+    } catch (deleteErr: unknown) {
+      if ((deleteErr as { code?: string }).code === "P2025") {
+        return NextResponse.json({ error: "文章不在此系列中" }, { status: 404 });
+      }
+      throw deleteErr;
+    }
 
     return NextResponse.json({ success: true });
   } catch (e) {

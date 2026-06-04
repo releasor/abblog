@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import Link from "next/link";
 import { FileText, Users, MessageSquare, Eye, TrendingUp, ArrowUpRight } from "lucide-react";
 import { StatCard } from "@/components/admin/stat-card";
@@ -41,17 +41,21 @@ function calcTrend(trend: DashboardData["trend"], key: keyof DashboardData["tren
   return { value: Math.abs(pct), isPositive: pct >= 0 };
 }
 
-export default function AdminDashboard() {
+export default memo(function AdminDashboard() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let cancelled = false;
     async function loadStats() {
       const result = await fetchApi<DashboardData>("/api/admin/stats", { errorMessage: "加载统计数据失败" });
-      setLoading(false);
-      if (result.ok) setData(result.data);
+      if (!cancelled) {
+        setLoading(false);
+        if (result.ok) setData(result.data);
+      }
     }
     loadStats();
+    return () => { cancelled = true; };
   }, []);
 
   if (loading) {
@@ -142,7 +146,7 @@ export default function AdminDashboard() {
                   <span className="text-xs text-zinc-400">
                     {post._count.comments} 评论
                   </span>
-                  <ArrowUpRight className="w-3.5 h-3.5 text-zinc-300 dark:text-zinc-600 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <ArrowUpRight className="w-3.5 h-3.5 text-zinc-300 dark:text-zinc-600 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity" />
                 </div>
               </Link>
             ))
@@ -151,4 +155,4 @@ export default function AdminDashboard() {
       </div>
     </div>
   );
-}
+});

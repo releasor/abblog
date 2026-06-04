@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, memo } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -26,21 +26,23 @@ const TYPE_ICONS: Record<string, string> = {
 };
 const getTypeIcon = (type: string) => TYPE_ICONS[type] || "📢";
 
-export default function NotificationsPage() {
+export default memo(function NotificationsPage() {
   const { status } = useSession();
   const router = useRouter();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  const fetchNotifications = useCallback(async () => {
+  const fetchNotifications = useCallback(async (cancelled?: { current: boolean }) => {
     const result = await fetchApi<{ notifications: Notification[]; unreadCount: number }>("/api/notifications", {
       showErrorToast: false,
     });
-    setLoading(false);
-    if (result.ok) {
-      setNotifications(result.data.notifications);
-      setUnreadCount(result.data.unreadCount);
+    if (!cancelled?.current) {
+      setLoading(false);
+      if (result.ok) {
+        setNotifications(result.data.notifications);
+        setUnreadCount(result.data.unreadCount);
+      }
     }
   }, []);
 
@@ -51,7 +53,9 @@ export default function NotificationsPage() {
     }
     if (status !== "authenticated") return;
 
-    fetchNotifications();
+    const cancelled = { current: false };
+    fetchNotifications(cancelled);
+    return () => { cancelled.current = true; };
   }, [status, router, fetchNotifications]);
 
   const markAsRead = async (id?: number) => {
@@ -147,4 +151,4 @@ export default function NotificationsPage() {
       </div>
     </div>
   );
-}
+});

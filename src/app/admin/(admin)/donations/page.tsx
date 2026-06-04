@@ -1,12 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import { Heart } from "lucide-react";
 import { fetchApi } from "@/lib/fetch-api";
 import { formatDate } from "@/lib/format-date";
 import { DataTable } from "@/components/data-table";
 import { SimplePagination } from "@/components/pagination";
 import { FilterTabs } from "@/components/filter-tabs";
+import { StatusBadge } from "@/components/status-badge";
+import { ADMIN_PAGE_SIZE } from "@/lib/constants";
 
 interface Donation {
   id: number;
@@ -19,7 +21,7 @@ interface Donation {
   post: { id: number; title: string } | null;
 }
 
-export default function AdminDonationsPage() {
+export default memo(function AdminDonationsPage() {
   const [donations, setDonations] = useState<Donation[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -32,7 +34,7 @@ export default function AdminDonationsPage() {
     async function loadDonations() {
       setLoading(true);
       try {
-        const params = new URLSearchParams({ page: page.toString(), limit: "20" });
+        const params = new URLSearchParams({ page: page.toString(), limit: String(ADMIN_PAGE_SIZE) });
         if (tab !== "all") params.set("type", tab);
         const res = await fetchApi<{ donations: Donation[]; pagination: { totalPages: number } }>(`/api/donations?${params}`, { showErrorToast: false });
         if (!cancelled && res.ok) {
@@ -129,17 +131,7 @@ export default function AdminDonationsPage() {
           {
             key: "status",
             label: "状态",
-            render: (d) => {
-              const config = statusConfig[d.status] || statusConfig.PENDING;
-              return (
-                <span
-                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${config.bg} ${config.text}`}
-                >
-                  <span className={`w-1.5 h-1.5 rounded-full ${config.dot}`} />
-                  {config.label}
-                </span>
-              );
-            },
+            render: (d) => <StatusBadge config={statusConfig[d.status] ?? { label: "待处理", dot: "bg-yellow-500", bg: "bg-yellow-50 dark:bg-yellow-900/20", text: "text-yellow-700 dark:text-yellow-400" }} />,
           },
           {
             key: "createdAt",
@@ -168,4 +160,4 @@ export default function AdminDonationsPage() {
       />
     </div>
   );
-}
+});

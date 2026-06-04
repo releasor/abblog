@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions, getAuthUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { checkRateLimit, RATE_LIMITS, getRateLimitHeaders } from "@/lib/rate-limit";
+import { MAX_TITLE_LENGTH, MAX_CONTENT_LENGTH, MAX_SLUG_LENGTH } from "@/lib/constants";
 
 export async function POST(request: NextRequest) {
   try {
@@ -29,19 +30,19 @@ export async function POST(request: NextRequest) {
     if (!title || !slug || !content) {
       return NextResponse.json({ error: "标题、slug和内容不能为空" }, { status: 400 });
     }
-    if (typeof title !== "string" || title.length > 200) {
-      return NextResponse.json({ error: "标题不能超过200个字符" }, { status: 400 });
+    if (typeof title !== "string" || title.length > MAX_TITLE_LENGTH) {
+      return NextResponse.json({ error: `标题不能超过${MAX_TITLE_LENGTH}个字符` }, { status: 400 });
     }
-    if (typeof content !== "string" || content.length > 500000) {
+    if (typeof content !== "string" || content.length > MAX_CONTENT_LENGTH) {
       return NextResponse.json({ error: "内容过长" }, { status: 400 });
     }
-    if (typeof slug !== "string" || !/^[a-z0-9-]+$/.test(slug) || slug.length > 200) {
+    if (typeof slug !== "string" || !/^[a-z0-9-]+$/.test(slug) || slug.length > MAX_SLUG_LENGTH) {
       return NextResponse.json({ error: "slug 格式无效，只能包含小写字母、数字和连字符" }, { status: 400 });
     }
-    if (categoryId && isNaN(parseInt(categoryId))) {
+    if (categoryId && isNaN(parseInt(categoryId, 10))) {
       return NextResponse.json({ error: "无效的分类ID" }, { status: 400 });
     }
-    if (tags && (!Array.isArray(tags) || tags.some((t: string) => isNaN(parseInt(t))))) {
+    if (tags && (!Array.isArray(tags) || tags.some((t: string) => isNaN(parseInt(t, 10))))) {
       return NextResponse.json({ error: "无效的标签ID" }, { status: 400 });
     }
 
@@ -71,11 +72,11 @@ export async function POST(request: NextRequest) {
           publishedAt: status === "PUBLISHED" ? new Date() : null,
           authorId: adminUser.id,
           userId,
-          categoryId: categoryId ? parseInt(categoryId) : null,
+          categoryId: categoryId ? parseInt(categoryId, 10) : null,
           ...(tags?.length > 0 && {
             tags: {
               create: tags.map((tagId: string) => ({
-                tag: { connect: { id: parseInt(tagId) } },
+                tag: { connect: { id: parseInt(tagId, 10) } },
               })),
             },
           }),

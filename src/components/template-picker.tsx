@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, memo } from "react";
 import { FileText, Plus, Trash2 } from "lucide-react";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { fetchApi } from "@/lib/fetch-api";
+import { Skeleton } from "@/components/skeleton";
 
 interface Template {
   id: number;
@@ -24,6 +25,7 @@ export const TemplatePicker = memo(function TemplatePicker({ onSelect }: Templat
   const [newName, setNewName] = useState("");
   const [newContent, setNewContent] = useState("");
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const closePicker = useCallback(() => setShow(false), []);
 
@@ -37,11 +39,17 @@ export const TemplatePicker = memo(function TemplatePicker({ onSelect }: Templat
   }, [show, closePicker]);
 
   useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
     async function loadTemplates() {
       const res = await fetchApi<Template[]>("/api/templates");
-      if (res.ok) setTemplates(Array.isArray(res.data) ? res.data : []);
+      if (!cancelled) {
+        setLoading(false);
+        if (res.ok) setTemplates(Array.isArray(res.data) ? res.data : []);
+      }
     }
     loadTemplates();
+    return () => { cancelled = true; };
   }, []);
 
   const handleCreate = async () => {
@@ -117,7 +125,16 @@ export const TemplatePicker = memo(function TemplatePicker({ onSelect }: Templat
           )}
 
           <div className="max-h-48 overflow-y-auto">
-            {templates.length === 0 ? (
+            {loading ? (
+              <div className="p-3 space-y-2">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <Skeleton className="h-4 flex-1" />
+                    <Skeleton className="w-6 h-6 rounded" />
+                  </div>
+                ))}
+              </div>
+            ) : templates.length === 0 ? (
               <p className="px-3 py-4 text-sm text-zinc-500 text-center">暂无模板</p>
             ) : (
               templates.map((t) => (

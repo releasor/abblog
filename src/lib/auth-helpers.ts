@@ -5,7 +5,7 @@ type SessionLike = Session | { user?: Record<string, unknown> | null } | null;
 export function getAuthUserId(session: SessionLike): number | null {
   const id = (session?.user as Record<string, unknown> | null)?.id as string | undefined;
   if (!id) return null;
-  const parsed = parseInt(id);
+  const parsed = parseInt(id, 10);
   return isNaN(parsed) ? null : parsed;
 }
 

@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { parsePagination, paginationMeta } from "@/lib/pagination";
 import { requireId, invalidIdResponse } from "@/lib/api-utils";
 import { checkRateLimit, RATE_LIMITS, getRateLimitHeaders } from "@/lib/rate-limit";
+import { CACHE_PRIVATE_MAX_AGE, CACHE_PRIVATE_STALE } from "@/lib/constants";
 
 export async function GET(request: NextRequest) {
   try {
@@ -50,7 +51,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       users,
       pagination: paginationMeta(page, limit, total),
-    }, { headers: { "Cache-Control": "private, max-age=10, stale-while-revalidate=20" } });
+    }, { headers: { "Cache-Control": `private, max-age=${CACHE_PRIVATE_MAX_AGE}, stale-while-revalidate=${CACHE_PRIVATE_STALE}` } });
   } catch (e) {
     console.error("[AdminUsers] Failed to fetch users:", e);
     return NextResponse.json({ error: "获取用户列表失败" }, { status: 500 });
@@ -88,7 +89,7 @@ export async function PATCH(request: NextRequest) {
         await prisma.user.update({ where: { id: userIdNum }, data: { role: value as "USER" | "EDITOR" | "ADMIN" } });
         break;
       case "addPoints": {
-        const delta = parseInt(value);
+        const delta = parseInt(value, 10);
         if (isNaN(delta)) return NextResponse.json({ error: "积分值必须是数字" }, { status: 400 });
         await prisma.user.update({
           where: { id: userIdNum },

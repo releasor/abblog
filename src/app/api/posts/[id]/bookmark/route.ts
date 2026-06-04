@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { createActivity } from "@/lib/activity";
 import { requireId, invalidIdResponse } from "@/lib/api-utils";
 import { checkRateLimit, RATE_LIMITS, getRateLimitHeaders } from "@/lib/rate-limit";
+import { CACHE_PRIVATE_MAX_AGE_MEDIUM, CACHE_PRIVATE_STALE_MEDIUM } from "@/lib/constants";
 
 export async function GET(
   _request: NextRequest,
@@ -30,7 +31,7 @@ export async function GET(
       select: { id: true },
     });
 
-    return NextResponse.json({ isBookmarked: !!existing }, { headers: { "Cache-Control": "private, max-age=30, stale-while-revalidate=60" } });
+    return NextResponse.json({ isBookmarked: !!existing }, { headers: { "Cache-Control": `private, max-age=${CACHE_PRIVATE_MAX_AGE_MEDIUM}, stale-while-revalidate=${CACHE_PRIVATE_STALE_MEDIUM}` } });
   } catch (e) {
     console.error("[Bookmark] Failed to fetch bookmark status:", e);
     return NextResponse.json({ error: "获取收藏状态失败" }, { status: 500 });

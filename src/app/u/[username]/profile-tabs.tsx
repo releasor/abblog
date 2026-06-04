@@ -15,7 +15,6 @@ interface UserPost {
   coverImageUrl: string | null;
   publishedAt: string | null;
   author?: { name: string } | null;
-  user?: { name: string; username: string } | null;
 }
 
 const TAB_LABELS: Record<string, string> = {
@@ -80,7 +79,7 @@ export const ProfileTabs = memo(function ProfileTabs({ username }: { username: s
             </div>
           ))
         ) : posts.length === 0 ? (
-          <EmptyState compact message={TAB_EMPTY_MSG[tab]} />
+          <EmptyState compact message={TAB_EMPTY_MSG[tab] ?? "暂无数据"} />
         ) : (
           posts.map((post) => (
             <Link
@@ -94,7 +93,6 @@ export const ProfileTabs = memo(function ProfileTabs({ username }: { username: s
               )}
               <div className="flex items-center gap-2 mt-2 text-xs text-zinc-500 dark:text-zinc-400">
                 {post.author && <span>{post.author.name}</span>}
-                {post.user && <span>{post.user.name}</span>}
                 {post.publishedAt && (
                   <>
                     <span>·</span>

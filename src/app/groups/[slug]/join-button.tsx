@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import { useSession } from "next-auth/react";
 import { fetchApi } from "@/lib/fetch-api";
 
@@ -8,19 +8,21 @@ interface JoinGroupButtonProps {
   groupId: number;
 }
 
-export function JoinGroupButton({ groupId }: JoinGroupButtonProps) {
+export const JoinGroupButton = memo(function JoinGroupButton({ groupId }: JoinGroupButtonProps) {
   const { data: session } = useSession();
   const [isMember, setIsMember] = useState(false);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!session) return;
+    let cancelled = false;
 
     async function checkMembership() {
       const result = await fetchApi<{ isMember: boolean }>(`/api/groups/${groupId}/membership`, { showErrorToast: false });
-      if (result.ok) setIsMember(result.data.isMember);
+      if (!cancelled && result.ok) setIsMember(result.data.isMember);
     }
     checkMembership();
+    return () => { cancelled = true; };
   }, [session, groupId]);
 
   async function handleJoin() {
@@ -49,4 +51,4 @@ export function JoinGroupButton({ groupId }: JoinGroupButtonProps) {
       {loading ? "处理中..." : isMember ? "退出圈子" : "加入圈子"}
     </button>
   );
-}
+});

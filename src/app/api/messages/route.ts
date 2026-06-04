@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions, getAuthUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { checkRateLimit, RATE_LIMITS, getRateLimitHeaders } from "@/lib/rate-limit";
+import { CACHE_PUBLIC_S_MAXAGE_TINY, CACHE_PUBLIC_STALE_TINY } from "@/lib/constants";
 import { getClientIp } from "@/lib/api-utils";
 
 export async function GET() {
@@ -26,7 +27,7 @@ export async function GET() {
         content: m.content,
         createdAt: m.createdAt.toISOString(),
       })),
-      { headers: { "Cache-Control": "public, s-maxage=30, stale-while-revalidate=60" } }
+      { headers: { "Cache-Control": `public, s-maxage=${CACHE_PUBLIC_S_MAXAGE_TINY}, stale-while-revalidate=${CACHE_PUBLIC_STALE_TINY}` } }
     );
   } catch (e) {
     console.error("[Messages] Failed to list messages:", e);

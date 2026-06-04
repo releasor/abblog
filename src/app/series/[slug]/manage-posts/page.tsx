@@ -7,6 +7,7 @@ import Link from "next/link";
 import { ArrowLeft, Trash2, Plus, ChevronUp, ChevronDown, Save } from "lucide-react";
 import { EmptyState } from "@/components/empty-state";
 import { Skeleton } from "@/components/skeleton";
+import { Button } from "@/components/ui/button";
 import { fetchApi } from "@/lib/fetch-api";
 
 interface SeriesPost {
@@ -42,15 +43,19 @@ export default memo(function ManageSeriesPostsPage() {
     }
     if (status !== "authenticated") return;
 
+    let cancelled = false;
     async function loadSeries() {
       const result = await fetchApi<{ id: number; name: string; slug: string; posts: SeriesPost[] }>(`/api/series/${slug}`, { showErrorToast: false });
-      setLoading(false);
-      if (result.ok) {
-        setSeries({ id: result.data.id, name: result.data.name, slug: result.data.slug });
-        setPosts(result.data.posts || []);
+      if (!cancelled) {
+        setLoading(false);
+        if (result.ok) {
+          setSeries({ id: result.data.id, name: result.data.name, slug: result.data.slug });
+          setPosts(result.data.posts || []);
+        }
       }
     }
     loadSeries();
+    return () => { cancelled = true; };
   }, [status, slug, router]);
 
   const fetchUserPosts = async () => {
@@ -95,7 +100,12 @@ export default memo(function ManageSeriesPostsPage() {
     const newPosts = [...posts];
     const targetIndex = direction === "up" ? index - 1 : index + 1;
     if (targetIndex < 0 || targetIndex >= newPosts.length) return;
-    [newPosts[index], newPosts[targetIndex]] = [newPosts[targetIndex], newPosts[index]];
+    const current = newPosts[index];
+    const target = newPosts[targetIndex];
+    if (current && target) {
+      newPosts[index] = target;
+      newPosts[targetIndex] = current;
+    }
     setPosts(newPosts);
   };
 
@@ -154,26 +164,27 @@ export default memo(function ManageSeriesPostsPage() {
 
       {/* Actions */}
       <div className="flex gap-2 mb-6">
-        <button
+        <Button
+          variant="secondary"
+          size="sm"
           onClick={() => {
             setShowAdd(!showAdd);
             if (!showAdd && userPosts.length === 0) fetchUserPosts();
           }}
           aria-expanded={showAdd}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
         >
           <Plus className="w-3.5 h-3.5" />
           添加文章
-        </button>
+        </Button>
         {posts.length > 1 && (
-          <button
+          <Button
+            size="sm"
             onClick={handleSaveOrder}
-            disabled={saving}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-lg font-medium hover:bg-zinc-800 dark:hover:bg-zinc-200 disabled:opacity-50 transition-colors"
+            loading={saving}
           >
             <Save className="w-3.5 h-3.5" />
-            {saving ? "保存中..." : "保存排序"}
-          </button>
+            保存排序
+          </Button>
         )}
       </div>
 

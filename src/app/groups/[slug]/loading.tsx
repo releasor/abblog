@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/skeleton";
 
 export default function GroupDetailLoading() {
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
+    <div className="max-w-4xl mx-auto px-4 py-8">
       <div className="mb-8">
         <Skeleton className="h-48 w-full rounded-xl mb-4" />
         <Skeleton className="h-8 w-64 mb-2" />

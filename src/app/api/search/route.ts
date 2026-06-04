@@ -4,6 +4,7 @@ import { highlightTerms } from "@/lib/highlight";
 import { checkRateLimit, RATE_LIMITS, getRateLimitHeaders } from "@/lib/rate-limit";
 import { getClientIp } from "@/lib/api-utils";
 import { stripHtml } from "@/lib/text";
+import { CACHE_PUBLIC_S_MAXAGE_SHORT, CACHE_PUBLIC_STALE_SHORT, CACHE_PUBLIC_S_MAXAGE, CACHE_PUBLIC_STALE } from "@/lib/constants";
 
 export async function GET(request: NextRequest) {
   const ip = getClientIp(request);
@@ -65,7 +66,7 @@ export async function GET(request: NextRequest) {
             slug: r.slug,
           })),
         },
-        { headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600" } }
+        { headers: { "Cache-Control": `public, s-maxage=${CACHE_PUBLIC_S_MAXAGE_SHORT}, stale-while-revalidate=${CACHE_PUBLIC_STALE_SHORT}` } }
       );
     }
 
@@ -88,7 +89,7 @@ export async function GET(request: NextRequest) {
         })),
         total: results.length,
       },
-      { headers: { "Cache-Control": "public, s-maxage=60, stale-while-revalidate=120" } }
+      { headers: { "Cache-Control": `public, s-maxage=${CACHE_PUBLIC_S_MAXAGE}, stale-while-revalidate=${CACHE_PUBLIC_STALE}` } }
     );
   } catch (e) {
     console.error("[Search] Search failed:", e);

@@ -13,8 +13,11 @@ export function extractHeadings(htmlContent: string): TocHeading[] {
   let match;
 
   while ((match = regex.exec(htmlContent)) !== null) {
-    const level = parseInt(match[1]) as 2 | 3;
-    const rawText = stripHtml(match[2]);
+    const levelStr = match[1];
+    const innerHtml = match[2];
+    if (!levelStr || !innerHtml) continue;
+    const level = parseInt(levelStr, 10) as 2 | 3;
+    const rawText = stripHtml(innerHtml);
     if (!rawText) continue;
 
     const id = slugify(rawText);

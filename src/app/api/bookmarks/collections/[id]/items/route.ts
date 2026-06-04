@@ -68,9 +68,16 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
     let postIdNum: number;
     try { postIdNum = requireId(postId); } catch { return invalidIdResponse(); }
 
-    await prisma.bookmarkItem.delete({
-      where: { collectionId_postId: { collectionId, postId: postIdNum } },
-    });
+    try {
+      await prisma.bookmarkItem.delete({
+        where: { collectionId_postId: { collectionId, postId: postIdNum } },
+      });
+    } catch (deleteErr: unknown) {
+      if ((deleteErr as { code?: string }).code === "P2025") {
+        return NextResponse.json({ error: "收藏记录不存在" }, { status: 404 });
+      }
+      throw deleteErr;
+    }
     return NextResponse.json({ success: true });
   } catch (e) {
     console.error("[BookmarkItems] Failed to remove item from collection:", e);

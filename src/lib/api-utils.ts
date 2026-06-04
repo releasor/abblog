@@ -5,7 +5,7 @@ export function getClientIp(request: NextRequest): string {
 }
 
 export function requireId(value: string): number {
-  const id = parseInt(value);
+  const id = parseInt(value, 10);
   if (isNaN(id) || id <= 0) throw new InvalidIdError();
   return id;
 }

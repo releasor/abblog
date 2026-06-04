@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions, getAuthUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { checkRateLimit, RATE_LIMITS, getRateLimitHeaders } from "@/lib/rate-limit";
+import { CACHE_PRIVATE_MAX_AGE_MEDIUM, CACHE_PRIVATE_STALE_MEDIUM } from "@/lib/constants";
 
 export async function GET() {
   try {
@@ -25,9 +26,9 @@ export async function GET() {
       aiApiKey: user?.aiApiKey || "",
       aiApiUrl: user?.aiApiUrl || "",
       aiModel: user?.aiModel || "",
-    }, { headers: { "Cache-Control": "private, max-age=30, stale-while-revalidate=60" } });
+    }, { headers: { "Cache-Control": `private, max-age=${CACHE_PRIVATE_MAX_AGE_MEDIUM}, stale-while-revalidate=${CACHE_PRIVATE_STALE_MEDIUM}` } });
   } catch (e) {
-    console.error("AI settings GET error:", e);
+    console.error("[AISettings] Failed to fetch settings:", e);
     return NextResponse.json({ error: "读取AI设置失败" }, { status: 500 });
   }
 }
@@ -64,7 +65,7 @@ export async function PATCH(request: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (e) {
-    console.error("AI settings PATCH error:", e);
+    console.error("[AISettings] Failed to update settings:", e);
     return NextResponse.json({ error: "保存AI设置失败" }, { status: 500 });
   }
 }

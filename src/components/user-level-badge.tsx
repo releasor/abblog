@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, memo } from "react";
-import { Star, TrendingUp } from "lucide-react";
+import { TrendingUp } from "lucide-react";
 import { fetchApi } from "@/lib/fetch-api";
 
 interface LevelInfo {
@@ -15,43 +15,19 @@ interface LevelInfo {
   };
 }
 
-const LEVEL_COLORS: Record<number, string> = {
-  1: "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400",
-  2: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
-  3: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
-  4: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400",
-  5: "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400",
-  6: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
-  7: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
-  8: "bg-gradient-to-r from-yellow-400 to-orange-500 text-white",
-};
-
 function useLevelInfo() {
   const [info, setInfo] = useState<LevelInfo | null>(null);
   useEffect(() => {
+    let cancelled = false;
     async function loadLevelInfo() {
       const res = await fetchApi<LevelInfo>("/api/user/points");
-      if (res.ok) setInfo(res.data);
+      if (!cancelled && res.ok) setInfo(res.data);
     }
     loadLevelInfo();
+    return () => { cancelled = true; };
   }, []);
   return info;
 }
-
-export const UserLevelBadge = memo(function UserLevelBadge() {
-  const info = useLevelInfo();
-  if (!info) return null;
-
-  return (
-    <div className="inline-flex items-center gap-2">
-      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${LEVEL_COLORS[info.level] || LEVEL_COLORS[1]}`}>
-        <Star className="w-3 h-3" />
-        Lv.{info.level} {info.levelName}
-      </span>
-      <span className="text-xs text-zinc-500">{info.points} 积分</span>
-    </div>
-  );
-});
 
 export const UserLevelProgress = memo(function UserLevelProgress() {
   const info = useLevelInfo();

@@ -27,7 +27,7 @@ export const DailyQuote = memo(function DailyQuote() {
   const prev = () => setIndex((i) => (i - 1 + quotes.length) % quotes.length);
   const next = () => setIndex((i) => (i + 1) % quotes.length);
 
-  const quote = quotes[index];
+  const quote = quotes[index] ?? quotes[0]!;
 
   return (
     <section className="py-16 border-t border-zinc-200 dark:border-zinc-800">

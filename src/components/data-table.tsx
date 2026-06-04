@@ -70,7 +70,10 @@ export function DataTable<T>({
             <tr
               key={keyExtractor(item)}
               className={`border-b border-zinc-100 dark:border-zinc-800 last:border-0 ${onRowClick ? "cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800/50" : ""}`}
+              role={onRowClick ? "button" : undefined}
+              tabIndex={onRowClick ? 0 : undefined}
               onClick={() => onRowClick?.(item)}
+              onKeyDown={onRowClick ? (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onRowClick(item); } } : undefined}
             >
               {columns.map((col) => (
                 <td key={col.key} className={`px-5 py-4 text-sm ${col.hideOnMobile ? "hidden md:table-cell" : ""} ${col.className || ""}`}>

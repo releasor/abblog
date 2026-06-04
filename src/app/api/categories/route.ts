@@ -4,6 +4,7 @@ import { authOptions, getAuthUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/slugify";
 import { checkRateLimit, RATE_LIMITS, getRateLimitHeaders } from "@/lib/rate-limit";
+import { CACHE_MAX_AGE } from "@/lib/constants";
 
 export async function GET() {
   try {
@@ -14,7 +15,7 @@ export async function GET() {
       },
     });
     return NextResponse.json(categories, {
-      headers: { "Cache-Control": "public, max-age=3600" },
+      headers: { "Cache-Control": `public, max-age=${CACHE_MAX_AGE}` },
     });
   } catch (e) {
     console.error("[Categories] Failed to fetch categories:", e);

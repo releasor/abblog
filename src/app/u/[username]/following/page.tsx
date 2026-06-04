@@ -6,6 +6,8 @@ import { UserAvatar } from "@/components/user-avatar";
 import { FollowButton } from "@/components/follow-button";
 import { EmptyState } from "@/components/empty-state";
 
+export const revalidate = 60;
+
 interface Props {
   params: Promise<{ username: string }>;
 }

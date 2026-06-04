@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { CACHE_PUBLIC_S_MAXAGE, CACHE_PUBLIC_STALE, ADMIN_PAGE_SIZE } from "@/lib/constants";
 
 export async function GET(
   request: NextRequest,
@@ -23,7 +24,7 @@ export async function GET(
       const likes = await prisma.like.findMany({
         where: { userId: user.id },
         orderBy: { createdAt: "desc" },
-        take: 20,
+        take: ADMIN_PAGE_SIZE,
         include: {
           post: {
             select: {
@@ -35,7 +36,7 @@ export async function GET(
         },
       });
       return NextResponse.json(likes.map((l) => l.post), {
-        headers: { "Cache-Control": "public, s-maxage=60, stale-while-revalidate=120" },
+        headers: { "Cache-Control": `public, s-maxage=${CACHE_PUBLIC_S_MAXAGE}, stale-while-revalidate=${CACHE_PUBLIC_STALE}` },
       });
     }
 
@@ -43,7 +44,7 @@ export async function GET(
       const bookmarks = await prisma.bookmarkItem.findMany({
         where: { collection: { userId: user.id } },
         orderBy: { createdAt: "desc" },
-        take: 20,
+        take: ADMIN_PAGE_SIZE,
         include: {
           post: {
             select: {
@@ -55,14 +56,14 @@ export async function GET(
         },
       });
       return NextResponse.json(bookmarks.map((b) => b.post), {
-        headers: { "Cache-Control": "public, s-maxage=60, stale-while-revalidate=120" },
+        headers: { "Cache-Control": `public, s-maxage=${CACHE_PUBLIC_S_MAXAGE}, stale-while-revalidate=${CACHE_PUBLIC_STALE}` },
       });
     }
 
     const posts = await prisma.post.findMany({
       where: { userId: user.id, status: "PUBLISHED" },
       orderBy: { publishedAt: "desc" },
-      take: 20,
+      take: ADMIN_PAGE_SIZE,
       select: {
         id: true, title: true, slug: true, excerpt: true, coverImageUrl: true, publishedAt: true,
         author: { select: { name: true } },
@@ -71,7 +72,7 @@ export async function GET(
     });
 
     return NextResponse.json(posts, {
-      headers: { "Cache-Control": "public, s-maxage=60, stale-while-revalidate=120" },
+      headers: { "Cache-Control": `public, s-maxage=${CACHE_PUBLIC_S_MAXAGE}, stale-while-revalidate=${CACHE_PUBLIC_STALE}` },
     });
   } catch (e) {
     console.error("[UserPosts] Failed to fetch user posts:", e);

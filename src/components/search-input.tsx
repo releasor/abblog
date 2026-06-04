@@ -17,7 +17,7 @@ export const SearchInput = memo(function SearchInput() {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const router = useRouter();
 
-  const fetchSuggestions = useCallback(async (q: string) => {
+  const fetchSuggestions = useCallback(async (q: string, cancelled?: { current: boolean }) => {
     if (q.trim().length < 2) {
       setSuggestions([]);
       setShowSuggestions(false);
@@ -28,7 +28,7 @@ export const SearchInput = memo(function SearchInput() {
       `/api/search?q=${encodeURIComponent(q)}&suggestions=true`,
       { showErrorToast: false }
     );
-    if (res.ok) {
+    if (!cancelled?.current && res.ok) {
       setSuggestions(res.data.suggestions || []);
       setShowSuggestions(true);
     }
@@ -36,13 +36,15 @@ export const SearchInput = memo(function SearchInput() {
 
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
+    const cancelled = { current: false };
 
     debounceRef.current = setTimeout(() => {
-      fetchSuggestions(query);
+      fetchSuggestions(query, cancelled);
     }, 300);
 
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
+      cancelled.current = true;
     };
   }, [query, fetchSuggestions]);
 
@@ -101,7 +103,7 @@ export const SearchInput = memo(function SearchInput() {
             onChange={(e) => setQuery(e.target.value)}
             placeholder="搜索文章..."
             aria-label="搜索文章"
-            className="w-48 sm:w-64 px-3 py-1.5 pr-8 text-sm border border-zinc-300 dark:border-zinc-700 rounded-md bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-lg focus:outline-none focus:ring-2 focus:ring-zinc-500"
+            className="w-48 sm:w-64 px-3 py-1.5 pr-8 text-sm border border-zinc-300 dark:border-zinc-700 rounded-md bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500"
           />
           <button
             type="submit"

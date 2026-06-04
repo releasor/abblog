@@ -4,6 +4,7 @@ import { authOptions, getAuthUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { requireId, invalidIdResponse } from "@/lib/api-utils";
 import { checkRateLimit, RATE_LIMITS, getRateLimitHeaders } from "@/lib/rate-limit";
+import { MAX_PROMPT_CONTENT_LENGTH, CACHE_PRIVATE_MAX_AGE_MEDIUM, CACHE_PRIVATE_STALE_MEDIUM } from "@/lib/constants";
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -13,7 +14,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
 
     const template = await prisma.postTemplate.findUnique({ where: { id: templateId } });
     if (!template) return NextResponse.json({ error: "模板不存在" }, { status: 404 });
-    return NextResponse.json(template, { headers: { "Cache-Control": "private, max-age=30, stale-while-revalidate=60" } });
+    return NextResponse.json(template, { headers: { "Cache-Control": `private, max-age=${CACHE_PRIVATE_MAX_AGE_MEDIUM}, stale-while-revalidate=${CACHE_PRIVATE_STALE_MEDIUM}` } });
   } catch (e) {
     console.error("[Template] Failed to fetch template:", e);
     return NextResponse.json({ error: "获取模板详情失败" }, { status: 500 });
@@ -57,7 +58,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     if (content !== undefined && (typeof content !== "string" || content.trim().length === 0)) {
       return NextResponse.json({ error: "模板内容不能为空" }, { status: 400 });
     }
-    if (content !== undefined && content.length > 50000) {
+    if (content !== undefined && content.length > MAX_PROMPT_CONTENT_LENGTH) {
       return NextResponse.json({ error: "模板内容过长" }, { status: 400 });
     }
 

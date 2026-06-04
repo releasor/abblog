@@ -1,3 +1,4 @@
+import { memo } from "react";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -24,7 +25,7 @@ function getPageNumbers(current: number, total: number): (number | "...")[] {
   return pages;
 }
 
-export function Pagination({ currentPage, totalPages, basePath }: PaginationProps) {
+export const Pagination = memo(function Pagination({ currentPage, totalPages, basePath }: PaginationProps) {
   if (totalPages <= 1) return null;
 
   const pages = getPageNumbers(currentPage, totalPages);
@@ -74,7 +75,7 @@ export function Pagination({ currentPage, totalPages, basePath }: PaginationProp
       )}
     </nav>
   );
-}
+});
 
 interface SimplePaginationProps {
   page: number;
@@ -83,7 +84,7 @@ interface SimplePaginationProps {
   onPageChange: (page: number) => void;
 }
 
-export function SimplePagination({ page, totalPages, totalLabel, onPageChange }: SimplePaginationProps) {
+export const SimplePagination = memo(function SimplePagination({ page, totalPages, totalLabel, onPageChange }: SimplePaginationProps) {
   if (totalPages <= 1) return null;
 
   return (
@@ -116,4 +117,4 @@ export function SimplePagination({ page, totalPages, totalLabel, onPageChange }:
       </div>
     </div>
   );
-}
+});

@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions, getAuthUserId } from "@/lib/auth";
 import { getAiConfig } from "@/lib/ai-config";
 import { checkRateLimit, RATE_LIMITS, getRateLimitHeaders } from "@/lib/rate-limit";
+import { AI_MAX_TOKENS } from "@/lib/constants";
 
 export async function POST(request: NextRequest) {
   try {
@@ -86,14 +87,14 @@ export async function POST(request: NextRequest) {
             { role: "system", content: systemPrompt },
             ...messages,
           ],
-          max_tokens: 2000,
+          max_tokens: AI_MAX_TOKENS,
           temperature: 0.7,
         }),
       });
 
       if (!res.ok) {
         const errText = await res.text().catch(() => "");
-        console.error("AI error:", errText);
+        console.error("[AI Conversation] API error:", errText);
         return NextResponse.json({ reply: `AI 服务返回错误 (${res.status}): ${errText.slice(0, 200)}` });
       }
 
@@ -101,7 +102,7 @@ export async function POST(request: NextRequest) {
       const reply = data.choices?.[0]?.message?.content || "无法生成回复";
       return NextResponse.json({ reply });
     } catch (e) {
-      console.error("AI fetch error:", e);
+      console.error("[AI Conversation] Fetch error:", e);
       return NextResponse.json({ reply: "请求失败，请检查AI设置后重试" });
     }
   } catch (e) {

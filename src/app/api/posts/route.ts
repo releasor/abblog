@@ -8,6 +8,7 @@ import { addPoints, POINTS } from "@/lib/points";
 import { estimateReadingTime } from "@/lib/reading-time";
 import { checkRateLimit, RATE_LIMITS, getRateLimitHeaders } from "@/lib/rate-limit";
 import { parsePagination, paginationMeta } from "@/lib/pagination";
+import { MAX_TITLE_LENGTH, MAX_CONTENT_LENGTH, CACHE_PUBLIC_S_MAXAGE, CACHE_PUBLIC_STALE } from "@/lib/constants";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -61,7 +62,7 @@ export async function GET(request: NextRequest) {
       })),
       pagination: paginationMeta(page, limit, total),
     }, {
-      headers: { "Cache-Control": "public, s-maxage=60, stale-while-revalidate=120" },
+      headers: { "Cache-Control": `public, s-maxage=${CACHE_PUBLIC_S_MAXAGE}, stale-while-revalidate=${CACHE_PUBLIC_STALE}` },
     });
   } catch (e) {
     console.error("[Posts] Failed to list posts:", e);
@@ -96,16 +97,16 @@ export async function POST(request: NextRequest) {
     if (!title || !content) {
       return NextResponse.json({ error: "标题和内容不能为空" }, { status: 400 });
     }
-    if (typeof title !== "string" || title.length > 200) {
-      return NextResponse.json({ error: "标题不能超过200个字符" }, { status: 400 });
+    if (typeof title !== "string" || title.length > MAX_TITLE_LENGTH) {
+      return NextResponse.json({ error: `标题不能超过${MAX_TITLE_LENGTH}个字符` }, { status: 400 });
     }
-    if (typeof content !== "string" || content.length > 500000) {
+    if (typeof content !== "string" || content.length > MAX_CONTENT_LENGTH) {
       return NextResponse.json({ error: "内容过长" }, { status: 400 });
     }
-    if (categoryId && isNaN(parseInt(categoryId))) {
+    if (categoryId && isNaN(parseInt(categoryId, 10))) {
       return NextResponse.json({ error: "无效的分类ID" }, { status: 400 });
     }
-    if (tags && (!Array.isArray(tags) || tags.some((t: string) => isNaN(parseInt(t))))) {
+    if (tags && (!Array.isArray(tags) || tags.some((t: string) => isNaN(parseInt(t, 10))))) {
       return NextResponse.json({ error: "无效的标签ID" }, { status: 400 });
     }
     const slug = body.slug || slugify(title);
@@ -130,11 +131,11 @@ export async function POST(request: NextRequest) {
           scheduledAt: scheduledAt ? new Date(scheduledAt) : null,
           readingTime: estimateReadingTime(content),
           authorId: userId,
-          categoryId: categoryId ? parseInt(categoryId) : null,
+          categoryId: categoryId ? parseInt(categoryId, 10) : null,
           tags: tags?.length
             ? {
                 create: tags.map((tagId: string) => ({
-                  tag: { connect: { id: parseInt(tagId) } },
+                  tag: { connect: { id: parseInt(tagId, 10) } },
                 })),
               }
             : undefined,

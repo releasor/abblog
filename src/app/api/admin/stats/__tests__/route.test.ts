@@ -1,5 +1,10 @@
 import { vi } from "vitest";
+import { NextRequest } from "next/server";
 import { GET } from "../route";
+
+function makeRequest(url = "http://localhost:3000/api/admin/stats") {
+  return new NextRequest(new URL(url));
+}
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
@@ -18,6 +23,16 @@ vi.mock("next-auth", () => ({
 vi.mock("@/lib/auth", () => ({
   authOptions: {},
   isAdmin: vi.fn(),
+}));
+
+vi.mock("@/lib/api-utils", () => ({
+  getClientIp: vi.fn(() => "127.0.0.1"),
+}));
+
+vi.mock("@/lib/rate-limit", () => ({
+  checkRateLimit: vi.fn(() => ({ allowed: true, remaining: 99, resetAt: Date.now() + 60000 })),
+  RATE_LIMITS: { api: { windowMs: 60000, max: 100 } },
+  getRateLimitHeaders: vi.fn(() => ({ "X-RateLimit-Remaining": "99" })),
 }));
 
 import { prisma } from "@/lib/prisma";
@@ -41,7 +56,7 @@ describe("GET /api/admin/stats", () => {
     mockGetServerSession.mockResolvedValue({});
     mockIsAdmin.mockReturnValue(false);
 
-    const res = await GET();
+    const res = await GET(makeRequest());
     expect(res.status).toBe(403);
   });
 
@@ -58,7 +73,7 @@ describe("GET /api/admin/stats", () => {
       { id: 1, title: "Test", slug: "test", score: 10, _count: { likes: 5, comments: 3 } },
     ]);
 
-    const res = await GET();
+    const res = await GET(makeRequest());
     const data = await res.json();
 
     expect(res.status).toBe(200);
@@ -73,7 +88,7 @@ describe("GET /api/admin/stats", () => {
     mockIsAdmin.mockReturnValue(true);
     mockPrisma.post.count.mockRejectedValue(new Error("DB error"));
 
-    const res = await GET();
+    const res = await GET(makeRequest());
     expect(res.status).toBe(500);
   });
 });

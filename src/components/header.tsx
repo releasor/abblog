@@ -15,13 +15,17 @@ const NotificationBell = memo(function NotificationBell() {
   const [count, setCount] = useState(0);
 
   useEffect(() => {
+    let cancelled = false;
     async function fetchCount() {
       const res = await fetchApi<{ unreadCount: number }>("/api/notifications", { showErrorToast: false });
-      if (res.ok) setCount(res.data.unreadCount || 0);
+      if (!cancelled && res.ok) setCount(res.data.unreadCount || 0);
     }
     fetchCount();
     const interval = setInterval(fetchCount, 60000);
-    return () => clearInterval(interval);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
   }, []);
 
   return (
@@ -43,11 +47,13 @@ const UserMenu = memo(function UserMenu() {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    let cancelled = false;
     async function loadProfile() {
       const res = await fetchApi<{ username: string | null; avatar: string | null }>("/api/user/profile", { showErrorToast: false });
-      if (res.ok) setProfile({ username: res.data.username, avatar: res.data.avatar });
+      if (!cancelled && res.ok) setProfile({ username: res.data.username, avatar: res.data.avatar });
     }
     loadProfile();
+    return () => { cancelled = true; };
   }, []);
 
   useEffect(() => {

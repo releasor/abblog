@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, memo } from "react";
 import { Save, Check } from "lucide-react";
 import { fetchApi } from "@/lib/fetch-api";
 
@@ -26,7 +26,7 @@ const defaultConfigs: ConfigItem[] = [
   { key: "auto_save_interval", value: "30", label: "自动保存间隔(秒)", type: "number" },
 ];
 
-export default function AdminConfigPage() {
+export default memo(function AdminConfigPage() {
   const [configs, setConfigs] = useState<ConfigItem[]>(defaultConfigs);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -35,9 +35,10 @@ export default function AdminConfigPage() {
   useEffect(() => () => clearTimeout(timerRef.current), []);
 
   useEffect(() => {
+    let cancelled = false;
     async function loadConfig() {
       const result = await fetchApi<{ key: string; value: string }[]>("/api/admin/config", { errorMessage: "加载配置失败" });
-      if (result.ok && Array.isArray(result.data)) {
+      if (!cancelled && result.ok && Array.isArray(result.data)) {
         setConfigs((prev) =>
           prev.map((c) => {
             const found = result.data.find((d) => d.key === c.key);
@@ -47,6 +48,7 @@ export default function AdminConfigPage() {
       }
     }
     loadConfig();
+    return () => { cancelled = true; };
   }, []);
 
   const handleChange = (key: string, value: string) => {
@@ -138,7 +140,7 @@ export default function AdminConfigPage() {
                 value={config.value}
                 onChange={(e) => handleChange(config.key, e.target.value)}
                 rows={2}
-                className="flex-1 px-3 py-2 text-sm border border-zinc-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-200 dark:focus:ring-zinc-700 resize-none"
+                className="flex-1 px-3 py-2 text-sm border border-zinc-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500 resize-none"
               />
             ) : (
               <input
@@ -146,7 +148,7 @@ export default function AdminConfigPage() {
                 type={config.type === "number" ? "number" : "text"}
                 value={config.value}
                 onChange={(e) => handleChange(config.key, e.target.value)}
-                className="flex-1 px-3 py-2 text-sm border border-zinc-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-200 dark:focus:ring-zinc-700"
+                className="flex-1 px-3 py-2 text-sm border border-zinc-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500"
               />
             )}
           </div>
@@ -154,4 +156,4 @@ export default function AdminConfigPage() {
       </div>
     </div>
   );
-}
+});

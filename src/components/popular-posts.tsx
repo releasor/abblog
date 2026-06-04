@@ -3,6 +3,7 @@
 import { useState, useEffect, memo } from "react";
 import Link from "next/link";
 import { fetchApi } from "@/lib/fetch-api";
+import { Skeleton } from "@/components/skeleton";
 
 interface PopularPost {
   id: number;
@@ -16,13 +17,20 @@ interface PopularPost {
 export const PopularPosts = memo(function PopularPosts() {
   const [posts, setPosts] = useState<PopularPost[]>([]);
   const [period, setPeriod] = useState<"week" | "month">("week");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
     async function loadPopular() {
       const res = await fetchApi<PopularPost[]>(`/api/posts/popular?period=${period}&limit=5`, { showErrorToast: false });
-      if (res.ok) setPosts(res.data);
+      if (!cancelled) {
+        setLoading(false);
+        if (res.ok) setPosts(res.data);
+      }
     }
     loadPopular();
+    return () => { cancelled = true; };
   }, [period]);
 
   return (
@@ -57,25 +65,33 @@ export const PopularPosts = memo(function PopularPosts() {
         </div>
       </div>
       <div className="space-y-3">
-        {posts.map((post, i) => (
-          <Link
-            key={post.id}
-            href={`/posts/${post.slug}`}
-            className="flex items-center gap-3 group"
-          >
-            <span className={`w-5 h-5 flex items-center justify-center rounded text-xs font-bold ${
-              i < 3
-                ? "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900"
-                : "bg-zinc-200 dark:bg-zinc-700 text-zinc-500 dark:text-zinc-400"
-            }`}>
-              {i + 1}
-            </span>
-            <span className="text-sm text-zinc-700 dark:text-zinc-300 group-hover:text-zinc-900 dark:group-hover:text-zinc-100 transition-colors line-clamp-1">
-              {post.title}
-            </span>
-          </Link>
-        ))}
-        {posts.length === 0 && (
+        {loading ? (
+          Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="flex items-center gap-3">
+              <Skeleton className="w-5 h-5 rounded" />
+              <Skeleton className="h-4 flex-1" />
+            </div>
+          ))
+        ) : posts.length > 0 ? (
+          posts.map((post, i) => (
+            <Link
+              key={post.id}
+              href={`/posts/${post.slug}`}
+              className="flex items-center gap-3 group"
+            >
+              <span className={`w-5 h-5 flex items-center justify-center rounded text-xs font-bold ${
+                i < 3
+                  ? "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900"
+                  : "bg-zinc-200 dark:bg-zinc-700 text-zinc-500 dark:text-zinc-400"
+              }`}>
+                {i + 1}
+              </span>
+              <span className="text-sm text-zinc-700 dark:text-zinc-300 group-hover:text-zinc-900 dark:group-hover:text-zinc-100 transition-colors line-clamp-1">
+                {post.title}
+              </span>
+            </Link>
+          ))
+        ) : (
           <p className="text-sm text-zinc-500 dark:text-zinc-400">暂无数据</p>
         )}
       </div>

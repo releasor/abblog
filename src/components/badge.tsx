@@ -1,10 +1,12 @@
+import { memo } from "react";
+
 interface BadgeProps {
   children: React.ReactNode;
   variant?: "default" | "outline";
   size?: "sm" | "md";
 }
 
-export function Badge({ children, variant = "default", size = "sm" }: BadgeProps) {
+export const Badge = memo(function Badge({ children, variant = "default", size = "sm" }: BadgeProps) {
   const baseClasses = "inline-flex items-center rounded-full font-medium";
   const sizeClasses = size === "sm" ? "px-2 py-0.5 text-xs" : "px-2.5 py-1 text-sm";
 
@@ -18,4 +20,4 @@ export function Badge({ children, variant = "default", size = "sm" }: BadgeProps
       {children}
     </span>
   );
-}
+});

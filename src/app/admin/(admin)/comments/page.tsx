@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, memo } from "react";
 import { MessageSquare, Check, X, Trash2 } from "lucide-react";
 import { truncate } from "@/lib/text";
 import { SkeletonRow } from "@/components/skeleton";
@@ -9,6 +9,8 @@ import { SimplePagination } from "@/components/pagination";
 import { FilterTabs } from "@/components/filter-tabs";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { ActionButton } from "@/components/action-button";
+import { StatusBadge } from "@/components/status-badge";
+import { ADMIN_PAGE_SIZE } from "@/lib/constants";
 import { useConfirmDelete } from "@/hooks/use-confirm-delete";
 import { fetchApi } from "@/lib/fetch-api";
 
@@ -30,7 +32,7 @@ interface Pagination {
   totalPages: number;
 }
 
-export default function AdminCommentsPage() {
+export default memo(function AdminCommentsPage() {
   const [comments, setComments] = useState<Comment[]>([]);
   const [pagination, setPagination] = useState<Pagination | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -38,27 +40,35 @@ export default function AdminCommentsPage() {
   const [loading, setLoading] = useState(true);
   const [actionId, setActionId] = useState<number | null>(null);
 
-  const fetchComments = useCallback(async () => {
-    setLoading(true);
-    const params = new URLSearchParams({
-      page: page.toString(),
-      limit: "20",
-    });
-    if (statusFilter !== "all") {
-      params.set("status", statusFilter);
-    }
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      setLoading(true);
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: String(ADMIN_PAGE_SIZE),
+      });
+      if (statusFilter !== "all") {
+        params.set("status", statusFilter);
+      }
 
-    const res = await fetchApi<{ comments: Comment[]; pagination: Pagination }>(`/api/admin/comments?${params}`, { showErrorToast: false });
-    if (res.ok) {
-      setComments(res.data.comments);
-      setPagination(res.data.pagination);
+      const res = await fetchApi<{ comments: Comment[]; pagination: Pagination }>(`/api/admin/comments?${params}`, { showErrorToast: false });
+      if (!cancelled) {
+        if (res.ok) {
+          setComments(res.data.comments);
+          setPagination(res.data.pagination);
+        }
+        setLoading(false);
+      }
     }
-    setLoading(false);
+    load();
+    return () => { cancelled = true; };
   }, [page, statusFilter]);
 
-  useEffect(() => {
-    fetchComments();
-  }, [fetchComments]);
+  const refetch = () => {
+    setPage(1);
+    setStatusFilter((f) => f);
+  };
 
   const updateStatus = async (id: number, status: "APPROVED" | "REJECTED") => {
     setActionId(id);
@@ -68,7 +78,7 @@ export default function AdminCommentsPage() {
       errorMessage: "更新评论状态失败",
     });
     setActionId(null);
-    if (result.ok) fetchComments();
+    if (result.ok) refetch();
   };
 
   const { targetId: deleteTargetId, requestDelete, confirm: confirmDelete, cancel: cancelDelete, isDeleting } = useConfirmDelete(async (id: number) => {
@@ -76,7 +86,7 @@ export default function AdminCommentsPage() {
       method: "DELETE",
       errorMessage: "删除失败",
     });
-    if (result.ok) fetchComments();
+    if (result.ok) refetch();
   });
 
   const statusConfig: Record<string, { label: string; dot: string; bg: string; text: string }> = {
@@ -129,7 +139,7 @@ export default function AdminCommentsPage() {
       ) : (
         <div className="space-y-3">
           {comments.map((comment) => {
-            const config = statusConfig[comment.status];
+            const config = statusConfig[comment.status] ?? { label: "待审核", dot: "bg-yellow-500", bg: "bg-yellow-50 dark:bg-yellow-900/20", text: "text-yellow-700 dark:text-yellow-400" };
             return (
               <div
                 key={comment.id}
@@ -141,12 +151,7 @@ export default function AdminCommentsPage() {
                       <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
                         {comment.authorName || comment.user?.name || "匿名"}
                       </span>
-                      <span
-                        className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium ${config.bg} ${config.text}`}
-                      >
-                        <span className={`w-1.5 h-1.5 rounded-full ${config.dot}`} />
-                        {config.label}
-                      </span>
+                      <StatusBadge config={config} size="sm" />
                     </div>
                     <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-2">
                       {truncate(comment.content, 200)}
@@ -212,4 +217,4 @@ export default function AdminCommentsPage() {
       />
     </div>
   );
-}
+});

@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions, getAuthUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { requireId, invalidIdResponse } from "@/lib/api-utils";
+import { CACHE_PUBLIC_S_MAXAGE_MEDIUM, CACHE_PUBLIC_STALE_MEDIUM } from "@/lib/constants";
 import { checkRateLimit, RATE_LIMITS, getRateLimitHeaders } from "@/lib/rate-limit";
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -21,7 +22,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     if (!group) return NextResponse.json({ error: "圈子不存在" }, { status: 404 });
     return NextResponse.json(
       { ...group, memberCount: group._count.members, postCount: group._count.posts },
-      { headers: { "Cache-Control": "public, s-maxage=120, stale-while-revalidate=300" } }
+      { headers: { "Cache-Control": `public, s-maxage=${CACHE_PUBLIC_S_MAXAGE_MEDIUM}, stale-while-revalidate=${CACHE_PUBLIC_STALE_MEDIUM}` } }
     );
   } catch (e) {
     console.error("[Group] Failed to fetch group:", e);

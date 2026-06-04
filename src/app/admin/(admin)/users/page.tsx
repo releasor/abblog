@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useRef, memo } from "react";
 import Image from "next/image";
 import { Search, Users, Star } from "lucide-react";
 import { formatDate } from "@/lib/format-date";
@@ -22,7 +22,7 @@ interface User {
   _count: { posts: number; comments: number; likes: number };
 }
 
-export default function AdminUsersPage() {
+export default memo(function AdminUsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -42,22 +42,25 @@ export default function AdminUsersPage() {
     };
   }, [query]);
 
-  const fetchUsers = useCallback(async () => {
-    setLoading(true);
-    const result = await fetchApi<{ users: User[]; pagination: { totalPages: number } }>(
-      `/api/admin/users?page=${page}&q=${encodeURIComponent(debouncedQuery)}`,
-      { errorMessage: "加载用户列表失败" }
-    );
-    setLoading(false);
-    if (result.ok) {
-      setUsers(result.data.users || []);
-      setTotalPages(result.data.pagination?.totalPages || 1);
-    }
-  }, [page, debouncedQuery]);
-
   useEffect(() => {
-    fetchUsers();
-  }, [fetchUsers]);
+    let cancelled = false;
+    async function load() {
+      setLoading(true);
+      const result = await fetchApi<{ users: User[]; pagination: { totalPages: number } }>(
+        `/api/admin/users?page=${page}&q=${encodeURIComponent(debouncedQuery)}`,
+        { errorMessage: "加载用户列表失败" }
+      );
+      if (!cancelled) {
+        setLoading(false);
+        if (result.ok) {
+          setUsers(result.data.users || []);
+          setTotalPages(result.data.pagination?.totalPages || 1);
+        }
+      }
+    }
+    load();
+    return () => { cancelled = true; };
+  }, [page, debouncedQuery]);
 
   const handleRoleChange = async (userId: number, role: string) => {
     const result = await fetchApi("/api/admin/users", {
@@ -65,7 +68,10 @@ export default function AdminUsersPage() {
       body: JSON.stringify({ userId, action: "setRole", value: role }),
       errorMessage: "角色修改失败",
     });
-    if (result.ok) fetchUsers();
+    if (result.ok) {
+      setPage(1);
+      setDebouncedQuery((q) => q);
+    }
   };
 
   const roleLabels: Record<string, string> = { USER: "用户", EDITOR: "编辑", ADMIN: "管理员" };
@@ -89,7 +95,7 @@ export default function AdminUsersPage() {
           onChange={(e) => setQuery(e.target.value)}
           placeholder="搜索用户名、邮箱..."
           aria-label="搜索用户"
-          className="w-full pl-10 pr-4 py-2.5 text-sm border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-200 dark:focus:ring-zinc-700 transition-shadow"
+          className="w-full pl-10 pr-4 py-2.5 text-sm border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500 transition-shadow"
         />
       </div>
 
@@ -199,4 +205,4 @@ export default function AdminUsersPage() {
       />
     </div>
   );
-}
+});

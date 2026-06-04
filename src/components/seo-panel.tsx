@@ -29,14 +29,24 @@ export const SEOPanel = memo(function SEOPanel({ postId }: SEOPanelProps) {
 
   const analyze = useCallback(async () => {
     setLoading(true);
-    const result = await fetchApi<SEOResult>(`/api/posts/${postId}/seo`, { errorMessage: "SEO 分析失败" });
+    const res = await fetchApi<SEOResult>(`/api/posts/${postId}/seo`, { errorMessage: "SEO 分析失败" });
     setLoading(false);
-    if (result.ok) setResult(result.data);
+    if (res.ok) setResult(res.data);
   }, [postId]);
 
   useEffect(() => {
-    analyze();
-  }, [analyze]);
+    let cancelled = false;
+    async function load() {
+      setLoading(true);
+      const res = await fetchApi<SEOResult>(`/api/posts/${postId}/seo`, { errorMessage: "SEO 分析失败" });
+      if (!cancelled) {
+        setLoading(false);
+        if (res.ok) setResult(res.data);
+      }
+    }
+    load();
+    return () => { cancelled = true; };
+  }, [postId]);
 
   if (loading) {
     return (

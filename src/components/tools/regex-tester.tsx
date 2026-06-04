@@ -33,14 +33,14 @@ export default memo(function RegexTester() {
               id="regex-pattern"
               value={pattern}
               onChange={(e) => setPattern(e.target.value)}
-              className="flex-1 px-3 py-2 font-mono text-sm border border-zinc-300 dark:border-zinc-700 rounded-lg bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500"
+              className="flex-1 px-3 py-2 font-mono text-sm border border-zinc-300 dark:border-zinc-700 rounded-lg bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500"
               placeholder="[a-z]+"
             />
             <span className="px-3 py-2 text-zinc-400 bg-zinc-100 dark:bg-zinc-800 rounded-lg">/</span>
             <input
               value={flags}
               onChange={(e) => setFlags(e.target.value)}
-              className="w-16 px-3 py-2 font-mono text-sm border border-zinc-300 dark:border-zinc-700 rounded-lg bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500"
+              className="w-16 px-3 py-2 font-mono text-sm border border-zinc-300 dark:border-zinc-700 rounded-lg bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500"
             />
           </div>
         </div>
@@ -56,7 +56,7 @@ export default memo(function RegexTester() {
           id="regex-test-str"
           value={testStr}
           onChange={(e) => setTestStr(e.target.value)}
-          className="w-full h-40 p-3 font-mono text-sm border border-zinc-300 dark:border-zinc-700 rounded-lg bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500 resize-none"
+          className="w-full h-40 p-3 font-mono text-sm border border-zinc-300 dark:border-zinc-700 rounded-lg bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500 resize-none"
           placeholder="输入要测试的文本..."
         />
       </div>

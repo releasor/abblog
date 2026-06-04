@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { fetchApi } from "@/lib/fetch-api";
@@ -22,7 +22,7 @@ interface PostData {
   status: "DRAFT" | "PUBLISHED";
 }
 
-export default function EditPostPage() {
+export default memo(function EditPostPage() {
   const params = useParams();
   const router = useRouter();
   const [post, setPost] = useState<PostData | null>(null);
@@ -30,27 +30,31 @@ export default function EditPostPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
+    let cancelled = false;
     const fetchPost = async () => {
       const res = await fetchApi<PostData>(`/api/posts/${params.id}`, { showErrorToast: false });
-      if (!res.ok) {
-        setError("文章未找到");
+      if (!cancelled) {
+        if (!res.ok) {
+          setError("文章未找到");
+          setLoading(false);
+          return;
+        }
+        setPost({
+          id: res.data.id,
+          title: res.data.title,
+          slug: res.data.slug,
+          content: res.data.content,
+          excerpt: res.data.excerpt || "",
+          coverImageUrl: res.data.coverImageUrl || "",
+          categoryId: res.data.categoryId,
+          tags: res.data.tags,
+          status: res.data.status,
+        });
         setLoading(false);
-        return;
       }
-      setPost({
-        id: res.data.id,
-        title: res.data.title,
-        slug: res.data.slug,
-        content: res.data.content,
-        excerpt: res.data.excerpt || "",
-        coverImageUrl: res.data.coverImageUrl || "",
-        categoryId: res.data.categoryId,
-        tags: res.data.tags,
-        status: res.data.status,
-      });
-      setLoading(false);
     };
     fetchPost();
+    return () => { cancelled = true; };
   }, [params.id]);
 
   if (loading) {
@@ -79,4 +83,4 @@ export default function EditPostPage() {
       <PostForm mode="edit" initialData={post} />
     </div>
   );
-}
+});

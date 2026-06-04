@@ -4,6 +4,7 @@ import { authOptions, getAuthUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { checkRateLimit, RATE_LIMITS, getRateLimitHeaders } from "@/lib/rate-limit";
 import { requireId, invalidIdResponse } from "@/lib/api-utils";
+import { MAX_MESSAGE_LENGTH, CACHE_PRIVATE_MAX_AGE, CACHE_PRIVATE_STALE } from "@/lib/constants";
 
 export async function GET(
   request: NextRequest,
@@ -33,7 +34,7 @@ export async function GET(
 
     const { searchParams } = new URL(request.url);
     const before = searchParams.get("before");
-    const beforeId = before ? parseInt(before) : undefined;
+    const beforeId = before ? parseInt(before, 10) : undefined;
     if (before && isNaN(beforeId!)) return NextResponse.json({ error: "无效的分页参数" }, { status: 400 });
     const limit = 30;
 
@@ -53,7 +54,7 @@ export async function GET(
       data: { lastReadAt: new Date() },
     });
 
-    return NextResponse.json(messages.toReversed(), { headers: { "Cache-Control": "private, max-age=10, stale-while-revalidate=20" } });
+    return NextResponse.json(messages.toReversed(), { headers: { "Cache-Control": `private, max-age=${CACHE_PRIVATE_MAX_AGE}, stale-while-revalidate=${CACHE_PRIVATE_STALE}` } });
   } catch (e) {
     console.error("[Messages] Failed to fetch messages:", e);
     return NextResponse.json({ error: "获取消息列表失败" }, { status: 500 });
@@ -100,8 +101,8 @@ export async function POST(
     if (!content || typeof content !== "string" || !content.trim()) {
       return NextResponse.json({ error: "消息不能为空" }, { status: 400 });
     }
-    if (content.length > 2000) {
-      return NextResponse.json({ error: "消息不能超过2000个字符" }, { status: 400 });
+    if (content.length > MAX_MESSAGE_LENGTH) {
+      return NextResponse.json({ error: `消息不能超过${MAX_MESSAGE_LENGTH}个字符` }, { status: 400 });
     }
 
     const message = await prisma.directMessage.create({
@@ -113,17 +114,17 @@ export async function POST(
       include: { sender: { select: { id: true, name: true, avatar: true } } },
     });
 
-    // Update conversation timestamp
-    await prisma.conversation.update({
-      where: { id: conversationId },
-      data: { updatedAt: new Date() },
-    });
-
-    // Notify other members
-    const otherMembers = await prisma.conversationMember.findMany({
-      where: { conversationId, userId: { not: userId } },
-      select: { userId: true },
-    });
+    // Update conversation timestamp and fetch other members in parallel
+    const [, otherMembers] = await Promise.all([
+      prisma.conversation.update({
+        where: { id: conversationId },
+        data: { updatedAt: new Date() },
+      }),
+      prisma.conversationMember.findMany({
+        where: { conversationId, userId: { not: userId } },
+        select: { userId: true },
+      }),
+    ]);
 
     const senderName = session?.user?.name || "有人";
 

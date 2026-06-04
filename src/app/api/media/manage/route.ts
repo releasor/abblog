@@ -7,6 +7,7 @@ import { unlink } from "fs/promises";
 import path from "path";
 import { requireId, invalidIdResponse } from "@/lib/api-utils";
 import { checkRateLimit, RATE_LIMITS, getRateLimitHeaders } from "@/lib/rate-limit";
+import { CACHE_PRIVATE_MAX_AGE, CACHE_PRIVATE_STALE } from "@/lib/constants";
 
 export async function GET(request: NextRequest) {
   try {
@@ -35,7 +36,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       files,
       pagination: paginationMeta(page, limit, total),
-    }, { headers: { "Cache-Control": "private, max-age=10, stale-while-revalidate=20" } });
+    }, { headers: { "Cache-Control": `private, max-age=${CACHE_PRIVATE_MAX_AGE}, stale-while-revalidate=${CACHE_PRIVATE_STALE}` } });
   } catch (e) {
     console.error("[MediaManage] Failed to fetch media:", e);
     return NextResponse.json({ error: "获取媒体文件失败" }, { status: 500 });

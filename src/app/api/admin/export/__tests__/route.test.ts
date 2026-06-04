@@ -1,5 +1,10 @@
 import { vi } from "vitest";
+import { NextRequest } from "next/server";
 import { GET } from "../route";
+
+function makeRequest(url = "http://localhost:3000/api/admin/export") {
+  return new NextRequest(new URL(url));
+}
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
@@ -44,7 +49,7 @@ describe("GET /api/admin/export", () => {
     mockGetServerSession.mockResolvedValue({ user: { id: 1 } });
     mockIsAdmin.mockReturnValue(false);
 
-    const res = await GET();
+    const res = await GET(makeRequest());
     expect(res.status).toBe(403);
   });
 
@@ -59,7 +64,7 @@ describe("GET /api/admin/export", () => {
     mockPrisma.comment.findMany.mockResolvedValue([]);
     mockPrisma.user.findMany.mockResolvedValue([]);
 
-    const res = await GET();
+    const res = await GET(makeRequest());
     const data = JSON.parse(await res.text());
 
     expect(res.status).toBe(200);
@@ -75,7 +80,7 @@ describe("GET /api/admin/export", () => {
     mockIsAdmin.mockReturnValue(true);
     mockPrisma.post.findMany.mockRejectedValue(new Error("DB error"));
 
-    const res = await GET();
+    const res = await GET(makeRequest());
     expect(res.status).toBe(500);
   });
 });

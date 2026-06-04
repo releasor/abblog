@@ -2,7 +2,9 @@ import { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { highlightTerms } from "@/lib/highlight";
 import { formatDate } from "@/lib/format-date";
+import { stripHtml } from "@/lib/text";
 import { PageHeader } from "@/components/page-header";
+import { Badge } from "@/components/badge";
 import Link from "next/link";
 
 export const metadata: Metadata = {
@@ -31,7 +33,7 @@ export default async function SearchPage({ searchParams }: PageProps) {
     );
   }
 
-  let results: Array<{
+  type SearchResult = {
     id: number;
     title: string;
     slug: string;
@@ -41,20 +43,12 @@ export default async function SearchPage({ searchParams }: PageProps) {
     categoryName: string | null;
     categorySlug: string | null;
     readingTime: number;
-  }> = [];
+  };
+
+  let results: SearchResult[] = [];
 
   try {
-    const rows: Array<{
-      id: number;
-      title: string;
-      slug: string;
-      excerpt: string | null;
-      content: string;
-      publishedAt: Date | null;
-      categoryName: string | null;
-      categorySlug: string | null;
-      readingTime: number;
-    }> = await prisma.$queryRaw`
+    const rows: SearchResult[] = await prisma.$queryRaw`
       SELECT
         p.id,
         p.title,
@@ -116,13 +110,13 @@ export default async function SearchPage({ searchParams }: PageProps) {
                 post.excerpt
                   ? highlightTerms(post.excerpt, query)
                   : highlightTerms(
-                      post.content.replace(/<[^>]*>/g, "").slice(0, 200),
+                      stripHtml(post.content).slice(0, 200),
                       query
                     )
               }
               category={
-                post.categoryName
-                  ? { name: post.categoryName, slug: post.categorySlug! }
+                post.categoryName && post.categorySlug
+                  ? { name: post.categoryName, slug: post.categorySlug }
                   : null
               }
               publishedAt={post.publishedAt}
@@ -156,11 +150,7 @@ function SearchResultCard({
       className="group block rounded-lg border border-zinc-200 dark:border-zinc-800 p-6 hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-sm transition-all"
     >
       <div className="flex items-center gap-2 mb-3">
-        {category && (
-          <span className="px-2.5 py-0.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-full text-xs font-medium">
-            {category.name}
-          </span>
-        )}
+        {category && <Badge>{category.name}</Badge>}
       </div>
       <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 group-hover:text-zinc-700 dark:group-hover:text-zinc-300 transition-colors mb-2">
         {title}

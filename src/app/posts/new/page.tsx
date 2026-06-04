@@ -1,8 +1,8 @@
 "use client";
 
+import { memo, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 import dynamic from "next/dynamic";
 import { Skeleton } from "@/components/skeleton";
 
@@ -16,7 +16,7 @@ const PostForm = dynamic(() => import("@/components/post-form"), {
   ),
 });
 
-export default function NewPostPage() {
+export default memo(function NewPostPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
 
@@ -53,4 +53,4 @@ export default function NewPostPage() {
       <PostForm mode="create" apiEndpoint="/api/user/posts" redirectPath="/" />
     </div>
   );
-}
+});

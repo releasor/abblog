@@ -1,6 +1,7 @@
+import { memo } from "react";
 import Link from "next/link";
 
-export function Footer() {
+export const Footer = memo(function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
@@ -47,8 +48,13 @@ export function Footer() {
           <p className="text-sm text-zinc-500 dark:text-zinc-500 text-center">
             © {currentYear} billionaire. 保留所有权利
           </p>
+          <p className="text-xs text-zinc-400 dark:text-zinc-600 text-center mt-2">
+            <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer" className="hover:text-zinc-600 dark:hover:text-zinc-400 transition-colors">
+              62655f0bb5ecadb19ea79f48665a3417
+            </a>
+          </p>
         </div>
       </div>
     </footer>
   );
-}
+});

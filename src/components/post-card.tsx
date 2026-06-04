@@ -1,3 +1,4 @@
+import { memo } from "react";
 import Link from "next/link";
 import { formatDate } from "@/lib/format-date";
 import { Badge } from "@/components/badge";
@@ -11,7 +12,7 @@ interface PostCardProps {
   readingTime: number;
 }
 
-export function PostCard({ title, slug, excerpt, category, publishedAt, readingTime }: PostCardProps) {
+export const PostCard = memo(function PostCard({ title, slug, excerpt, category, publishedAt, readingTime }: PostCardProps) {
 
   return (
     <Link
@@ -38,4 +39,4 @@ export function PostCard({ title, slug, excerpt, category, publishedAt, readingT
       </div>
     </Link>
   );
-}
+});

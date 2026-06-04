@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import Image from "next/image";
 import { ImageIcon, Copy, Check, Trash2 } from "lucide-react";
 import { EmptyState } from "@/components/empty-state";
@@ -22,7 +22,7 @@ const formatSize = (bytes: number) => {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 };
 
-export default function MediaPage() {
+export default memo(function MediaPage() {
   const [images, setImages] = useState<MediaFile[]>([]);
   const [loading, setLoading] = useState(true);
   const { copiedId, copy } = useCopyWithId<string>();
@@ -30,12 +30,16 @@ export default function MediaPage() {
   const [deleteTargetFile, setDeleteTargetFile] = useState<string | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
     async function loadMedia() {
       const result = await fetchApi<MediaFile[]>("/api/media", { errorMessage: "加载媒体库失败" });
-      setLoading(false);
-      if (result.ok && Array.isArray(result.data)) setImages(result.data);
+      if (!cancelled) {
+        setLoading(false);
+        if (result.ok && Array.isArray(result.data)) setImages(result.data);
+      }
     }
     loadMedia();
+    return () => { cancelled = true; };
   }, []);
 
   const copyUrl = (url: string) => copy(url, url);
@@ -92,7 +96,7 @@ export default function MediaPage() {
                   sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
                   loading="lazy"
                 />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center gap-2 sm:opacity-0 sm:group-hover:opacity-100">
                   <button
                     onClick={() => copyUrl(img.url)}
                     className="p-2 bg-white/90 dark:bg-zinc-900/90 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-white dark:hover:bg-zinc-900 transition-colors"
@@ -146,4 +150,4 @@ export default function MediaPage() {
       />
     </div>
   );
-}
+});

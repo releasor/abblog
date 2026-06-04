@@ -96,7 +96,7 @@ async function main() {
       status: "PUBLISHED" as const,
       publishedAt: new Date("2025-05-20"),
       readingTime: 8,
-      categoryId: categoryRecords[0].id,
+      categoryId: categoryRecords[0]!.id,
     },
     {
       title: "TypeScript 高级类型技巧",
@@ -106,7 +106,7 @@ async function main() {
       status: "PUBLISHED" as const,
       publishedAt: new Date("2025-05-18"),
       readingTime: 12,
-      categoryId: categoryRecords[1].id,
+      categoryId: categoryRecords[1]!.id,
     },
     {
       title: "React 性能优化实战",
@@ -116,7 +116,7 @@ async function main() {
       status: "PUBLISHED" as const,
       publishedAt: new Date("2025-05-15"),
       readingTime: 10,
-      categoryId: categoryRecords[0].id,
+      categoryId: categoryRecords[0]!.id,
     },
     {
       title: "CSS Grid 布局完全指南",
@@ -126,7 +126,7 @@ async function main() {
       status: "PUBLISHED" as const,
       publishedAt: new Date("2025-05-12"),
       readingTime: 15,
-      categoryId: categoryRecords[0].id,
+      categoryId: categoryRecords[0]!.id,
     },
     {
       title: "Node.js 微服务架构实践",
@@ -136,7 +136,7 @@ async function main() {
       status: "PUBLISHED" as const,
       publishedAt: new Date("2025-05-10"),
       readingTime: 18,
-      categoryId: categoryRecords[1].id,
+      categoryId: categoryRecords[1]!.id,
     },
     {
       title: "程序员的周末时光",
@@ -146,7 +146,7 @@ async function main() {
       status: "PUBLISHED" as const,
       publishedAt: new Date("2025-05-08"),
       readingTime: 5,
-      categoryId: categoryRecords[2].id,
+      categoryId: categoryRecords[2]!.id,
     },
   ];
 
@@ -250,7 +250,8 @@ async function main() {
         },
       });
       for (let i = 0; i < seriesInfo.postIndices.length; i++) {
-        const post = postRecords[seriesInfo.postIndices[i]];
+        const postIndex = seriesInfo.postIndices[i];
+        const post = postIndex !== undefined ? postRecords[postIndex] : undefined;
         if (post) {
           await prisma.seriesPost.create({
             data: { seriesId: series.id, postId: post.id, order: i + 1 },
@@ -343,17 +344,18 @@ async function main() {
   }
 
   // Create Activities
+  const p0 = postRecords[0]!, p1 = postRecords[1]!, p2 = postRecords[2]!, p3 = postRecords[3]!, p4 = postRecords[4]!, p5 = postRecords[5]!;
   const activitiesData = [
-    { userId: user.id, type: "POST_PUBLISHED" as const, targetId: postRecords[0].id, metadata: JSON.stringify({ title: postRecords[0].title }) },
-    { userId: user.id, type: "POST_PUBLISHED" as const, targetId: postRecords[1].id, metadata: JSON.stringify({ title: postRecords[1].title }) },
-    { userId: user.id, type: "POST_PUBLISHED" as const, targetId: postRecords[2].id, metadata: JSON.stringify({ title: postRecords[2].title }) },
-    { userId: user2.id, type: "LIKE_ADDED" as const, targetId: postRecords[0].id, metadata: JSON.stringify({ title: postRecords[0].title }) },
-    { userId: user2.id, type: "BOOKMARK_ADDED" as const, targetId: postRecords[1].id, metadata: JSON.stringify({ title: postRecords[1].title }) },
-    { userId: user.id, type: "POST_PUBLISHED" as const, targetId: postRecords[3].id, metadata: JSON.stringify({ title: postRecords[3].title }) },
+    { userId: user.id, type: "POST_PUBLISHED" as const, targetId: p0.id, metadata: JSON.stringify({ title: p0.title }) },
+    { userId: user.id, type: "POST_PUBLISHED" as const, targetId: p1.id, metadata: JSON.stringify({ title: p1.title }) },
+    { userId: user.id, type: "POST_PUBLISHED" as const, targetId: p2.id, metadata: JSON.stringify({ title: p2.title }) },
+    { userId: user2.id, type: "LIKE_ADDED" as const, targetId: p0.id, metadata: JSON.stringify({ title: p0.title }) },
+    { userId: user2.id, type: "BOOKMARK_ADDED" as const, targetId: p1.id, metadata: JSON.stringify({ title: p1.title }) },
+    { userId: user.id, type: "POST_PUBLISHED" as const, targetId: p3.id, metadata: JSON.stringify({ title: p3.title }) },
     { userId: user2.id, type: "FOLLOW_USER" as const, targetId: user.id, metadata: JSON.stringify({ name: user.name }) },
-    { userId: user.id, type: "POST_PUBLISHED" as const, targetId: postRecords[4].id, metadata: JSON.stringify({ title: postRecords[4].title }) },
-    { userId: user.id, type: "POST_PUBLISHED" as const, targetId: postRecords[5].id, metadata: JSON.stringify({ title: postRecords[5].title }) },
-    { userId: user2.id, type: "COMMENT_ADDED" as const, targetId: postRecords[0].id, metadata: JSON.stringify({ title: postRecords[0].title }) },
+    { userId: user.id, type: "POST_PUBLISHED" as const, targetId: p4.id, metadata: JSON.stringify({ title: p4.title }) },
+    { userId: user.id, type: "POST_PUBLISHED" as const, targetId: p5.id, metadata: JSON.stringify({ title: p5.title }) },
+    { userId: user2.id, type: "COMMENT_ADDED" as const, targetId: p0.id, metadata: JSON.stringify({ title: p0.title }) },
   ];
 
   // Only create activities if none exist
